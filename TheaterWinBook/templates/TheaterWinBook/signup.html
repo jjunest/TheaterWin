@@ -1,0 +1,275 @@
+
+
+{% extends "TheaterWinBook/base_header_footer_dark.html" %}
+{% block content %}
+
+    <div class="wrapper">
+        <div class="container-fluid" style="max-width: 100%;">
+            <div class="clearfix"></div>
+            <div class="wrapper-page">
+
+                <div class="m-t-40 card-box">
+                    <div class="text-center">
+                        <h4 class="text-uppercase font-bold mb-0" style="font-family: BM_DOHYEON; font-size: 25px"> 극장승
+                            가입 </h4>
+                    </div>
+                    <div class="p-20">
+                        <form role="form" method="post" action="" class="form-horizontal m-t-20">
+                            {% csrf_token %}
+                            <div class="form-group row">
+                                <label class="col-10 col-form-label">아이디</label>
+                                <div class="col-10">
+                                    <input class="form-control" id="username" name="username"
+                                           placeholder="사용할 아이디를 입력해주세요"
+                                           minlength="4" style="font-family: Roboto sans-seri">
+                                    <span id="id_len_check_info"
+                                          class=""
+                                          style="text-align: center;font-size: 8px;">* 아이디는 최소 4자 이상입니다</span>
+                                </div>
+                            </div>
+
+
+                            <div class="form-group row">
+                                <label class="col-10 col-form-label">비밀번호</label>
+                                <div class="col-10">
+                                    <input class="form-control" type="password" id="password" name="password"
+                                           placeholder="비밀번호를 입력해주세요" style="font-family: Roboto sans-seri">
+                                    <span id="pw_len_check_info"
+                                          class=""
+                                          style="text-align: center;font-size: 8px; ">* 비밀번호는 최소 4자 이상입니다</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-10 col-form-label">비번 확인</label>
+                                <div class="col-10">
+                                    <input class="form-control" type="password" name="password_check"
+                                           id="password_check"
+                                           placeholder="비밀번호를 다시 입력해주세요" style="font-family: Roboto sans-seri">
+                                    <span
+                                            id="password_check_info" class="hidden"
+                                            style="text-align: center;font-size: 9px;">* 비밀번호가 일치하지 않습니다.</span>
+                                </div>
+                            </div>
+
+
+                            {% comment %}
+
+
+                            <div class="form-group">
+                                <div class="col-xs-12">
+                                    <div class="checkbox checkbox-custom">
+                                        <input id="checkbox-signup" type="checkbox" checked="checked">
+                                        <label for="checkbox-signup">I accept <a href="#">Terms and
+                                            Conditions</a></label>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endcomment %}
+
+                            <div class="form-group text-center m-t-40 mb-0">
+                                <div class="col-10">
+
+
+                                    <button class="btn btn-custom btn-bordred btn-block waves-effect waves-light"
+                                            id="submit" type="submit"
+                                            style="width: 90%; margin: 0 5%; background: #333333 " disabled>
+                                        회원가입
+                                    </button>
+                                </div>
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-10 text-center">
+                            <p class="text-muted">이미 가입하셨습니까?<a href="{% url 'login_view' %}"
+                                                                class="text-primary m-l-5"><b>로그인</b></a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!-- end card-box -->
+
+
+            </div>
+            <!-- end wrapper page -->
+
+
+        </div>
+    </div>
+
+
+
+    {% comment %}
+
+
+    <div class="breadcrumb-wrap">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h4>간단 회원 가입</h4>
+                </div>
+
+            </div>
+        </div>
+    </div><!--breadcrumbs-->
+
+
+    <div class="container" style="padding: 0px">
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-md-offset-0 ">
+
+                <div class="login-form">
+
+                    <form role="form" method="post" action="">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">&nbsp&nbsp 가입 아이디</label> <span id="id_len_check_info"
+                                                                                            class=""
+                                                                                            style="text-align: center;font-size: 8px;">* 아이디는 최소 4자 이상입니다</span></label>
+                            <input class="form-control" id="username" name="username" placeholder="사용할 아이디를 입력해주세요"
+                                   maxlength="15" minlength="4">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="exampleInputPassword1">&nbsp&nbsp 가입 비밀번호 </label> <span id="pw_len_check_info"
+                                                                                                 class=""
+                                                                                                 style="text-align: center;font-size: 8px; ">* 비밀번호는 최소 4자 이상입니다</span>
+                            <input class="form-control" type="password" id="password" name="password" maxlength="15"
+                                   placeholder="비밀번호를 입력해주세요">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputPassword1">&nbsp&nbsp 비밀번호 확인 </label> <span
+                                id="password_check_info" class="hidden"
+                                style="text-align: center;font-size: 9px;color: red">* 비밀번호가 일치하지 않습니다.</span>
+                            <input class="form-control" type="password" name="password_check" id="password_check"
+                                   maxlength="15" placeholder="비밀번호를 다시 입력해주세요">
+                        </div>
+                        <button type="submit" id="submit" class="btn btn-theme-bg"
+                                style="width: 90%; margin: 0 5%; background: #333333" disabled>회원 가입 하기
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endcomment %}
+
+
+{% endblock %}
+w
+{% block javascript %}
+    <script>
+        var id_condition = false;
+        var pw_condition = false;
+
+        $(document).ready(function () {
+            var minLength = 4;
+            var maxLength = 15;
+
+            // username 입력시 체크해야할 것들
+            $('#username').keyup(function () {
+                //최소 및 최대 데이터 확인
+                var value = $(this).val();
+                if (value.length < minLength) {
+                    $("#id_len_check_info").css("color", "red").text("* 아이디는 최소 4자 이상입니다");
+                    id_condition = false;
+                }
+                else {
+                    {#$("#id_len_check_info").css("color","green").text("* 아이디로 사용하실 수 있습니다");#}
+                    //AJAX로 회원가입 아이디 있는지 확인...
+                    var username = $(this).val();
+                    $.ajax({
+                        url: '/ajax/validate_username/',
+                        data: {
+                            'username': username
+                        },
+                        dataType: 'json',
+                        success: function (data) {
+                            if (data.is_taken) {
+                                $("#id_len_check_info").css("color", "red").text("* 이미 존재하는 아이디가 있습니다.");
+                                id_condition = false;
+
+                            } else {
+                                $("#id_len_check_info").css("color", "green").text("* 아이디로 사용하실 수 있습니다");
+                                id_condition = true;
+
+                            }
+                        },
+                        complete: function () {
+                            signup_condition_check();
+                        }
+                    });
+
+                }
+
+
+            });
+
+
+            // password  체인지
+            $('#password').keyup(function () {
+                //최소 및 최대 데이터 확인.
+                var value = $(this).val();
+
+                if (value.length < minLength) {
+                    console.log("this is passwd change");
+                    $("#pw_len_check_info").css("color", "red").text("* 비밀번호는 최소 4자 이상입니다");
+                    pw_condition = false;
+
+                }
+                else {
+                    $("#pw_len_check_info").css("color", "green").text("* 비밀번호로 사용하실 수 있습니다");
+                    if ($('#password_check').val() != $('#password').val()) {
+                        $('#password_check_info').css("color", "red").text('* 비밀번호가 일치하지 않습니다.').removeClass('hidden');
+                        pw_condition = false;
+                    } else {
+                        $('#password_check_info').css("color", "green").text('* 비밀번호가 일치합니다.').removeClass('hidden');
+                        pw_condition = true;
+
+                    }
+
+                }
+
+
+                signup_condition_check();
+            });
+            // password_check 체인지
+            $('#password_check').keyup(function () {
+
+                //비밀번호 일치 확인 로직
+                if ($('#password_check').val() != $('#password').val()) {
+                    $('#password_check_info').css("color", "red").text('* 비밀번호가 일치하지 않습니다').removeClass('hidden');
+                    pw_condition = false;
+
+                } else {
+                    $('#password_check_info').css("color", "green").text('* 비밀번호가 일치합니다').removeClass('hidden');
+                    pw_condition = true;
+
+                }
+
+                signup_condition_check();
+            });
+
+        });
+
+        function signup_condition_check() {
+            if (id_condition == true) {
+                if (pw_condition == true) {
+                    $("#submit").attr("disabled", false).css("background", "#59a9f8");
+                } else {
+                    $("#submit").attr("disabled", true).css("background", "#333333");
+                }
+            } else {
+                $("#submit").attr("disabled", true).css("background", "#333333");
+
+            }
+        }
+    </script>
+{% endblock %}
+
+

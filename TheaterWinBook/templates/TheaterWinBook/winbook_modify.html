@@ -1,0 +1,556 @@
+{% extends "TheaterWinBook/base_header_footer_dark.html" %}
+
+{% block css_script %}
+    <style>
+        .breadcrumb-wrap {
+            padding: 5%;
+        }
+    </style>
+        {#    tinymce widget#}
+    {{ form.media }}
+{% endblock %}
+
+{% block content %}
+
+
+
+    <div class="wrapper">
+        <div class="container-fluid">
+            <!-- Page-Title -->
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="btn-group pull-right m-t-20">
+                    </div>
+                    <h4 class="page-title">토계부 정보 수정</h4>
+                </div>
+            </div>
+            <!-- end page title end breadcrumb -->
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card-box">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="p-20">
+                                    <form role="form" class="form-horizontal" method="post" action="" id="modifyForm">
+                                        {% csrf_token %}
+                                        <input type="number" name="record_pk" value="{{ record_pk }}" class="hidden">
+                                        <div class="form-group row">
+                                            <label class="col-3 col-form-label">날짜</label>
+                                            <div class="col-9">
+                                                <div class="input-group">
+                                                    {{ form.buy_date }}
+                                                    <div class="input-group-append">
+                                                        <span class="input-group-text"><i
+                                                                class="ti-calendar"></i></span>
+                                                    </div>
+                                                </div><!-- input-group -->
+                                            </div>
+                                        </div>
+                                        {#                            글을 쓴 날짜는 hidden #}
+                                        <div class="form-group row" style="display: none">
+                                            <label class="col-3 col-form-label">기록날짜</label>
+                                            <div class="col-9"> {{ form.writing_date }}</div>
+
+                                        </div>
+                                        <div class="form-group row">
+                                            <label class="col-3 col-form-label">경기명</label>
+                                            <div class="col-9">
+                                                {{ form.buy_game_title }}
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label class="col-3 col-form-label">배당률</label>
+                                            <div class="col-9">
+                                                {{ form.batting_ratio }}
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label class="col-3 col-form-label">금액</label>
+                                            <div class="col-9">
+                                                {{ form.batting_money }}
+                                            </div>
+                                            <div class="col-12" style="text-align: right">            <span
+                                                    id="batting_money_kor"
+                                                    style="color: gray"> * 0 원</span>
+                                            </div>
+
+                                        </div>
+                                        <div class="form-group row">
+                                            <label class="col-3 col-form-label">폴더수</label>
+                                            <div class="col-9">
+                                                {{ form.folder_num }}
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label class="col-3 col-form-label">적중유무</label>
+                                            <div class="col-9">
+                                                {{ form.win_check }}
+                                            </div>
+                                        </div>
+                                        <div class="form-group row"><label
+                                                style="width:100%; margin-top: 2px; border-radius: 5px; padding: 0 10px;color: whitesmoke;text-align: right">적중
+                                            <i class="fas fa-won-sign"></i> <span id="expecting_money"
+                                                                                  style="color: whitesmoke;"> </span></label>
+                                        </div>
+                                        <div class="form-group row"><label
+                                                style="width:100%;margin-top: 2px; border-radius: 5px; padding: 0 10px;color: whitesmoke;text-align: right">순수익
+                                            <i class="fas fa-won-sign"></i> <span id="net_profit_money"
+                                                                                  style="color: whitesmoke;"> </span></label>
+                                        </div>
+
+                                        <div class="form-group row">
+                                            <label class="col-3 col-form-label">메모</label>
+                                            <div class="col-9">
+                                                {{ form.etc_memo }}
+
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label class="col-3 col-form-label">나의 분석</label>
+                                            <div class="col-12">
+
+                                                <textarea id="id_batting_analysis"
+                                                          name="batting_analysis">  {{ target_record.batting_analysis }}  </textarea>
+                                                <input name="image" type="file" id="upload" class="hidden" onchange="">
+
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label class="col-3 col-form-label">공유여부</label>
+                                            <div class="col-9">
+                                                {{ form.share_check }}
+                                            </div>
+                                        </div>
+
+
+                                        <button type="submit" id="submit_BT"
+                                                class="btn btn-block btn--md btn-info waves-effect waves-light"
+                                                style="width: 90%; margin: 0% 5%;height: 45px; border-radius: 6px;" ;>수정
+                                            하기
+                                        </button>
+
+                                    </form>
+
+
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    {% comment %}
+
+
+    <div class="breadcrumb-wrap">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h4>토계부 정보 수정하기</h4>
+                </div>
+
+
+            </div>
+        </div>
+    </div><!--breadcrumbs-->
+
+    <div class="container" style="padding: 0px;width: 100%">
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-md-offset-0">
+                <div class="comment-form" style="background:#f5f5f8; margin: 0px;padding: 20px">
+
+                    <div class="form-contact">
+                        <form role="form" method="post" action="" id="modifyForm">
+                            {% csrf_token %}
+                            <input type="number" name="record_pk" value="{{ record_pk }}" class="hidden">
+                            <div class="form-group">
+                                <label id="label_buy_date">*구입 날짜</label>
+                                {{ form.buy_date }}
+                            </div>
+                            {#                            글을 쓴 날짜는 hidden #}
+                            <div class="form-group hidden">
+                                <label id="label_buy_date">* 글을 쓴 날짜</label>
+                                {{ form.writing_date }}
+
+                            </div>
+
+                            <div class="form-group">
+                                <label id="label_buy_game_title">*구입 경기</label>
+                                {{ form.buy_game_title }}
+                            </div>
+                            <div class="form-group">
+                                <label id="label_batting_ratio">*배당률 </label>
+                                {{ form.batting_ratio }}
+                            </div>
+                            <div class="form-group">
+                                <label id="label_batting_money">*배팅 금액 <span id="batting_money_kor"
+                                                                             style="color: gray"> - 0 원</span></label>
+                                {{ form.batting_money }}
+                            </div>
+                            <div class="form-group">
+                                <label id="label_folder_num">*폴더 수</label>
+                                {{ form.folder_num }}
+                            </div>
+                            <div class="form-group">
+                                <div><label id="label_win_check">*적중 유무</label></div>
+
+
+                                {{ form.win_check }}
+                                <div><label
+                                        style="width:100%;background:#A9A9A9;margin-top: 2px; border-radius: 5px; padding: 0 10px;color: whitesmoke;text-align: right">적중금액
+                                    <i class="fas fa-won-sign"></i> <span id="expecting_money"
+                                                                          style="color: whitesmoke;"> </span></label>
+                                </div>
+                                <div><label
+                                        style="width:100%;background:#32c5d2;margin-top: 2px; border-radius: 5px; padding: 0 10px;color: whitesmoke;text-align: right">순수익
+                                    <i class="fas fa-won-sign"></i> <span id="net_profit_money"
+                                                                          style="color: whitesmoke;"> </span></label>
+                                </div>
+
+                            </div>
+                            <div class="form-group">
+                                <label id="label_etc_memo">기타 메모</label>
+                                {{ form.etc_memo }}
+                            </div>
+                            <div class="form-group">
+
+                                <button type="submit" id="submit_BT" class="btn btn-theme-bg btn-lg"
+                                        style="width: 90%; margin: 0% 5%" ;>수정 하기
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endcomment %}
+
+
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        $(document).ready(function () {
+            tinymce.init({
+                selector: '#id_batting_analysis',
+                {#selector: "#id_content2",  // change this value according to your HTML#}
+                width: 'auto',
+                height: '350',
+                paste_data_images: true,
+                plugins: [
+                    "advlist autolink lists link image charmap print preview hr anchor pagebreak",
+                    "searchreplace wordcount visualblocks visualchars code fullscreen",
+                    "insertdatetime media nonbreaking save table contextmenu directionality",
+                    "emoticons template paste textcolor colorpicker textpattern"
+                ],
+                toolbar1: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image",
+                toolbar2: "print preview media | forecolor backcolor emoticons",
+                image_advtab: true,
+                file_picker_callback: function (callback, value, meta) {
+                    if (meta.filetype == 'image') {
+                        $('#upload').trigger('click');
+                        $('#upload').on('change', function () {
+                            if (this.files[0].size > 1000000) {
+                                alert("File is too big!");
+                                this.value = "";
+                            }
+
+                            var file = this.files[0];
+
+
+                            var reader = new FileReader();
+                            reader.onload = function (e) {
+                                callback(e.target.result, {
+                                    alt: ''
+                                });
+                            };
+                            reader.readAsDataURL(file);
+                        });
+                    }
+                },
+                templates: [{
+                    title: 'Test template 1',
+                    content: 'Test 1'
+                }, {
+                    title: 'Test template 2',
+                    content: 'Test 2'
+                }]
+            });
+
+
+            {#dark version starti#}
+            $('#buy_date').datepicker({
+                format: "yyyy-mm-dd",
+                autoclose: true,
+                todayHighlight: true,
+                inline: true,
+                showOtherMonths: true,
+                showMonthAfterYear: true,
+                monthNames: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'],
+                dayNamesMin: ['일', '월', '화', '수', '목', '금', '토'],
+            });
+            {#           dark version end #}
+            {#수정 페이지는 이미 값이 존재하니, 한번 expecting_money를 체크해주자. #}
+            expecting_money();
+            {#url체크해서 navigation에 색깔 칠해주기. #}
+            if (window.location.href.indexOf("winbook_insert") > -1) {
+                $("#navtop_winbook_insert").css("color", "#32c5d2");
+            }
+
+            {#배당률/금액/폴더수/적중 변경시마다 예상금액 바꾸기#}
+            $("#id_batting_ratio").change(function () {
+                expecting_money();
+            });
+            $("#id_batting_ratio").keyup(function () {
+                expecting_money();
+            });
+
+            $("#id_batting_money").change(function () {
+                expecting_money();
+            });
+            $("#id_batting_money").keyup(function () {
+                expecting_money();
+            });
+
+            $("#id_folder_num").change(function () {
+                expecting_money();
+            });
+            $("#id_folder_num").keyup(function () {
+                expecting_money();
+            });
+
+            $("#id_win_check").change(function () {
+                expecting_money();
+            });
+
+            {# 배팅금액 3자리씩 변경해주기#}
+            $("#id_batting_money").on("focus", function () {
+                var x = $(this).val();
+                x = removeCommas(x);
+                $(this).val(x);
+            }).on("focusout", function () {
+                var x = $(this).val();
+                if (x && x.length > 0) {
+                    if (!$.isNumeric(x)) {
+                        x = x.replace(/[^0-9]/g, "");
+                    }
+                    x = addCommas(x);
+                    $(this).val(x);
+                }
+            }).on("keyup", function () {
+                $(this).val($(this).val().replace(/[^0-9]/g, ""));
+                var batting_money_num = $(this).val();
+                var batting_money_kor = viewKorean(batting_money_num);
+                $("#batting_money_kor").text(batting_money_kor);
+                {#  이 부분에서 한글화가 필요하다. #}
+                expecting_money();
+            });
+
+
+            {#예상 금액 변경해주기 #}
+            {#            3자리마다 콤마#}
+            $("#id_batting_money").keyup(function () {
+
+
+            });
+
+            {#     폼 에러가 안나게 input type check 하기       #}
+            $('#submit_BT').click(function () {
+                event.preventDefault();
+                var check_input_result = check_input_value();
+                if (check_input_result == true) {
+                    {#배팅 머니 input 컴마 있는 부분 다 없애서 저장하기#}
+                    var batting_money_comma = $("#id_batting_money").val();
+                    var batting_money_nocomma = batting_money_comma.replace(/,/g, "");
+                    {#콤마를 다 제거한 것이 숫자 형태여야만 한다. 아니라면 return false#}
+                    if ($.isNumeric(batting_money_nocomma)) {
+                        $("#id_batting_money").val(batting_money_nocomma);
+                        $("#modifyForm").submit();
+                    } else {
+                        alert("배팅금액에는 숫자만 넣어주세요");
+                        $('#id_batting_money').focus().get(0).scrollIntoView(true);
+                        $('#id_batting_money').css("border", "solid red");
+                        return false;
+                    }
+
+
+                } else {
+
+                }
+
+            });
+
+
+            {#    #}
+        });
+
+        function check_input_value() {
+            var check_input_result = false;
+            var buy_date = $('#buy_date').val();
+            if (date_check(buy_date) == false) {
+                {#달력 데이터가 정상적 입력값이 아니면 false#}
+                alert("구입 날짜를 정확히 입력해주세요!");
+                $('#buy_date').focus();
+                return false;
+            }
+            if ($("#id_buy_game_title").val() == '') {
+                var result = confirm("구입 경기 정보를 입력하지 않으셨습니다.\n그대로 저장하시겠습니까?");
+                if (result) {
+                    var default_buy_game_title = buy_date + ' 구입 경기';
+                    $('#id_buy_game_title').val(default_buy_game_title);
+                    $('#id_buy_game_title').css("border", "");
+                } else {
+                    $('#id_buy_game_title').focus().get(0).scrollIntoView(true);
+                    $('#id_buy_game_title').css("border", "solid red");
+                    return false;
+                }
+
+            }
+
+            if ($("#id_batting_ratio").val() == '' || $("#id_batting_ratio").val() <= 0 || !$.isNumeric($("#id_batting_ratio").val())) {
+                alert("배당률 정보가 0이하거나 숫자 형태가 아닙니다. \n배당률을 정확히 입력해주세요!");
+                $('#id_batting_ratio').focus().get(0).scrollIntoView(true);
+                $('#id_batting_ratio').css("border", "solid red");
+                return false;
+            } else {
+                $('#id_batting_ratio').css("border", "");
+            }
+
+            if ($("#id_batting_money").val() == '' || $("#id_batting_money").val() <= 0) {
+                alert("배팅 금액 정보가 없거나 0원 이하입니다. \n배팅 금액을 정확히 입력해주세요!");
+                $('#id_batting_money').focus().get(0).scrollIntoView(true);
+                $('#id_batting_money').css("border", "solid red");
+                return false;
+            } else {
+                $('#id_batting_money').css("border", "");
+            }
+
+
+            if ($("#id_folder_num").val() == '' || $("#id_folder_num").val() <= 0 || !$.isNumeric($("#id_folder_num").val())) {
+                alert("폴더 수가 없거나 0이하입니다. \n폴더 수를 정확히 입력해주세요!");
+                $('#id_folder_num').focus().get(0).scrollIntoView(true);
+                $('#id_folder_num').css("border", "solid red");
+                return false;
+            } else {
+                $('#id_folder_num').css("border", "");
+            }
+
+            if ($("#id_win_check").val() == '') {
+                alert("적중 유무를 정확히 입력해주세요");
+                $('#id_win_check').focus().get(0).scrollIntoView(true);
+                $('#id_win_check').css("border", "solid red");
+                return false;
+            } else {
+                $('#id_win_check').css("border", "");
+            }
+            {#적중 안된 것 0, 적중 된 것 1, 미정 2 #}
+            if (!($("#id_win_check").val() == 0 || $("#id_win_check").val() == 1 || $("#id_win_check").val() == 2)) {
+                alert("적중 유무가 적당하지 않습니다. ");
+                $('#id_win_check').focus().get(0).scrollIntoView(true);
+                $('#id_win_check').css("border", "solid red");
+                return false;
+            } else {
+                $('#id_win_check').css("border", "");
+            }
+
+
+            return true;
+        }
+
+        function date_check(dateString) {
+            var regEx = /^\d{4}-\d{2}-\d{2}$/;
+            if (!dateString.match(regEx)) return false;  // Invalid format
+            var d = new Date(dateString);
+            if (!d.getTime() && d.getTime() !== 0) return false; // Invalid date
+            return d.toISOString().slice(0, 10) === dateString;
+        }
+
+        {#3자리마다 콤마 찍어주기#}
+        //3자리 단위마다 콤마 생성
+        function addCommas(x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        //모든 콤마 제거
+        function removeCommas(x) {
+            if (!x || x.length == 0) return "";
+            else return x.split(",").join("");
+        }
+
+
+        {#금액 한글로 표시하기#}
+
+        function viewKorean(num) {
+            var hanA = new Array("", "일", "이", "삼", "사", "오", "육", "칠", "팔", "구", "십");
+            var danA = new Array("", "십", "백", "천", "", "십", "백", "천", "", "십", "백", "천", "", "십", "백", "천");
+            var result = "";
+            for (i = 0; i < num.length; i++) {
+                str = "";
+                han = hanA[num.charAt(num.length - (i + 1))];
+                if (han != "") str += han + danA[i];
+                if (i == 4) str += "만";
+                if (i == 8) str += "억";
+                if (i == 12) str += "조";
+                result = str + result;
+            }
+            if (num != 0) result = "- " + result + "원";
+            if (num == 0) result = result + " - 0 원";
+            return result;
+        }
+
+        {#  입력값 변경 시마다 예상금액 바꿔주기 #}
+
+        function expecting_money() {
+            var id_batting_ratio = $("#id_batting_ratio").val();
+
+            if (id_batting_ratio == null || id_batting_ratio == "") {
+                id_batting_ratio = 0;
+            }
+
+            var id_batting_money = removeCommas($("#id_batting_money").val());
+            if (id_batting_money == null || id_batting_money == "") {
+                id_batting_money = 0;
+            }
+            var id_folder_num = $("#id_folder_num").val();
+            if (id_folder_num == null || id_folder_num == "") {
+                id_folder_num = 0;
+            }
+
+            var id_win_check = $("#id_win_check").val();
+            {#alert("this is id_batting_ratio" + id_batting_ratio + '// and money:' + id_batting_money + '//id_foldernum' + id_folder_num);#}
+
+            {#  만약 win_check가 0 이라면.... 비적중이다 #}
+            var expecting_text = "";
+            var net_profit_text = "";
+            if (id_win_check == 0) {
+                expecting_text = "- " + addCommas(Math.round(id_batting_money));
+                net_profit_text = "- " + addCommas(Math.round(id_batting_money));
+            } else if (id_win_check == 1) {
+                var expecting_money = addCommas(Math.round(id_batting_ratio * id_batting_money));
+                var net_profit_money = addCommas(Math.round((id_batting_ratio * id_batting_money) - (id_batting_money)));
+                expecting_text = "+ " + expecting_money;
+                net_profit_text = "+ " + net_profit_money;
+
+            } else if (id_win_check == 2) {
+                var expecting_money = addCommas(Math.round(id_batting_ratio * id_batting_money));
+                var net_profit_money = addCommas(Math.round((id_batting_ratio * id_batting_money) - (id_batting_money)));
+                expecting_text = "+ " + expecting_money + " 예상";
+                net_profit_text = "+ " + net_profit_money + " 예상";
+            }
+            $("#expecting_money").text(expecting_text);
+            $("#net_profit_money").text(net_profit_text);
+        }
+    </script>
+{% endblock %}
+
+

@@ -1,0 +1,50 @@
+{% extends "TheaterWinBook/base_header_footer_dark.html" %}
+{% load static %}
+{% block css_script %}
+    <style>
+        .breadcrumb-wrap {
+            padding: 5%;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+
+
+    <div class="wrapper">
+        <div class="container-fluid">
+
+            <div class="form-group row">
+                <label class="control-label col-sm-4">Auto Close</label>
+                <div class="col-sm-8">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="yyyy-mm-dd" id="datepicker-autoclose">
+                        <div class="input-group-append">
+                            <span class="input-group-text"><i class="ti-calendar"></i></span>
+                        </div>
+                    </div><!-- input-group -->
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        $(document).ready(function () {
+
+            // JQuery 적용
+            jQuery('#datepicker-autoclose').datepicker({
+                format: "yyyy-mm-dd",
+                autoclose: false,
+                todayHighlight: true
+            });
+        });
+
+
+    </script>
+{% endblock %}
