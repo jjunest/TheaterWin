@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 from django.utils.datetime_safe import datetime
-from tinymce import HTMLField
+# from tinymce import HTMLField
 
 
 class TheaterWinQuestion(models.Model):
@@ -88,7 +88,7 @@ class TheaterWinBookRecord(models.Model):
     win_check = models.IntegerField(default=1)
     # 장고 모델에서는 null을 허용하지 않고 blank = true로 표시한다.
     etc_memo = models.CharField(blank=True, max_length=200)
-    batting_analysis = HTMLField()
+    # batting_analysis = HTMLField()
     # batting_analysis = HTMLField('Content', default='내용없음')
     # 1이 공유, 0이 비공유
     share_check = models.IntegerField(default=0)
