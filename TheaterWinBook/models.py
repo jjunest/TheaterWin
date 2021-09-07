@@ -8,70 +8,114 @@ from django.utils.datetime_safe import datetime
 class StockSummaryKr(models.Model):
     bat_time = models.DateTimeField(default=datetime.now, blank = False)
     info_date = models.DateField(default=datetime.now, blank=False)
-    stock_code = models.SmallIntegerField(default=1, blank=False)
-    stock_name = models.CharField(max_length=20, blank=True)
+    #CharField 로 하면 varchar로 만들어짐 CharField default=5 는 varchar(5) 등
+    #tinyint 는 0~ 255 까지 (1바이트) Char는 1바이트
+    #smallint 는 -32,767~32,767 (2바이트)
+    #int 는 -2,147,483,648 ~ 2,147,483,648 (4바이트)
+    stock_code = models.CharField(max_length=10, blank=False)
+    stock_country = models.CharField(max_length=1, blank=False)
+    vesting_type = models.CharField(max_length=1, blank=False)
+    vesting_type_detail = models.CharField(max_length=1, blank=False)
+    stock_name = models.CharField(max_length=15, blank=True)
+    stock_market_sum = models.IntegerField(blank=True, null=True)
+    stock_share_total_num = models.IntegerField(blank=True, null=True)
+    stock_first_price = models.IntegerField(blank=True, null=True)
+    stock_foreign_share_max = models.IntegerField(blank=True, null=True)
+    stock_foreign_share_num = models.IntegerField(blank=True, null=True)
+    stock_foreign_share_percent = models.FloatField(blank=True, null=True)
+    stock_maxprice_year = models.IntegerField(blank=True, null=True)
+    stock_lowprice_year = models.IntegerField(blank=True, null=True)
+    stock_per = models.FloatField(blank=True, null=True)
+    stock_eps = models.IntegerField(blank=True, null=True)
+    stock_per_guess = models.FloatField(blank=True, null=True)
+    stock_eps_guess = models.IntegerField(blank=True, null=True)
+    stock_pbr = models.FloatField(blank=True, null=True)
+    stock_bps = models.IntegerField(blank=True, null=True)
+    stock_allocation_ratio = models.FloatField(blank=True, null=True)
+    stock_similar_per = models.FloatField(blank=True, null=True)
+    stock_now = models.IntegerField(blank=True, null=True)
+    stock_close = models.IntegerField(blank=True, null=True)
+    stock_open = models.IntegerField(blank=True, null=True)
+    stock_high = models.IntegerField(blank=True, null=True)
+    stock_low = models.IntegerField(blank=True, null=True)
+    stock_volume_share = models.IntegerField(blank=True, null=True)
+    stock_volume_money = models.IntegerField(blank=True, null=True)
+    stock_trading_sum_foreign = models.IntegerField(blank=True, null=True)
+    stock_trading_sum_agency = models.IntegerField(blank=True, null=True)
+    stock_trading_sum_ant = models.IntegerField(blank=True, null=True)
+    stock_agency_buy_top1 = models.CharField(max_length=15, blank=True)
+    stock_agency_buy_top1_vol = models.IntegerField(blank=True, null=True)
+    stock_agency_buy_top2 = models.CharField(max_length=15, blank=True)
+    stock_agency_buy_top2_vol = models.IntegerField(blank=True, null=True)
+    stock_agency_buy_top3 = models.CharField(max_length=15, blank=True)
+    stock_agency_buy_top3_vol = models.IntegerField(blank=True, null=True)
+    stock_agency_buy_top4 = models.CharField(max_length=15, blank=True)
+    stock_agency_buy_top4_vol = models.IntegerField(blank=True, null=True)
+    stock_agency_buy_top5 = models.CharField(max_length=15, blank=True)
+    stock_agency_buy_top5_vol = models.IntegerField(blank=True, null=True)
+    stock_agency_sell_top1 = models.CharField(max_length=15, blank=True)
+    stock_agency_sell_top1_vol = models.IntegerField(blank=True, null=True)
+    stock_agency_sell_top2 = models.CharField(max_length=15, blank=True)
+    stock_agency_sell_top2_vol = models.IntegerField(blank=True, null=True)
+    stock_agency_sell_top3 = models.CharField(max_length=15, blank=True)
+    stock_agency_sell_top3_vol = models.IntegerField(blank=True, null=True)
+    stock_agency_sell_top4 = models.CharField(max_length=15, blank=True)
+    stock_agency_sell_top4_vol = models.IntegerField(blank=True, null=True)
+    stock_agency_sell_top5 = models.CharField(max_length=15, blank=True)
+    stock_agency_sell_top5_vol = models.IntegerField(blank=True, null=True)
+    etc1_string = models.CharField(max_length=1, blank=True)
+    etc2_string = models.CharField(max_length=1, blank=True)
+    etc3_string = models.CharField(max_length=1, blank=True)
+    etc4_string = models.CharField(max_length=1, blank=True)
+    etc5_string = models.CharField(max_length=1, blank=True)
+    etc1_int = models.SmallIntegerField(blank=True, null=True)
+    etc2_int = models.SmallIntegerField(blank=True, null=True)
+    etc3_int = models.SmallIntegerField(blank=True, null=True)
+    etc4_int = models.SmallIntegerField(blank=True, null=True)
+    etc5_int = models.SmallIntegerField(blank=True, null=True)
 
     class Meta:
-        unique_together = ("info_date","stock_code")
-    # stock_country =
-    # vesting_type
-    # vesting_type_detail
-    # stock_market_sum
-    # stock_share_total_num
-    # stock_first_price
-    # stock_foreign_share_max
-    # stock_foreign_share_num
-    # stock_foreign_share_percent
-    # stock_maxprice_year
-    # stock_lowprice_year
-    # stock_per
-    # stock_eps
-    # stock_per_guess
-    # stock_eps_guess
-    # stock_pbr
-    # stock_bps
-    # stock_allocation_ratio
-    # stock_similar_per
-    # stock_now
-    # stock_close
-    # stock_open
-    # stock_high
-    # stock_low
-    # stock_volume_share
-    # stock_volume_money
-    # stock_trading_sum_foreign_
-    # stock_trading_sum_agency
-    # stock_trading_sum_ant
-    # stock_agency_buy_top1
-    # stock_agency_buy_top1_vol
-    # stock_agency_buy_top2
-    # stock_agency_buy_top2_vol
-    # stock_agency_buy_top3
-    # stock_agency_buy_top3_vol
-    # stock_agency_buy_top4
-    # stock_agency_buy_top4_vol
-    # stock_agency_buy_top5
-    # stock_agency_buy_top5_vol
-    # stock_agency_sell_top1
-    # stock_agency_sell_top1_vol
-    # stock_agency_sell_top2
-    # stock_agency_sell_top2_vol
-    # stock_agency_sell_top3
-    # stock_agency_sell_top3_vol
-    # stock_agency_sell_top4
-    # stock_agency_sell_top4_vol
-    # stock_agency_sell_top5
-    # stock_agency_sell_top5_vol
-    # etc1_string
-    # etc2_string
-    # etc3_string
-    # etc4_string
-    # etc5_string
-    # etc1_int
-    # etc2_int
-    # etc3_int
-    # etc4_int
-    # etc5_int
+        unique_together = ("info_date","stock_code","stock_country","vesting_type","vesting_type_detail")
+
+
+class StockIfrsKr(models.Model):
+    bat_time = models.DateTimeField(default=datetime.now, blank = False)
+    info_date = models.DateField(default=datetime.now, blank=False)
+    #CharField 로 하면 varchar로 만들어짐 CharField default=5 는 varchar(5) 등
+    #tinyint 는 0~ 255 까지 (1바이트) Char는 1바이트
+    #smallint 는 -32,767~32,767 (2바이트)
+    #int 는 -2,147,483,648 ~ 2,147,483,648 (4바이트)
+    stock_code = models.CharField(max_length=5, blank=False)
+    stock_country = models.CharField(max_length=1, blank=False)
+    ifrs_type = models.CharField(max_length=1, blank=False)
+    vesting_type = models.CharField(max_length=1, blank=False)
+    vesting_type_detail = models.CharField(max_length=1, blank=False)
+    stock_name = models.CharField(max_length=15, blank=True)
+    stock_revenue = models.IntegerField(blank=True, null=True)
+    operating_income = models.IntegerField(blank=True, null=True)
+    net_income = models.IntegerField(blank=True, null=True)
+    operating_income_ratio = models.FloatField(blank=True, null=True)
+    income_ratio = models.FloatField(blank=True, null=True)
+    roe = models.FloatField(blank=True, null=True)
+    debt_ratio = models.FloatField(blank=True, null=True)
+    quick_ratio = models.FloatField(blank=True, null=True)
+    reserve_ratio = models.FloatField(blank=True, null=True)
+    stock_eps = models.IntegerField(blank=True, null=True)
+    stock_per = models.FloatField(blank=True, null=True)
+    stock_bps = models.IntegerField(blank=True, null=True)
+    stock_pbr = models.FloatField(blank=True, null=True)
+    etc1_string = models.CharField(max_length=1, blank=True)
+    etc2_string = models.CharField(max_length=1, blank=True)
+    etc3_string = models.CharField(max_length=1, blank=True)
+    etc1_int = models.SmallIntegerField(blank=True, null=True)
+    etc2_int = models.SmallIntegerField(blank=True, null=True)
+    etc3_int = models.SmallIntegerField(blank=True, null=True)
+
+    class Meta:
+        unique_together = ("info_date","stock_code","stock_country","ifrs_type","vesting_type","vesting_type_detail")
+
+
+
 
 
 class TheaterWinQuestion(models.Model):

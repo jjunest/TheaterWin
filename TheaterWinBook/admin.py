@@ -1,7 +1,10 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Post,TheaterWinBookRecord,TheaterWinQuestion, TheaterWinQuestionInfo,TheaterWinQuestionReply, Full_Chatting_Message, TheaterWinBookRecordInfo, TheaterWinBookRecordReply, StockSummaryKr
+from .models import Post,TheaterWinBookRecord,TheaterWinQuestion,\
+                    TheaterWinQuestionInfo,TheaterWinQuestionReply, \
+                    Full_Chatting_Message, TheaterWinBookRecordInfo, \
+                    TheaterWinBookRecordReply, StockSummaryKr, StockIfrsKr
 
 admin.site.register(Post)
 admin.site.register(TheaterWinBookRecord)
@@ -12,3 +15,4 @@ admin.site.register(Full_Chatting_Message)
 admin.site.register(TheaterWinBookRecordInfo)
 admin.site.register(TheaterWinBookRecordReply)
 admin.site.register(StockSummaryKr)
+admin.site.register(StockIfrsKr)
