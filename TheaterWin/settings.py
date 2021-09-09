@@ -142,8 +142,8 @@ TIME_ZONE = 'Asia/Seoul'
 USE_I18N = True
 
 USE_L10N = True
-
-USE_TZ = True
+# 한국시간이므로 반드시 False 해야함.
+USE_TZ = False
 
 # bower
 STATICFILES_FINDERS = [
