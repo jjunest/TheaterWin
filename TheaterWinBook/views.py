@@ -237,6 +237,11 @@ def winbook_statistics_ajax(request):
     return JsonResponse(data)
 
 
+def appchat(request):
+    return render(request, 'TheaterWinBook/appchat.html', {})
+
+
+
 @login_required(login_url='/login_view')
 def winbook_list(request):
     datepicker_start = request.GET.get('datepicker_start', None)
@@ -575,6 +580,9 @@ def question_write(request):
             print("this is is_original is not reply_write")
             form = TheaterWinQuestionForm()  # forms.py의 PostForm 클래스의 인스턴스
     return render(request, 'TheaterWinBook/question_write.html', {'form': form})  # 템플릿 파일 경로 지정, 데이터 전달
+
+
+
 
 
 @login_required(login_url='/login_view')

@@ -3,6 +3,7 @@ from . import views
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
+    url(r'^appchat/$', views.appchat, name='appchat'),
     # editor wyswig
     url(r'^tinymce/', include('tinymce.urls')),
 

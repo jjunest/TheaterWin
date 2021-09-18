@@ -7,7 +7,7 @@ from django.utils.datetime_safe import datetime
 
 class StockSummaryKr(models.Model):
     bat_time = models.DateTimeField(default=datetime.now, blank = False)
-    info_date = models.DateField(default=datetime.now, blank=False)
+    info_date = models.DateField(default=datetime.now , blank=False)
     #CharField 로 하면 varchar로 만들어짐 CharField default=5 는 varchar(5) 등
     #tinyint 는 0~ 255 까지 (1바이트) Char는 1바이트
     #smallint 는 -32,767~32,767 (2바이트)
@@ -81,6 +81,7 @@ class StockSummaryKr(models.Model):
 class StockIfrsKr(models.Model):
     bat_time = models.DateTimeField(default=datetime.now, blank = False)
     info_date = models.DateField(default=datetime.now, blank=False)
+    ifrs_date = models.DateField(default=datetime.now, blank=False)
     #CharField 로 하면 varchar로 만들어짐 CharField default=5 는 varchar(5) 등
     #tinyint 는 0~ 255 까지 (1바이트) Char는 1바이트
     #smallint 는 -32,767~32,767 (2바이트)
@@ -104,6 +105,9 @@ class StockIfrsKr(models.Model):
     stock_per = models.FloatField(blank=True, null=True)
     stock_bps = models.IntegerField(blank=True, null=True)
     stock_pbr = models.FloatField(blank=True, null=True)
+    dividend_per_share = models.IntegerField(blank=True, null=True)
+    dividend_yield_ratio = models.FloatField(blank=True, null=True)
+    dividend_payout_ratio = models.FloatField(blank=True, null=True)
     etc1_string = models.CharField(max_length=1, blank=True)
     etc2_string = models.CharField(max_length=1, blank=True)
     etc3_string = models.CharField(max_length=1, blank=True)
@@ -112,7 +116,7 @@ class StockIfrsKr(models.Model):
     etc3_int = models.SmallIntegerField(blank=True, null=True)
 
     class Meta:
-        unique_together = ("info_date","stock_code","stock_country","ifrs_type","vesting_type","vesting_type_detail")
+        unique_together = ("info_date","ifrs_date","stock_code","stock_country","ifrs_type","vesting_type","vesting_type_detail")
 
 
 
