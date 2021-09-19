@@ -93,7 +93,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'TheaterWin.wsgi.application'
 
-# Database
+# DatabaseNAME (apach2 배포용)
+DATABASE_NAME = '/home/TheaterWin/db.sqlite3'
+
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
 DATABASES = {
