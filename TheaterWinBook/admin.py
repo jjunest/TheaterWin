@@ -4,7 +4,7 @@ from django.contrib import admin
 from .models import Post,TheaterWinBookRecord,TheaterWinQuestion,\
                     TheaterWinQuestionInfo,TheaterWinQuestionReply, \
                     Full_Chatting_Message, TheaterWinBookRecordInfo, \
-                    TheaterWinBookRecordReply, StockSummaryKr, StockIfrsKr
+                    TheaterWinBookRecordReply, StockSummaryKr, StockIfrsKr, StockGroupKr
 
 admin.site.register(Post)
 admin.site.register(TheaterWinBookRecord)
@@ -16,3 +16,4 @@ admin.site.register(TheaterWinBookRecordInfo)
 admin.site.register(TheaterWinBookRecordReply)
 admin.site.register(StockSummaryKr)
 admin.site.register(StockIfrsKr)
+admin.site.register(StockGroupKr)

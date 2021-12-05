@@ -5,6 +5,35 @@ from django.utils.datetime_safe import datetime
 # from tinymce import HTMLField
 
 
+class StockGroupKr(models.Model):
+    bat_time = models.DateTimeField(default=datetime.now, blank = False)
+    info_date = models.DateField(default=datetime.now , blank=False)
+    stock_code = models.CharField(max_length=10, blank=False)
+    stock_country = models.CharField(max_length=1, blank=False)
+    vesting_type = models.CharField(max_length=1, blank=False)
+    # vesting_type_detail = models.CharField(max_length=1, blank=False)
+    stock_name = models.CharField(max_length=15, blank=True)
+    stock_group = models.CharField(max_length=30, blank=True)
+    stock_theme = models.CharField(max_length=30, blank=True)
+    etc1_string = models.CharField(max_length=1, blank=True)
+    etc2_string = models.CharField(max_length=1, blank=True)
+    etc3_string = models.CharField(max_length=1, blank=True)
+    etc4_string = models.CharField(max_length=1, blank=True)
+    etc5_string = models.CharField(max_length=1, blank=True)
+    etc1_int = models.SmallIntegerField(blank=True, null=True)
+    etc2_int = models.SmallIntegerField(blank=True, null=True)
+    etc3_int = models.SmallIntegerField(blank=True, null=True)
+    etc4_int = models.SmallIntegerField(blank=True, null=True)
+    etc5_int = models.SmallIntegerField(blank=True, null=True)
+
+    class Meta:
+        unique_together = ("info_date","stock_code","stock_country","vesting_type")
+
+
+
+
+
+
 class StockSummaryKr(models.Model):
     bat_time = models.DateTimeField(default=datetime.now, blank = False)
     info_date = models.DateField(default=datetime.now , blank=False)
