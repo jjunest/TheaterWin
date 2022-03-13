@@ -68,7 +68,7 @@ def remove_comma_string(integer_withcomma):
 
 
 def insert_info_into_db(stock_summary_info_dataframe) :
-    print("this is insert_info_into_db() start")
+    print("this is insert_info_into_db() start:",datetime.now())
     try:
         # DB sqlite 위치 구하기
         # stock_summary_info_dataframe
@@ -126,11 +126,11 @@ def insert_info_into_db(stock_summary_info_dataframe) :
         if sqliteconnection :
             sqliteconnection.close()
             print("The Sqlite connection is closed")
-        print("this is insert_info_into_db() end")
+        print("this is insert_info_into_db() end",datetime.now())
 
 
 def get_stock_summary_info_kor(stock_list_kor) :
-    print("this is get_stock_summary_info_kor() start")
+    print("this is get_stock_summary_info_kor() start",datetime.now())
     # logging.debug("get_stock_summary_info_kor() start")
     stock_summary_info_dataframe = pd.DataFrame()
     stock_summary_info_dataframe_csv = pd.DataFrame()
@@ -142,7 +142,7 @@ def get_stock_summary_info_kor(stock_list_kor) :
             #     break
             stock_code = stock_list_kor.loc[i,"stock_code"]
             stock_detail_url = stock_detail_url_temp % stock_code
-            print(stock_detail_url)
+            # print(stock_detail_url)
             stock_detail_soup = get_page_content(stock_detail_url)
             # 가져올 데이터 # (1-1)저장 날짜는 항상 저장하자
             # strptime 는 객체를 -> datetime 오브젝트로 변환, strftime는 string형으로 변환
@@ -438,7 +438,7 @@ def get_stock_summary_info_kor(stock_list_kor) :
 
 
 if __name__ == '__main__':
-    # print("this is test")
+    print("this is getinfo_db_summary_everyday start:",datetime.now())
     stockcode_url = "https://finance.naver.com/sise/sise_market_sum.nhn?&page="
     # print('오늘 네이버주가 끌어왓습니다!!! 네이버 주가는 : '+get_price("005930"))
     stock_list_kor = get_stock_list_kor()
