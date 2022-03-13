@@ -276,6 +276,11 @@ class Full_Chatting_Message(models.Model):
     writer = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
     timestamp = models.DateTimeField()
-
     def __str__(self):
         return self.content
+
+
+class FullvestingApi(models.Model):
+    fullvesting_text = models.CharField(max_length=200, blank=True)
+    def __str__(self):
+        return self.fullvesting_text
