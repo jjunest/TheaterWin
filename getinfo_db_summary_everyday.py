@@ -33,7 +33,7 @@ def get_page_content(url):
 
 # (코드참고) https://aidalab.tistory.com/29
 def get_stock_list_kor():
-    print('this is get_stock_list_kor() start')
+    # print('this is get_stock_list_kor() start')
     # 종목코드는 거래소 파일에서 읽어옴. 네이버주가총액은 etf까지 존재, 거래소파일은 fullvestapi 폴더와 동일위치
     # 운영서버 코드
     stock_list_kospi_csv = pd.read_csv("/home/fullvestapi/kospi_list.csv", encoding='euc-kr')
@@ -73,7 +73,7 @@ def insert_info_into_db(stock_summary_info_dataframe) :
         # DB sqlite 위치 구하기
         # stock_summary_info_dataframe
         # pandas 형식의 데이터 타입 -> 날짜 컬럼의 데이터타입을 바꿔주고 -> list로 변환
-        print("this is stock_summary_info_dataframe len",len(stock_summary_info_dataframe))
+        # print("this is stock_summary_info_dataframe len",len(stock_summary_info_dataframe))
         stock_summary_info_dataframe['bat_time'] = stock_summary_info_dataframe['bat_time'].apply(str)
         # 데이터프레임 안의 datetime 타입 -> date 타입으로 변경
         stock_summary_info_dataframe['info_date'] = pd.to_datetime(stock_summary_info_dataframe['info_date'], utc = True)
@@ -81,7 +81,7 @@ def insert_info_into_db(stock_summary_info_dataframe) :
         stock_summary_info_dataframe['info_date'] = stock_summary_info_dataframe['info_date'].apply(str)
         stock_summary_info_tolist = stock_summary_info_dataframe.values.tolist()
 
-        print("this is stock_summary_info_tolist's length:",len(stock_summary_info_tolist))
+        # print("this is stock_summary_info_tolist's length:",len(stock_summary_info_tolist))
         # 운영서버용 코드
         sqliteconnection = sqlite3.connect("/home/TheaterWin/db.sqlite3")
         # 개발로컬PC용 코드
@@ -131,7 +131,7 @@ def insert_info_into_db(stock_summary_info_dataframe) :
 
 def get_stock_summary_info_kor(stock_list_kor) :
     print("this is get_stock_summary_info_kor() start")
-    logging.debug("get_stock_summary_info_kor() start")
+    # logging.debug("get_stock_summary_info_kor() start")
     stock_summary_info_dataframe = pd.DataFrame()
     stock_summary_info_dataframe_csv = pd.DataFrame()
     try:
@@ -142,13 +142,13 @@ def get_stock_summary_info_kor(stock_list_kor) :
             #     break
             stock_code = stock_list_kor.loc[i,"stock_code"]
             stock_detail_url = stock_detail_url_temp % stock_code
-            print(stock_detail_url)
+            # print(stock_detail_url)
             stock_detail_soup = get_page_content(stock_detail_url)
             # 가져올 데이터 # (1-1)저장 날짜는 항상 저장하자
             # strptime 는 객체를 -> datetime 오브젝트로 변환, strftime는 string형으로 변환
             bat_time = datetime.now()
 
-            print("this is bat_time",bat_time)
+            # print("this is bat_time",bat_time)
             vesting_type_detail = stock_list_kor.loc[i,"type"]
             # print(bat_time)
 
@@ -397,7 +397,7 @@ def get_stock_summary_info_kor(stock_list_kor) :
                 # (File backup) csv 백업 파일 출력용은 누적해서 저장
                 stock_summary_info_dataframe_csv = pd.concat([stock_summary_info_dataframe_csv, stock_summary_info_df], axis=0)
                 # stock_summary_info_dataframe_csv = stock_summary_info_dataframe_csv.append(stock_summary_info, ignore_index=True)
-                print("this is stock_summary_info_dataframe_csv len:",len(stock_summary_info_dataframe_csv))
+
                 # (DB insert) DB insert는 한번에 대량의 데이터 입력이 부담되어 100 개씩 잘라서 넣어주려고함 -> 따라서 dataframe을 초기화 시켜줘야됨
                 if len(stock_summary_info_dataframe) == 100 :
                     insert_info_into_db(stock_summary_info_dataframe)
@@ -431,13 +431,14 @@ def get_stock_summary_info_kor(stock_list_kor) :
     while (os.path.exists(output_path)) :
         output_path = '/home/fullvestapi/backup_stockinfo/%s(%d).csv' % (filename,uniq)
         uniq += 1
-    print("this is before_csv")
+    # print("this is before_csv")
+    print("this is stock_summary_info_dataframe_csv len:",len(stock_summary_info_dataframe_csv))
     stock_summary_info_dataframe_csv.to_csv(output_path, header=True, index=False, encoding='euc-kr')
     print("this is get_stock_summary_info_kor() end")
 
 
 if __name__ == '__main__':
-    print("this is test")
+    # print("this is test")
     stockcode_url = "https://finance.naver.com/sise/sise_market_sum.nhn?&page="
     # print('오늘 네이버주가 끌어왓습니다!!! 네이버 주가는 : '+get_price("005930"))
     stock_list_kor = get_stock_list_kor()
