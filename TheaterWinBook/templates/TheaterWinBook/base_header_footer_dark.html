@@ -203,15 +203,13 @@
                         <a href="{% url 'winbook_calendar' %}"><i class="mdi mdi-calendar-check"></i> <span> 달력 </span>
                         </a>
                     </li>
-
-
                     <li class="has-submenu" id="nav_question_list">
                         <a href="{% url 'question_list' %}" id="nav_question_list_text"><i
                                 class="mdi mdi-comment-question-outline"></i> <span> 게시판</span>
                         </a>
                     </li>
                     <li class="has-submenu" id="nav_share_picks">
-                        <a href="{% url 'share_picks' %}" id="nav_share_picks"><i
+                        <a href="{% url 'share_picks' %}" id="nav_share_picks_text"><i
                                 class="mdi mdi-share-variant"></i> <span> 공유</span>
                         </a>
                     </li>
@@ -219,14 +217,18 @@
 {#                    {% if request.user.username == 'theaterwinner' %}#}
 
 
-                        <li class="has-submenu" id="nav_question_list">
+                        <li class="has-submenu" id="nav_chatting_room">
                             <a href="/chatting_room/everyone/"><i class=" mdi mdi-account-multiple"></i>
                                 <span> 채팅</span>
                             </a>
                         </li>
 {#                    {% endif %}#}
-                      <li class="has-submenu" id="nav_index_real">
+                    <li class="has-submenu" id="nav_index_real">
                         <a href="{% url 'index_real' %}"><i class="mdi mdi-alert-box"></i> <span> 공지 </span>
+                        </a>
+                    </li>
+                    <li class="has-submenu" id="nav_stock_rank">
+                        <a href="{% url 'stock_rank' %}"><i class="mdi mdi-alert-box"></i> <span> 탑텐 </span>
                         </a>
                     </li>
 
@@ -315,7 +317,9 @@
 <script src="{% static 'TheaterWinBook/assets/plugins/raphael/raphael-min.js' %}"></script>
 {% comment %}
 <!-- Jquery-Ui -->
-<script src="{% static 'TheaterWinBook/assets/plugins/jquery-ui/jquery-ui.min.js' %}"></script>{% endcomment %}
+<script src="{% static 'TheaterWinBook/assets/plugins/jquery-ui/jquery-ui.min.js' %}"></script>
+
+{% endcomment %}
 
 <!-- SCRIPTS -->
 <script src="{% static 'TheaterWinBook/assets/plugins/moment/moment.js' %}"></script>

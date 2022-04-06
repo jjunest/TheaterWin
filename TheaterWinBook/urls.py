@@ -64,4 +64,7 @@ urlpatterns = [
     url(r'^winbook_reply_delete/$', views.winbook_reply_delete, name='winbook_reply_delete'),
     url(r'^winbook_reply_modify/$', views.winbook_reply_modify, name='winbook_reply_modify'),
 
+    #stock_rank
+    url(r'^stock_rank/$', views.stock_rank, name='stock_rank'),
+
 ]

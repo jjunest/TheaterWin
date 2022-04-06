@@ -32,6 +32,19 @@ import json
 #     return render(request, 'TheaterWinBook/post_list.html', {'posts': posts})
 #
 #
+
+# stock_rank
+
+def stock_rank(request):
+    return render(request, 'TheaterWinBook/stock_rank.html')
+
+
+def index_real(request):
+    return render(request, 'TheaterWinBook/index.html')
+
+
+
+
 def error_404(request):
     return render(request, 'TheaterWinBook/error_404.html')
 
