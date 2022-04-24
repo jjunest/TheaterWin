@@ -66,5 +66,7 @@ urlpatterns = [
 
     #stock_rank
     url(r'^stock_rank/$', views.stock_rank, name='stock_rank'),
+    # stock_rank
+    url(r'^stock_rank_pop/$', views.stock_rank_pop, name='stock_rank_pop'),
 
 ]

@@ -11,7 +11,7 @@ from django.utils import timezone
 from django.utils.encoding import smart_text
 
 from .forms import UserForm, LoginForm, TheaterWinBookRecordForm, TheaterWinQuestionForm
-from .models import Post, TheaterWinBookRecord, TheaterWinQuestion, TheaterWinQuestionInfo, TheaterWinQuestionReply, Full_Chatting_Message, TheaterWinBookRecordInfo, TheaterWinBookRecordReply
+from .models import Post, TheaterWinBookRecord, TheaterWinQuestion, TheaterWinQuestionInfo, TheaterWinQuestionReply, Full_Chatting_Message, TheaterWinBookRecordInfo, TheaterWinBookRecordReply, StockSummaryKr
 # from .models import Post, TheaterWinBookRecord
 from django.contrib import messages
 from django.contrib.messages import get_messages
@@ -37,6 +37,25 @@ import json
 
 def stock_rank(request):
     return render(request, 'TheaterWinBook/stock_rank.html')
+
+
+def stock_rank_pop(request):
+    latest_date = StockSummaryKr.objects.filter().latest('info_date')
+    print("this is lastest_date:", latest_date.info_date)
+    # latest_date_list = list(latest_date)
+    # print("this is latest_date_list", latest_date_list)
+    latest_date = StockSummaryKr.objects.filter().latest('info_date')
+    top_stock = StockSummaryKr.objects.raw('SELECT * FROM TheaterWinBook_stocksummarykr '
+                                       'WHERE info_date = (SELECT info_date FROM TheaterWinBook_stocksummarykr '
+                                       'ORDER BY info_date DESC LIMIT 1) ORDER BY STOCK_MARKET_SUM DESC LIMIT 10')
+    for p in top_stock :
+        print("%s번째, %s" % (p.stock_name,p))
+    top_stock_list = list(top_stock)
+
+    return render(request, 'TheaterWinBook/stock_rank_pop.html',{"top_stock": top_stock})
+    # return render(request, 'TheaterWinBook/stock_rank_pop.html',{"top10": top10_result})
+
+
 
 
 def index_real(request):
