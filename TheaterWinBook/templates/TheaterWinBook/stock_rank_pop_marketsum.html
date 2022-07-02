@@ -1,0 +1,78 @@
+{% extends "TheaterWinBook/base_header_footer_pop_5.2.html" %}
+{% load static %}
+
+{% block css_script %}
+<style>
+        .ui-datepicker {
+            width: 80%; /*what ever width you want*/
+        }
+
+
+</style>
+{{ form.media }}
+
+{% endblock %}
+
+{% block content %}
+<!-- 아래 content는 <div class = container-fluid> 밑에 있는 <div class = row > 부터 오면 됨 --->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body table-responsive">
+                <h4 class="mt-0 header-title">시가총액Top10</h4>
+                <p class="text-muted font-14 mb-3">
+
+                </p>
+
+                <table id="selection-datatable" class="table table-bordered dt-responsive nowrap">
+                    <thead>
+                    <tr>
+                        <th>순위</th>
+                        <th>주식명</th>
+                        <th>Office</th>
+                        <th>Age</th>
+                        <th>Start date</th>
+                        <th>Salary</th>
+                    </tr>
+                    </thead>
+
+
+                    <tbody>
+
+
+                    {% for top_stock_record in top_stock %}
+                    <tr>
+                        <td> {{ forloop.counter }}</td>
+                        <td> {{ top_stock_record.stock_name }}</td>
+                        <td> {{ top_stock_record.stock_market_sum }}</td>
+                        <td> {{ top_stock_record.stock_name }}</td>
+                        <td> {{ top_stock_record.stock_name }}</td>
+                        <td> {{ top_stock_record.stock_name }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div> <!-- end row -->
+
+
+
+
+
+{% endblock %}
+
+
+{% block javascript %}
+<script>
+        $(document).ready(function () {
+
+            // JQuery 적용
+<!--            alert("this is test");-->
+        });
+
+
+
+</script>
+{% endblock %}

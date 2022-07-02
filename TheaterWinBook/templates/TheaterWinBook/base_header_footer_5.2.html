@@ -12,6 +12,15 @@
         <!-- App favicon -->
         <link rel="shortcut icon" href="{% static '/admin/images/favicon.ico' %}">
 
+
+
+        <!-- third party css -->
+        <link href="{% static '/admin/libs/datatables.net-bs5/css/dataTables.bootstrap5.min.css' %}" rel="stylesheet" type="text/css" />
+        <link href="{% static '/admin/libs/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css'  %}" rel="stylesheet" type="text/css" />
+        <link href="{% static '/admin/libs/datatables.net-buttons-bs5/css/buttons.bootstrap5.min.css' %}" rel="stylesheet" type="text/css" />
+        <link href="{% static '/admin/libs/datatables.net-select-bs5/css/select.bootstrap5.min.css' %}" rel="stylesheet" type="text/css" />
+
+
         <!-- App css -->
 
         <link href="{% static '/admin/css/app.min.css' %}" rel="stylesheet" type="text/css" id="app-style" />
@@ -393,21 +402,21 @@
                             </li>
 
                             <li>
-                                <a href="{% url 'winbook_statistics' %}" data-bs-toggle="collapse">
+                                <a href="{% url 'winbook_statistics' %}">
                                     <i class="mdi mdi-email-outline"></i>
                                     <span> 통계 </span>
                                 </a>
                             </li>
 
                             <li>
-                                <a href="{% url 'question_list' %}" data-bs-toggle="collapse">
+                                <a href="{% url 'question_list' %}" >
                                     <i class="mdi mdi-email-outline"></i>
                                     <span> 게시판 </span>
                                 </a>
                             </li>
 
                             <li>
-                                <a href="{% url 'share_picks' %}" data-bs-toggle="collapse">
+                                <a href="{% url 'share_picks' %}">
                                     <i class="mdi mdi-email-outline"></i>
                                     <span> 공유 </span>
                                 </a>
@@ -416,11 +425,28 @@
                             <li class="menu-title mt-2">Apps(Fullvesting)</li>
 
                             <li>
-                                <a href="{% url 'stock_rank' %}" data-bs-toggle="collapse">
+                                <a href="{% url 'stock_rank' %}" >
                                     <i class="mdi mdi-email-outline"></i>
                                     <span> 랭킹 </span>
                                 </a>
                             </li>
+
+                            <li>
+                                <a href="{% url 'stock_list_kospi' %}">
+                                    <i class="mdi mdi-email-outline"></i>
+                                    <span> 한국주식 </span>
+                                </a>
+                            </li>
+
+
+                            <li>
+                                <a href="{% url 'stock_list_kospi' %}" data-bs-toggle="collapse">
+                                    <i class="mdi mdi-email-outline"></i>
+                                    <span> 자유게시판 </span>
+                                </a>
+                            </li>
+
+
 
 
                             <li>
@@ -783,6 +809,27 @@
         <script src="/static/admin/libs/waypoints/lib/jquery.waypoints.min.js"></script>
         <script src="/static/admin/libs/jquery.counterup/jquery.counterup.min.js"></script>
         <script src="/static/admin/libs/feather-icons/feather.min.js"></script>
+
+
+
+        <!-- third party js -->
+        <script src="/static/admin/libs/datatables.net/js/jquery.dataTables.min.js"></script>
+        <script src="/static/admin/libs/datatables.net-bs5/js/dataTables.bootstrap5.min.js"></script>
+        <script src="/static/admin/libs/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+        <script src="/static/admin/libs/datatables.net-responsive-bs5/js/responsive.bootstrap5.min.js"></script>
+        <script src="/static/admin/libs/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
+        <script src="/static/admin/libs/datatables.net-buttons-bs5/js/buttons.bootstrap5.min.js"></script>
+        <script src="/static/admin/libs/datatables.net-buttons/js/buttons.html5.min.js"></script>
+        <script src="/static/admin/libs/datatables.net-buttons/js/buttons.flash.min.js"></script>
+        <script src="/static/admin/libs/datatables.net-buttons/js/buttons.print.min.js"></script>
+        <script src="/static/admin/libs/datatables.net-keytable/js/dataTables.keyTable.min.js"></script>
+        <script src="/static/admin/libs/datatables.net-select/js/dataTables.select.min.js"></script>
+        <script src="/static/admin/libs/pdfmake/build/pdfmake.min.js"></script>
+        <script src="/static/admin/libs/pdfmake/build/vfs_fonts.js"></script>
+        <!-- third party js ends -->
+
+        <!-- Datatables init -->
+        <script src="/static/admin/js/pages/datatables.init.js"></script>
 
         <!-- App js -->
         <script src="/static/admin/js/app.min.js"></script>

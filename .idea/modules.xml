@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/TheaterWin.iml" filepath="$PROJECT_DIR$/.idea/TheaterWin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../fullvestapi/.idea/fullvestapi.iml" filepath="$PROJECT_DIR$/../fullvestapi/.idea/fullvestapi.iml" />
     </modules>
   </component>
 </project>

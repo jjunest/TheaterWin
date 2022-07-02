@@ -67,6 +67,8 @@ urlpatterns = [
     #stock_rank
     url(r'^stock_rank/$', views.stock_rank, name='stock_rank'),
     # stock_rank
-    url(r'^stock_rank_pop/$', views.stock_rank_pop, name='stock_rank_pop'),
-
+    url(r'^stock_rank_pop/(?P<rank_name>[^/]+)/$', views.stock_rank_pop, name='stock_rank_pop'),
+    # url(r'^stock_rank_pop_marketsum/(?P<rank_name>[^/]+)/$', views.stock_rank_pop_marketsum, name='stock_rank_pop_marketsum'),
+    url(r'^stock_list_kospi/$', views.stock_list_kospi, name='stock_list_kospi'),
+    url(r'^stock_detail_kospi/(?P<stock_code>\d+)/$', views.stock_detail_kospi, name='stock_detail_kospi'),
 ]

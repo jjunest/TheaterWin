@@ -1,0 +1,81 @@
+{% extends "TheaterWinBook/base_header_footer_5.2.html" %}
+{% load static %}
+
+{% block css_script %}
+<style>
+        .ui-datepicker {
+            width: 80%; /*what ever width you want*/
+        }
+
+</style>
+{{ form.media }}
+
+{% endblock %}
+
+{% block content %}
+
+<!-- 아래 content는 <div class = container-fluid> 밑에 있는 <div class = row > 부터 오면 됨 --->
+                    <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body table-responsive">
+                                        <h4 class="mt-0 header-title">시가총액</h4>
+                                        <p class="text-muted font-14 mb-3">
+                                            지표설명: 시가총액이 현재일 기준으로 높은 순서
+                                        </p>
+
+                                        <table id="selection-datatable" class="table table-bordered dt-responsive nowrap">
+                                            <thead>
+                                            <tr>
+                                                <th>순위</th>
+                                                <th>종목</th>
+                                                <th>지표</th>
+                                                <th>종합점수</th>
+                                            </tr>
+                                            </thead>
+
+                                            {% for top_stock_record in top_stock %}
+                                            <tr>
+                                                <td> {{ forloop.counter }} </td>
+                                                <td> <a href = "/stock_detail_kospi/{{ top_stock_record.stock_code }}"> {{ top_stock_record.stock_name }} </a></td>
+                                                <td> <a href = "/stock_detail_kospi/{{ top_stock_record.stock_code }}"> {{ top_stock_record.stock_market_sum }} </a></td>
+                                                <td> <a href = "/stock_detail_kospi/{{ top_stock_record.stock_code }}"> {{ top_stock_record.stock_name }} </a></td>
+                                            </tr>
+                                           {% endfor %}
+
+                                            <tbody>
+
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div> <!-- end row -->
+
+
+
+
+{% endblock %}
+
+
+{% block javascript %}
+<script>
+        $(document).ready(function () {
+<!--            alert("this is test");-->
+            // JQuery 적용
+            //alert("this is test");
+        });
+
+
+
+
+
+
+
+
+
+
+</script>
+{% endblock %}

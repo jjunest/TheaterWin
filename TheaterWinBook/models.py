@@ -2,7 +2,8 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 from django.utils.datetime_safe import datetime
-# from tinymce import HTMLField
+from tinymce import models as tinymce_models
+
 
 
 class StockGroupKr(models.Model):
@@ -28,6 +29,28 @@ class StockGroupKr(models.Model):
 
     class Meta:
         unique_together = ("info_date","stock_code","stock_country","vesting_type")
+
+
+class StockList(models.Model):
+    stock_code_full = models.CharField(max_length=14, blank=False, default=None, null=True)
+    stock_code = models.CharField(max_length=10, blank=False)
+    stock_country = models.CharField(max_length=1, blank=False)
+    vesting_type = models.CharField(max_length=1, blank=False)
+    vesting_type_detail = models.CharField(max_length=1, blank=False, default=None, null=True)
+    stock_name = models.CharField(max_length=15, blank=True)
+    etc1_string = models.CharField(max_length=1, blank=True)
+    etc2_string = models.CharField(max_length=1, blank=True)
+    etc3_string = models.CharField(max_length=1, blank=True)
+    etc4_string = models.CharField(max_length=1, blank=True)
+    etc5_string = models.CharField(max_length=1, blank=True)
+    etc1_int = models.SmallIntegerField(blank=True, null=True)
+    etc2_int = models.SmallIntegerField(blank=True, null=True)
+    etc3_int = models.SmallIntegerField(blank=True, null=True)
+    etc4_int = models.SmallIntegerField(blank=True, null=True)
+    etc5_int = models.SmallIntegerField(blank=True, null=True)
+
+    class Meta:
+        unique_together = ("stock_code_full","stock_code","stock_country","vesting_type","vesting_type_detail")
 
 
 
@@ -155,7 +178,7 @@ class TheaterWinQuestion(models.Model):
     # 토계부 질문게시판용 필드 모델
     writing_date = models.DateField(default=datetime.now, blank=False)
     question_title = models.CharField(max_length=200, blank=False)
-    # question_content = HTMLField('Content')
+    question_content = tinymce_models.HTMLField(blank=True)
     # isanswer 은 답변이 달렸는지에 대한 필드, 0이면 안 달리고 1이면 달린것이다.
     question_isanswer = models.IntegerField(default=0, blank=False)
     question_hit = models.IntegerField(default=0, blank=False)

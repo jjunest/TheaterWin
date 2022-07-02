@@ -31,7 +31,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'www.fullvesting.com', 'full
 # Application definition
 
 INSTALLED_APPS = (
-    # 'channels',
+    'channels',
     # 'django_channels',
     # 'channels_presence',
     # 'filebrowser',
@@ -51,10 +51,11 @@ INSTALLED_APPS = (
 ASGI_APPLICATION = 'TheaterWin.routing.application'
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'BACKEND': 'channels_redis.core.RedisChannelLpip ayer',
         'CONFIG': {
             "hosts": [('127.0.0.1', 6379)],
         },
+
     },
 }
 

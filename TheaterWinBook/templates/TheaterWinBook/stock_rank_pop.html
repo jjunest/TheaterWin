@@ -2,9 +2,12 @@
 {% load static %}
 
 {% block css_script %}
-<style>
+    <style>
         .ui-datepicker {
             width: 80%; /*what ever width you want*/
+        }
+        .content-page{
+            margin-top: 10px  !important;
         }
 
     </style>
@@ -14,47 +17,46 @@
 
 {% block content %}
 <!-- 아래 content는 <div class = container-fluid> 밑에 있는 <div class = row > 부터 오면 됨 --->
-  <div class="row">
+                    <div class="row">
                             <div class="col-12">
                                 <div class="card">
                                     <div class="card-body table-responsive">
-                                        <h4 class="mt-0 header-title">시가총액Top10</h4>
+                                        <h4 class="mt-0 header-title">시가총액</h4>
                                         <p class="text-muted font-14 mb-3">
-                                           시가총액Top10
+                                            지표설명: 시가총액이 현재일 기준으로 높은 순서
                                         </p>
 
                                         <table id="selection-datatable" class="table table-bordered dt-responsive nowrap">
                                             <thead>
                                             <tr>
-                                                <th>주식명</th>
-                                                <th>Position</th>
-                                                <th>Office</th>
-                                                <th>Age</th>
-                                                <th>Start date</th>
-                                                <th>Salary</th>
+                                                <th>순위</th>
+                                                <th>종목</th>
+                                                <th>지표</th>
+                                                <th>종합점수</th>
                                             </tr>
                                             </thead>
 
+                                            {% for top_stock_record in top_stock %}
+                                            <tr>
+                                                <td> {{ forloop.counter }} </td>
+                                                <td> {{ top_stock_record.stock_name }} </td>
+                                                <td> {{ top_stock_record.stock_market_sum }} </td>
+                                                <td> {{ top_stock_record.stock_name }} </td>
+                                            </tr>
+                                           {% endfor %}
 
                                             <tbody>
 
 
-                                           {% for top_stock_record in top_stock %}
-                                            <tr>
-                                                <td> {{ top_stock_record.stock_name }} </td>
-                                                <td> {{ top_stock_record.stock_name }} </td>
-                                                <td> {{ top_stock_record.stock_name }} </td>
-                                                <td> {{ top_stock_record.stock_name }} </td>
-                                                <td> {{ top_stock_record.stock_name }} </td>
-                                                <td> {{ top_stock_record.stock_name }} </td>
-                                            </tr>
-                                           {% endfor %}
                                             </tbody>
                                         </table>
                                     </div>
                                 </div>
+
                             </div>
                         </div> <!-- end row -->
+
+
 
 
 {% endblock %}
@@ -65,9 +67,22 @@
 <script>
         $(document).ready(function () {
 
-            // JQuery 적용
-<!--            alert("this is test");-->
+
+
         });
+
+        // JQuery 적용
+        {#3자리마다 콤마 찍어주기#}
+        //3자리 단위마다 콤마 생성
+        function addCommas(x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        //모든 콤마 제거
+        function removeCommas(x) {
+            if (!x || x.length == 0) return "";
+            else return x.split(",").join("");
+        }
 
 
     </script>

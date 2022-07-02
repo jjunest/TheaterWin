@@ -57,8 +57,8 @@
             <div class="card-body project-box">
                 <div class="badge bg-success float-end">Completed</div>
                 <h4 class="mt-0"><a href="" class="text-dark"></a></h4>
-                <p class="text-success text-uppercase font-13"><a href="#" onclick = "openPopup('{% url 'stock_rank_pop' %}', ) " class="text-dark">시가총액TOP5</a></p>
-                <p class="text-muted font-13">If several languages coalesce the grammar is more simple and regular than that of the individual languages...<a href="#" class="text-primary">View more</a>
+                <p class="text-success text-uppercase font-13"><a href="#" onclick = "openPopup('{% url 'stock_rank_pop' rank_name='marketsum' %}', ) " class="text-dark">시가총액</a></p>
+                <p class="text-muted font-13">시가총액<a href="#" class="text-primary">View more</a>
                 </p>
 
                 <ul class="list-inline">
@@ -128,7 +128,7 @@
         function openPopup (url, name) {
             var popupX = (document.body.offsetWidth / 2) - (200 / 2);
             var popupY= (window.screen.height / 2) - (300 / 2);
-            var options = 'width=800, height=600, location=no';
+            var options = 'width=850, height=600, location=no';
             window.open (url, name, options);
 
         }
