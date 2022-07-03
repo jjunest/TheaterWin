@@ -31,7 +31,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'www.fullvesting.com', 'full
 # Application definition
 
 INSTALLED_APPS = (
-    'channels',
+    # 'channels',
     # 'django_channels',
     # 'channels_presence',
     # 'filebrowser',
