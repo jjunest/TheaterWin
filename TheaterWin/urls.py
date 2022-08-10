@@ -21,5 +21,6 @@ from django.contrib import admin
 urlpatterns = [
     path('admin/', admin.site.urls),
     url(r'', include('TheaterWinBook.urls')),
+    url(r'', include('TheaterWinBook.urls_freeboard')),
     url('^', include('django.contrib.auth.urls')),
 ]

@@ -1,8 +1,8 @@
-{% extends "TheaterWinBook/base_header_footer_dark.html" %}
+{% extends "TheaterWinBook/base_header_footer_5.2.html" %}
 {% load static %}
+
 {% block css_script %}
-    {% comment %}
-    <style>
+    {% comment %}   <style>
         .breadcrumb-wrap {
             padding: 5%;
         }
@@ -18,9 +18,11 @@
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>{% endcomment %}
     {#    tinymce widget#}
     {{ form.media }}
+
 {% endblock %}
 
 {% block content %}
+<!-- 아래 content는 <div class = container-fluid> 밑에 있는 <div class = row > 부터 오면 됨 --->
 
     <div class="wrapper">
         <div class="container-fluid">
@@ -30,34 +32,37 @@
             <br>
 
             <div class="card-box">
-                <form role="form" class="form-horizontal" method="post" action="" id="modifyForm"
+                <form role="form" class="form-horizontal" method="post" action="" id="inputForm"
                       enctype="multipart/form-data">
                     {% csrf_token %}
-                    <input type="number" name="record_pk" value="{{ record_pk }}" class="hidden">
                     <div class="form-group row">
                         <div class="col-9">
-                            {#          원본 글일 경우 original 로 보내자.                   #}
-                            <input id="is_original" name="is_original" value="question_original" style="display: none">
-                            <input id="question_pk" name="question_pk" value="1" style="display: none">
+                            {# 답글이 아닌 원본 글일 경우 original 로 보내자.                   #}
+                            <input id="is_original" name="is_original" value="freeBoard_original" style="display: none">
+                            <input id="freeBoard_pk" name="freeBoard_pk" value="1" style="display: none">
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-2 col-form-label">글제목</label>
+                        <label class="col-2 col-form-label">글제목1 </label>
                         <div class="col-10">
-                            {{ form.question_title }}
+                            {{ form.freeBoard_title }}
                         </div>
                     </div>
                     <div class="form-group row">
-                        <div class="col-12">        <textarea id="id_question_content" name = "question_content">  {{ target_record.question_content }}  </textarea>
-                                      <input name="image" type="file" id="upload" class="hidden" onchange="">
+                        {#                        <div class="col-12"> {{ form.freeBoard_content }}</div>#}
+
+                        <div class="col-12"><textarea id="id_freeBoard_content" name="freeBoard_content"></textarea>
+                            <input name="image" type="file" id="upload" class="hidden" onchange="">
                         </div>
 
                     </div>
 
                     <button class="btn btn-info waves-effect waves-light m-b-5" style="width: 100%"
-                            id="submit_BT">
+                            id="freeBoard_write_btn">
                         <i
-                                class="fa fa-pencil-square-o "></i> <span>수정하기</span></button>
+                                class="fa fa-pencil-square-o "></i> <span>글올리기</span></button>
+
+
                 </form>
 
 
@@ -72,16 +77,18 @@
 
 {% endblock %}
 
+
+
 {% block javascript %}
-    {% comment %}
+  {% comment %}
     {#    quill 이미지 크기 조절을 위한 #}
     <script src="{% static 'TheaterWinBook/js/image-resize.min.js' %}"></script>
     {% endcomment %}
 
     <script>
         $(document).ready(function () {
-               tinymce.init({
-                selector: '#id_question_content',
+            tinymce.init({
+                selector: '#id_freeBoard_content',
                 {#selector: "#id_content2",  // change this value according to your HTML#}
                 width: 'auto',
                 height: '350',
@@ -99,10 +106,10 @@
                     if (meta.filetype == 'image') {
                         $('#upload').trigger('click');
                         $('#upload').on('change', function () {
-                                                        if (this.files[0].size > 1000000) {
-                                   alert("File is too big!");
-                                   this.value = "";
-                               }
+                            if (this.files[0].size > 100000) {
+                                        alert("죄송합니다. 현재 사이트 속도상 100KB이상 파일은 올리실 수 없습니다. 빠른 시일내 보완하겠습니다");
+                                this.value = "";
+                            }
 
                             var file = this.files[0];
 
@@ -127,30 +134,21 @@
             });
 
 
-
             var is_original = getParameterByName('is_original');
-            var question_pk = getParameterByName('question_pk');
-            if (is_original == 'question_reply') {
-                $("#is_original").val('question_reply');
-                $("#question_pk").val(question_pk);
+            var freeBoard_pk = getParameterByName('freeBoard_pk');
+            if (is_original == 'freeBoard_reply') {
+                $("#is_original").val('freeBoard_reply');
+                $("#freeBoard_pk").val(freeBoard_pk);
             } else if (is_original == null) {
-                $("#is_original").val('question_original');
-                $("#question_pk").val(1);
+                $("#is_original").val('freeBoard_original');
+                $("#freeBoard_pk").val(1);
             }
 
 
             {#     폼 에러가 안나게 input type check 하기       #}
-            $('#question_write_btn').click(function () {
+            $('#freeBoard_write_btn').click(function () {
                 event.preventDefault();
                 $("#inputForm").submit();
-            });
-
-
-            {#     폼 에러가 안나게 input type check 하기       #}
-            $('#submit_BT').click(function () {
-                event.preventDefault();
-                $("#modifyForm").submit();
-
             });
 
 
@@ -175,5 +173,3 @@
     </script>
 
 {% endblock %}
-
-

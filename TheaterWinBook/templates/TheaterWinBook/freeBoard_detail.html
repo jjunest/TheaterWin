@@ -1,21 +1,19 @@
-{% extends "TheaterWinBook/base_header_footer_dark.html" %}
+{% extends "TheaterWinBook/base_header_footer_5.2.html" %}
 {% load static %}
+
 {% block css_script %}
-    <style>
-        .breadcrumb-wrap {
-            padding: 5%;
+<style>
+        .ui-datepicker {
+            width: 80%; /*what ever width you want*/
         }
-
-        .mouse_cursor {
-            cursor: pointer;
-        }
-
 
     </style>
-    {{ form.media }}
+{{ form.media }}
+
 {% endblock %}
 
 {% block content %}
+<!-- 아래 content는 <div class = container-fluid> 밑에 있는 <div class = row > 부터 오면 됨 --->
 
     <div class="wrapper">
         <div class="container-fluid">
@@ -26,27 +24,27 @@
                 <div class="form-group row">
                     <label class="col-3 col-form-label">글제목</label>
                     <div class="col-9 col-form-label">
-                        {{ question_record.question_title }}
+                        {{ freeBoard_record.freeBoard_title }}
                     </div>
                 </div>
                 <div class="form-group row">
                     <label class="col-3 col-form-label">작성날짜</label>
                     <div class="col-9  col-form-label">
-                        {{ question_record.writing_date }}
+                        {{ freeBoard_record.writing_date }}
 
                     </div>
                 </div>
                 <div class="form-group row">
                     <label class="col-3 col-form-label">작성인</label>
                     <div class="col-9  col-form-label">
-                        {{ question_record.user_name }}
+                        {{ freeBoard_record.user_name }}
 
                     </div>
                 </div>
                 <div class="form-group row">
                     <label class="col-3 col-form-label">조회수</label>
                     <div class="col-9  col-form-label">
-                        {{ question_record.question_hit }}
+                        {{ freeBoard_record.freeBoard_hit }}
                     </div>
                 </div>
                 <div class="form-group row">
@@ -68,14 +66,14 @@
 
             <div class="form-group row">
                 <div class="col-12">
-                    <textarea id="id_content2">{{ question_record.question_content }}</textarea>
+                    <textarea id="id_content2">{{ freeBoard_record.freeBoard_content }}</textarea>
                 </div>
             </div>
 
 
             {#                오직 관리자만 볼 수 있게 해야 함 . #}
-            {#                <div class="card-box" style="background: #394C57">#}
-            <div class="form-group row" style="background: #394C57; margin: 1% 3%">
+            {#                <div class="card-box" style="">#}
+            <div class="form-group row" style="margin: 1% 3%">
 
                 <label class="col-9 col-form-label"><input type="text" id="content_reply" name="content_reply"
                                                            class="form-control" placeholder="부모 댓글을 여기다 써주세요"></label>
@@ -86,10 +84,12 @@
 
                 </div>
             </div>
+
+
             {#                </div>#}
             {#        댓글 달기 부분 #}
             {% for record in target_replys %}
-                <div class="form-group row" style="background: #394C57; margin: 0% 3%"
+                <div class="form-group row" style="margin: 0% 3%"
                      id="parent_reply_section_{{ record.pk }}">
                     <div class="col-1 col-form-label" style="text-align: center">{{ forloop.counter }}</div>
 
@@ -103,12 +103,12 @@
                                             {% endfor %}
                                 {% endwith %}
 
-                        {{ record.question_reply_content }}</label>
+                        {{ record.freeBoard_reply_content }}</label>
 
                 </div>
 
                 <div class="form-group row"
-                     style="background: #394C57; margin: 0% 3%; border-bottom: 0.5px solid; font-size: 10px">
+                     style="margin: 0% 3%; border-bottom: 0.5px solid; font-size: 10px">
 
                                <div class="form-group row col-12 hidden" id="re_reply_section_{{ record.pk }}"
                          name="re_reply_section">
@@ -117,7 +117,7 @@
                                                                    name="reply_modify_input"
                                                                    class="form-control"
                                                                    placeholder="수정 댓글을 여기다 써주세요"
-                                                                   value="{{ record.question_reply_content }}"></label>
+                                                                   value="{{ record.freeBoard_reply_content }}"></label>
                         <div class="col-3 col-form-label" style="text-align: center">
                             <button class="btn btn-info waves-effect waves-light m-b-5" style="width: 100%"
                                     id="btn_reply_modify_{{ record.pk }}"
@@ -149,13 +149,20 @@
                         <div class="col-6 col-form-label" style="">
                         </div>
                         <div class="col-6 col-form-label" style="text-align: right">
+
                             <a style="color: #98a6ad"
                                class="mouse_cursor"
                                name="btn_reply_modify_open"
+                               record_pk={{ record.pk }}>
+                                <i class="mdi mdi mdi-table-edit"></i> 수정</a>
+
+                            <a href="#" style="color: #98a6ad"
+                               name="btn_reply_modify_open"
                                record_pk={{ record.pk }}
+                                       name="btn_reply_delete"
                             >
                                 <i
-                                        class="mdi mdi mdi-table-edit"></i> 수정</a>
+                                        class="mdi mdi-delete"></i> 수정(2)</a>
                             <a href="#" style="color: #98a6ad"
                                name="btn_reply_delete"
                                record_pk={{ record.pk }}
@@ -164,7 +171,6 @@
                                 <i
                                         class="mdi mdi-delete"></i> 삭제</a>
                             <a style="color: #98a6ad"
-                               class="mouse_cursor"
                                name="btn_re_reply_write_open"
                                record_pk={{ record.pk }}
                             >
@@ -194,12 +200,12 @@
 
                 </div>
 
-            {% endfor %}
+          {% endfor %}
 
             <div class="form-group row" style="margin-top: 10px">
                 <div class="col-12">
                     <button class="btn btn-info waves-effect waves-light m-b-5" style="width: 100%"
-                            id="question_reply_btn" name="{{ question_record.pk }}">
+                            id="freeBoard_reply_btn" name="{{ freeBoard_record.pk }}">
                         <i class="fa fa-pencil-square-o "></i> <span>    답글달기</span></button>
                 </div>
             </div>
@@ -209,19 +215,19 @@
                 <div class="col-12">
                     <button class="hidden btn btn-info waves-effect waves-light m-b-5"
                             id="modify_btn"
-                            record_pk={{ question_record.pk }}
+                            record_pk={{ freeBoard_record.pk }}
                                     name="modify_btn"
-                            style="color: #98a6ad;font-size:15px; mar5gin:5px; width: 100%">
-                        <i class="fa fa-pencil-square-o "></i> <span>수정</span></button>
+                            style="mar5gin:5px; width: 100%">
+                        <i class="fa fa-pencil-square-o "></i> <span>본문수정</span></button>
                 </div>
             </div>
             <div class="form-group row">
                 <div class="col-12">
                     <button class="hidden btn btn-info waves-effect waves-light m-b-5"
                             id="delete_btn"
-                            record_pk={{ question_record.pk }} name="delete_btn"
-                            style="color: #98a6ad;font-size:15px; margin:5px; width: 100%">
-                        <i class="fa fa-pencil-square-o "></i> <span>삭제</span></button>
+                            record_pk={{ freeBoard_record.pk }} name="delete_btn"
+                            style=" margin:5px; width: 100%">
+                        <i class="fa fa-pencil-square-o "></i> <span>본문삭제</span></button>
                 </div>
             </div>
 
@@ -238,6 +244,8 @@
 
 {% endblock %}
 
+
+
 {% block javascript %}
 
     <script>
@@ -252,12 +260,12 @@
             btn_reply_delete_modify();
             btn_re_reply_open_setting();
 
-            {#question_title 에 대한 값을 집어 넣는다. #}
-            var question_title = '{{ question_record.question_title }}';
-            $("#id_question_title").val(question_title);
-            {% comment %}        var question_content = '{{ form.question_content }}';
-                    alert("this question content",question_content);
-                    tinyMCE.activeEditor.setContent(question_content);{% endcomment %}
+            {#freeBoard_title 에 대한 값을 집어 넣는다. #}
+            var freeBoard_title = '{{ freeBoard_record.freeBoard_title }}';
+            $("#id_freeBoard_title").val(freeBoard_title);
+            {% comment %}        var freeBoard_content = '{{ form.freeBoard_content }}';
+                    alert("this freeBoard content",freeBoard_content);
+                    tinyMCE.activeEditor.setContent(freeBoard_content);{% endcomment %}
             tinymce.init({
                 selector : 'textarea',
                 {#selector: "#id_content2",  // change this value according to your HTML#}
@@ -265,14 +273,14 @@
                 height: '350',
                 {#readOnly 편집 불가능하게 설정. #}
                 readonly: '1',
-                content_css : '/static/TheaterWinBook/css/tinymce_style.css'
+<!--                content_css : '/static/TheaterWinBook/css/tinymce_style.css'-->
 
 
             });
 
-            $("#question_reply_btn").click(function () {
-                var question_pk = $("#question_reply_btn").attr("name");
-                window.location = '/question_write?question_pk=' + question_pk + "&is_original=question_reply";
+            $("#freeBoard_reply_btn").click(function () {
+                var freeBoard_pk = $("#freeBoard_reply_btn").attr("name");
+                window.location = '/freeBoard_write?freeBoard_pk=' + freeBoard_pk + "&is_original=freeBoard_reply";
 
 
             });
@@ -286,6 +294,43 @@
     <script>
         function btn_re_reply_open_setting() {
 
+
+                $("[name = 'btn_re_reply_write_open']").click(function () {
+                var record_pk = $(this).attr('record_pk');
+
+                $("#re_reply_write_section_" + record_pk).toggleClass("hidden");
+                 });
+
+                $("[name = 'btn_re_reply_write']").click(function () {
+                var record_pk = $(this).attr('record_pk');
+                var content_pk = $("#freeBoard_reply_btn").attr("name");
+                var re_reply_write_content = $("#re_reply_write_input_" + record_pk).val();
+                $.ajax({
+                    type: "POST",
+                    url: "/freeBoard_re_reply_write_ajax/",
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        'record_pk': record_pk,
+                        'content_pk': content_pk,
+                        're_reply_write_content': re_reply_write_content,
+                        'is_original' : 're_reply'
+                    },
+                    success: function (data) {
+                        var ajax_result = data.re_reply_write_success;
+                        if (ajax_result == "success") {
+                            swal(
+                                '대댓글 입력 성공!',
+                                '성공적으로 입력되었습니다..',
+                                'success'
+                            )
+                            location.reload();
+                        } else {
+                            swal("정상적인 동작이 실행 되지 않았습니다.\n 다시 시도해주시기 바랍니다").catch(swal.noop)
+                        }
+                    }
+                    });
+
+                });
         }
 
         function btn_reply_delete_modify() {
@@ -303,7 +348,7 @@
                 }).then(function () {
                     $.ajax({
                         type: "POST",
-                        url: "/question_reply_delete/",
+                        url: "/freeBoard_reply_delete/",
                         data: {
                             csrfmiddlewaretoken: '{{ csrf_token }}',
                             'record_pk': record_pk,
@@ -334,18 +379,14 @@
                 $("#re_reply_section_" + record_pk).toggleClass("hidden");
                 $("#parent_reply_section_" + record_pk).toggleClass("hidden");
 
-            });
-            $("[name = 'btn_re_reply_write_open']").click(function () {
-                var record_pk = $(this).attr('record_pk');
-                $("#re_reply_write_section_" + record_pk).toggleClass("hidden");
-            });
 
+            });
             $("[name = 'btn_reply_modify']").click(function () {
                 var record_pk = $(this).attr('record_pk');
                 var reply_modify_content = $("#reply_modify_input_" + record_pk).val();
                 $.ajax({
                     type: "POST",
-                    url: "/question_reply_modify/",
+                    url: "/freeBoard_reply_modify/",
                     data: {
                         csrfmiddlewaretoken: '{{ csrf_token }}',
                         'record_pk': record_pk,
@@ -367,55 +408,24 @@
                 });
 
             });
-            $("[name = 'btn_re_reply_write']").click(function () {
-                var record_pk = $(this).attr('record_pk');
-                var content_pk = $("#question_reply_btn").attr("name");
-                var re_reply_write_content = $("#re_reply_write_input_" + record_pk).val();
-                $.ajax({
-                    type: "POST",
-                    url: "/question_re_reply_write_ajax/",
-                    data: {
-                        csrfmiddlewaretoken: '{{ csrf_token }}',
-                        'record_pk': record_pk,
-                        'content_pk': content_pk,
-                        're_reply_write_content': re_reply_write_content,
-                        'is_original' : 're_reply'
-                    },
-                    success: function (data) {
-                        var ajax_result = data.re_reply_write_success;
-                        if (ajax_result == "success") {
-                            swal(
-                                '대댓글 입력 성공!',
-                                '성공적으로 입력되었습니다..',
-                                'success'
-                            )
-                            location.reload();
-                        } else {
-                            swal("정상적인 동작이 실행 되지 않았습니다.\n 다시 시도해주시기 바랍니다").catch(swal.noop)
-                        }
-                    }
-                });
-
-            });
 
         }
 
         function content_reply_btn_setting() {
             $("#content_reply_btn").click(function () {
-                var question_pk = $("#question_reply_btn").attr("name");
+                var freeBoard_pk = $("#freeBoard_reply_btn").attr("name");
                 var content_reply = $("#content_reply").val();
                 $.ajax({
                     type: "POST",
-                    url: "/ajax/content_reply_ajax/",
+                    url: "/ajax/freeBoard_content_reply_write_ajax/",
                     data: {
                         csrfmiddlewaretoken: '{{ csrf_token }}',
-                        'question_pk': question_pk,
+                        'freeBoard_pk': freeBoard_pk,
                         'content_reply': content_reply
 
                     },
                     success: function (data) {
                         var result = data.result;
-                        alert("this is result:"+result);
                         if (result == "success") {
                             swal(
                                 '추천!',
@@ -437,21 +447,23 @@
         function btn_thumb_setting() {
 
             $(".btn_thumbdown").hover(function () {
+                    <!--      마우스를 올렸을 경우      -->
                     $(this).css("color", "#71B6F9");
                 }, function () {
-                    $(this).css("color", "#98a6ad");
+                    <!--      마우스를 내렸을 경우      -->
+                    $(this).css("color", "#323a46");
                 }
             );
 
 
             $(".btn_thumbdown").click(function () {
-                var question_pk = $("#question_reply_btn").attr("name");
+                var freeBoard_pk = $("#freeBoard_reply_btn").attr("name");
                 $.ajax({
                     type: "POST",
-                    url: "/ajax/question_thumb_ajax/",
+                    url: "/ajax/freeBoard_thumb_ajax/",
                     data: {
                         csrfmiddlewaretoken: '{{ csrf_token }}',
-                        'question_pk': question_pk,
+                        'freeBoard_pk': freeBoard_pk,
                         'thumb_style': 'down'
 
                     },
@@ -473,22 +485,24 @@
             });
 
             $(".btn_thumbup").hover(function () {
+                    <!--      마우스를 올렸을 경우      -->
                     $(this).css("color", "#71B6F9");
                 }, function () {
-                    $(this).css("color", "#98a6ad");
+                    <!--      마우스를 내렸을 경우      -->
+                    $(this).css("color", "#323a46");
                 }
             );
 
 
             $(".btn_thumbup").click(function () {
                 {#비추 버튼 클릭 시#}
-                var question_pk = $("#question_reply_btn").attr("name");
+                var freeBoard_pk = $("#freeBoard_reply_btn").attr("name");
                 $.ajax({
                     type: "POST",
-                    url: "/ajax/question_thumb_ajax/",
+                    url: "/ajax/freeBoard_thumb_ajax/",
                     data: {
                         csrfmiddlewaretoken: '{{ csrf_token }}',
-                        'question_pk': question_pk,
+                        'freeBoard_pk': freeBoard_pk,
                         'thumb_style': 'up'
 
                     },
@@ -558,7 +572,7 @@
                 }).then(function () {
                     $.ajax({
                         type: "POST",
-                        url: "/question_delete/",
+                        url: "/freeBoard_delete/",
                         data: {
                             csrfmiddlewaretoken: '{{ csrf_token }}',
                             'record_pk': record_pk,
@@ -571,7 +585,7 @@
                                     '성공적으로 삭제되었습니다..',
                                     'success'
                                 )
-                                window.location = '/question_list/';
+                                window.location = '/freeBoard_list/';
                             } else {
                                 swal("정상적인 동작이 실행 되지 않았습니다.\n 다시 시도해주시기 바랍니다").catch(swal.noop)
                             }
@@ -588,7 +602,7 @@
                 var record_pk = $(this).attr('record_pk');
                 $.ajax({
                     type: "POST",
-                    url: "/question_usercheck/",
+                    url: "/freeBoard_usercheck/",
                     data: {
                         csrfmiddlewaretoken: '{{ csrf_token }}',
                         'record_pk': record_pk,
@@ -596,7 +610,7 @@
                     success: function (data) {
                         var usercheck_result = data.usercheck_success;
                         if (usercheck_result == "success") {
-                            window.location = '/question_modify?record_pk=' + record_pk;
+                            window.location = '/freeBoard_modify?record_pk=' + record_pk;
                         } else {
                             alert("정상적인 수정과정이 아닙니다. \n 재로그인 후 다시 시도해주세요");
                         }
@@ -608,5 +622,3 @@
 
     </script>
 {% endblock %}
-
-

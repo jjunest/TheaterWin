@@ -11,6 +11,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <!-- App favicon -->
     <link rel="shortcut icon" href="{% static '/admin/images/favicon.ico' %}">
+
+    <!-- App css -->
+    <link href="{% static '/admin/css/app.min.css' %}" rel="stylesheet" type="text/css" id="app-style"/>
+
+
     <!-- Plugins css-->
     <link href="{% static 'TheaterWinBook/assets/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.css' %}"
           rel="stylesheet"/>
@@ -54,17 +59,12 @@
           type="text/css"/>
 
 
-    <!-- App css -->
-
-    <link href="{% static '/admin/css/app.min.css' %}" rel="stylesheet" type="text/css" id="app-style"/>
-
 
     <!-- icons -->
     <link href="{% static '/admin/css/icons.min.css' %}" rel="stylesheet %}" type="text/css"/>
 
     <link href="{% static 'TheaterWinBook/assets/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css"/>
     <link href="{% static 'TheaterWinBook/assets/css/icons.css' %}" rel="stylesheet" type="text/css"/>
-<!--    5.2 버전에서 body색이 안바뀌는 원인은 아래 style.css가 존재하기 떄문 -->
 <!--    <link href="{% static 'TheaterWinBook/assets/css/style.css' %}" rel="stylesheet" type="text/css"/>-->
 
     <script src="{% static 'TheaterWinBook/assets/js/modernizr.min.js' %}"></script>
@@ -108,7 +108,7 @@
 
 
 <!-- body start -->
-<body id="fullvesting_body" class="loading" data-layout-color="light" data-layout-mode="default" data-layout-size="fluid"
+<body class="loading" data-layout-color="light" data-layout-mode="default" data-layout-size="fluid"
       data-topbar-color="light" data-leftbar-position="scrollable" data-leftbar-color="light" data-leftbar-size='default'
       data-sidebar-user='false'>
 
@@ -371,21 +371,12 @@
         </div>
 
         <ul class="list-unstyled topnav-menu topnav-menu-left mb-0">
-<!--            <li>-->
-<!--                <button class="button-menu-mobile disable-btn waves-effect" onclick="">-->
-<!--                    <i class="fe-menu"></i>-->
-<!--                </button>-->
-<!--            </li>-->
-            <li style = "display:none">
-                <button class="button-menu-mobile " >
-                    <i class="fe-menu"></i>
-                </button>
-            </li>
             <li>
                 <button class="button-menu-mobile disable-btn waves-effect" onclick="onClickNavMobile()">
                     <i class="fe-menu"></i>
                 </button>
             </li>
+
             <li>
                 <h4 class="page-title-main">페이지명</h4>
             </li>
@@ -398,7 +389,7 @@
     <!-- end Topbar -->
 
     <!-- ========== Left Sidebar Start ========== -->
-    <div class="left-side-menu" style = "width:50%">
+    <div class="left-side-menu">
 
         <div class="h-100" data-simplebar>
 
@@ -407,25 +398,25 @@
 
                 <div class="dropdown">
                     <a href="#" class="user-name dropdown-toggle h5 mt-2 mb-1 d-block" data-bs-toggle="dropdown"
-                       aria-expanded="false">Nowak Helme left bar</a>
+                       aria-expanded="false">Nowak Helme</a>
                     <div class="dropdown-menu user-pro-dropdown">
 
                         <!-- item-->
                         <a href="javascript:void(0);" class="dropdown-item notify-item">
                             <i class="fe-user me-1"></i>
-                            <span>My Account  left bar</span>
+                            <span>My Account</span>
                         </a>
 
                         <!-- item-->
                         <a href="javascript:void(0);" class="dropdown-item notify-item">
                             <i class="fe-settings me-1"></i>
-                            <span>Settings  left bar</span>
+                            <span>Settings</span>
                         </a>
 
                         <!-- item-->
                         <a href="javascript:void(0);" class="dropdown-item notify-item">
                             <i class="fe-lock me-1"></i>
-                            <span>Lock Screen  left bar</span>
+                            <span>Lock Screen</span>
                         </a>
 
                         <!-- item-->
@@ -713,7 +704,8 @@
             <div class="container-fluid">
 
 
-            </div>
+
+
                 {% block content %}
 
                 {# This is where Contents are placed #}
@@ -1037,16 +1029,8 @@
 
 <script>
     function onClickNavMobile (){
-
-        if ($('.left-side-menu').css('display') == 'none') {
-            $(".left-side-menu").attr("width","80%");
-            $(".left-side-menu").show();
-
-        } else {
-                    $(".left-side-menu").attr("width","80%");
-            $(".left-side-menu").hide();
-        }
-
+        alert("mobile nav click ");
+<!--        $("#testid").trigger("click");-->
     }
 
     /* 오늘 날짜를 문자열로 반환 */

@@ -7,6 +7,10 @@ from .models import Post,TheaterWinBookRecord,TheaterWinQuestion,\
                     TheaterWinBookRecordReply, StockSummaryKr, StockIfrsKr, StockGroupKr, FullvestingApi, \
                     StockList
 
+from .models_freeboard import FreeBoard, FreeBoardInfo, FreeBoardReply
+
+
+
 admin.site.register(Post)
 admin.site.register(TheaterWinBookRecord)
 admin.site.register(TheaterWinQuestion)
@@ -20,3 +24,7 @@ admin.site.register(StockIfrsKr)
 admin.site.register(StockGroupKr)
 admin.site.register(FullvestingApi)
 admin.site.register(StockList)
+
+admin.site.register(FreeBoard)
+admin.site.register(FreeBoardInfo)
+admin.site.register(FreeBoardReply)

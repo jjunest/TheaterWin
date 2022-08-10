@@ -291,7 +291,7 @@ function ($) {
         var $this = this;
 
         // Left menu collapse
-        $('.button-menu-mobile').on('click', function (event) {
+        $('.freeBoard').on('click', function (event) {
             event.preventDefault();
             $this.$body.toggleClass('sidebar-enable');
             if ($this.$window.width() >= 768) {
