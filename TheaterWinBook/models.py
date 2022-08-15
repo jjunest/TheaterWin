@@ -130,6 +130,7 @@ class StockSummaryKr(models.Model):
         unique_together = ("info_date","stock_code","stock_country","vesting_type","vesting_type_detail")
 
 
+
 class StockIfrsKr(models.Model):
     bat_time = models.DateTimeField(default=datetime.now, blank = False)
     info_date = models.DateField(default=datetime.now, blank=False)
