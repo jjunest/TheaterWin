@@ -71,7 +71,7 @@ urlpatterns = [
     url(r'^stock_rank_pop/(?P<rank_name>[^/]+)/$', views.stock_rank_pop, name='stock_rank_pop'),
     # url(r'^stock_rank_pop_marketsum/(?P<rank_name>[^/]+)/$', views.stock_rank_pop_marketsum, name='stock_rank_pop_marketsum'),
     url(r'^stock_list_kospi/$', views.stock_list_kospi, name='stock_list_kospi'),
-    url(r'^stock_detail_kospi/(?P<stock_code>\d+)/$', views.stock_detail_kospi, name='stock_detail_kospi'),
+    url(r'^stock_detail_kor/(?P<stock_code>\d+)/$', views.stock_detail_kor, name='stock_detail_kor'),
     # url(r'^stock_rank_pop_marketsum/(?P<rank_name>[^/]+)/$', views.stock_rank_pop_marketsum, name='stock_rank_pop_marketsum'),
 
     # 게시판 작성 시 6개 페이지 필요 : list / write (원글+답글) / delete / modify / detail

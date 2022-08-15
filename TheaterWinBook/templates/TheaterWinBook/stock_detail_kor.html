@@ -37,37 +37,91 @@
                         <a href="javascript:void(0);" class="dropdown-item">Separated link</a>
                     </div>
                 </div>
-                {% for top_stock_record in top_stock %}
+                {% for record in stock_detail %}
                 <div class="d-flex mb-3">
                     <div class="flex-grow-1">
-                        <h4 class="media-heading mt-0">{{ top_stock_record.stock_name }} </h4>
-                        <span class="badge bg-danger">Urgent</span>
+                        <h4 class="media-heading mt-0">{{ record.stock_name }} </h4>
+                        <span class="badge bg-danger">시가총액</span>
                     </div>
                 </div>
 
                 <h4>Code HTML email template for welcome email</h4>
 
                 <p class="text-muted">
-                    At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum
-                    deleniti atque corrupti quos dolores et quas molestias excepturi sint cupiditate non sunt in culpa
-                    qui officia deserunt animi est laborum et
+                    text Sample
                 </p>
 
                 <p class="text-muted">
                     Consectetur adipisicing elit. Voluptates, illo, iste
                     itaque voluptas corrupti ratione reprehenderit magni similique Tempore quos
-                    delectus asperiores libero voluptas quod perferendis erum ipsum dolor sit.
+                    delectus asperiores libero voluptas quod perferendis
+                    erum ipsum dolor sit.
                 </p>
 
                 <div class="row task-dates mb-0 mt-2">
                     <div class="col-lg-6">
-                        <h5 class="font-600 m-b-5">Start Date</h5>
-                        <p> 22 March 2016 <small class="text-muted">1:00 PM</small></p>
+                        <h5 class="font-600 m-b-5">시가총액</h5>
+                        <p>{{ record.stock_market_sum }} 원 <small class="text-muted">1:00 PM</small></p>
                     </div>
 
                     <div class="col-lg-6">
-                        <h5 class="font-600 m-b-5">Due Date</h5>
-                        <p> 17 April 2016 <small class="text-muted">12:00 PM</small></p>
+                        <h5 class="font-600 m-b-5">외국인보유비율</h5>
+                        <p>{{ record.stock_foreign_share_percent }} % <small class="text-muted">12:00 PM</small></p>
+                    </div>
+                </div>
+                <div class="row task-dates mb-0 mt-2">
+                    <div class="col-lg-6">
+                        <h5 class="font-600 m-b-5">신고가</h5>
+                        <p>{{ record.stock_maxprice_year }} 원 <small class="text-muted"> 현재가 대비 00%</small></p>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <h5 class="font-600 m-b-5">신저가</h5>
+                        <p>{{ record.stock_lowprice_year }} 원 <small class="text-muted"> 현재가 대비 00%</small></p>
+                    </div>
+                </div>
+                <div class="row task-dates mb-0 mt-2">
+                    <div class="col-lg-6">
+                        <h5 class="font-600 m-b-5">신고가</h5>
+                        <p>{{ record.stock_maxprice_year }} 원 <small class="text-muted"> 현재가 대비 00%</small></p>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <h5 class="font-600 m-b-5">PER</h5>
+                        <p>{{ record.stock_lowprice_year }} 원 <small class="text-muted"> 현재가 대비 00%</small></p>
+                    </div>
+                </div>
+                <div class="row task-dates mb-0 mt-2">
+                    <div class="col-lg-6">
+                        <h5 class="font-600 m-b-5">시가총액</h5>
+                        <p>{{ record.stock_market_sum }} 원 <small class="text-muted">1:00 PM</small></p>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <h5 class="font-600 m-b-5">외국인보유비율</h5>
+                        <p>{{ record.stock_foreign_share_percent }} % <small class="text-muted">12:00 PM</small></p>
+                    </div>
+                </div>
+                <div class="row task-dates mb-0 mt-2">
+                    <div class="col-lg-6">
+                        <h5 class="font-600 m-b-5">신고가</h5>
+                        <p>{{ record.stock_maxprice_year }} 원 <small class="text-muted"> 현재가 대비 00%</small></p>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <h5 class="font-600 m-b-5">신저가</h5>
+                        <p>{{ record.stock_lowprice_year }} 원 <small class="text-muted"> 현재가 대비 00%</small></p>
+                    </div>
+                </div>
+                <div class="row task-dates mb-0 mt-2">
+                    <div class="col-lg-6">
+                        <h5 class="font-600 m-b-5">신고가</h5>
+                        <p>{{ record.stock_maxprice_year }} 원 <small class="text-muted"> 현재가 대비 00%</small></p>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <h5 class="font-600 m-b-5">PER</h5>
+                        <p>{{ record.stock_lowprice_year }} 원 <small class="text-muted"> 현재가 대비 00%</small></p>
                     </div>
                 </div>
                 <div class="clearfix"></div>

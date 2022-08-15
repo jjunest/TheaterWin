@@ -37,9 +37,9 @@
                                             {% for top_stock_record in top_stock %}
                                             <tr>
                                                 <td> {{ forloop.counter }} </td>
-                                                <td> <a href = "/stock_detail_kospi/{{ top_stock_record.stock_code }}"> {{ top_stock_record.stock_name }} </a></td>
-                                                <td> <a href = "/stock_detail_kospi/{{ top_stock_record.stock_code }}"> {{ top_stock_record.stock_market_sum }} </a></td>
-                                                <td> <a href = "/stock_detail_kospi/{{ top_stock_record.stock_code }}"> {{ top_stock_record.stock_name }} </a></td>
+                                                <td> <a href = "/stock_detail_kor/{{ top_stock_record.stock_code }}"> {{ top_stock_record.stock_name }} </a></td>
+                                                <td> <a href = "/stock_detail_kor/{{ top_stock_record.stock_code }}"> {{ top_stock_record.stock_market_sum }} </a></td>
+                                                <td> <a href = "/stock_detail_kor/{{ top_stock_record.stock_code }}"> {{ top_stock_record.stock_name }} </a></td>
                                             </tr>
                                            {% endfor %}
 

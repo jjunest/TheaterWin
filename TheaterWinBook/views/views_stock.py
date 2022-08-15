@@ -60,12 +60,14 @@ def stock_list_kospi(request):
     return render(request, 'TheaterWinBook/stock_list_kospi.html',{"top_stock": top_stock})
 
 
-def stock_detail_kospi(request, stock_code):
+def stock_detail_kor(request, stock_code):
     stock_code = stock_code
     print("this is stock_detail page, stock_code:",stock_code)
-    top_stock = StockList.objects.raw('SELECT * FROM TheaterWinBook_StockList WHERE STOCK_CODE = %s',[stock_code])
-    print("this is top_stock:",top_stock)
-    is_record_owner = 'not_owner'
+    stock_detail = StockSummaryKr.objects.raw('SELECT * FROM TheaterWinBook_stocksummarykr WHERE '
+                                       'info_date = (SELECT info_date FROM TheaterWinBook_stocksummarykr '
+                                       'ORDER BY info_date DESC LIMIT 1) and STOCK_CODE = %s',[stock_code])
+
+    print("this is stock_detail:",stock_detail)
     # question_pk = question_pk
     # print("this is question_pk" + question_pk)
 
@@ -74,6 +76,6 @@ def stock_detail_kospi(request, stock_code):
     #                'thumbup_count': thumbup_count, 'thumbdown_count': thumbdown_count, 'target_replys': target_replys,
     #                'login_user': login_user})
 
-    return render(request, 'TheaterWinBook/stock_detail_kospi.html', {'top_stock': top_stock} )
+    return render(request, 'TheaterWinBook/stock_detail_kor.html', {'stock_detail': stock_detail} )
 
 
