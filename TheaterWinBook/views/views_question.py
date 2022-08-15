@@ -72,7 +72,13 @@ def question_write(request):
                 # 가져 온 후 데이터 처리를 해도 된다.
                 inputForm.user_name = request.user
                 # inputForm.question_groupnum = 새로 쓴 원본 글이기 때문에 pk 를 groupnum 과 똑같이 해줌.
-                inputForm.question_groupnum = int(TheaterWinQuestion.objects.last().pk)
+                print("this is object:", TheaterWinQuestion.objects.get)
+                if TheaterWinQuestion.objects.last() is None :
+                    print("this is not none")
+                    inputForm.question_groupnum = 1
+                else:
+                    print("this is none")
+                    inputForm.question_groupnum = int(TheaterWinQuestion.objects.last().pk)
                 print("inputForm.pk latest : ", inputForm.question_groupnum)
                 # sequence num 을 넣어준다 = 1이다
                 inputForm.question_sequencenum_ingroup = 1
