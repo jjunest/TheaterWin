@@ -4,3 +4,5 @@ from .views_winbook import *
 from .views_freeBoard import *
 from .views_userBoard import *
 from .views_stock import *
+from .views_freeBoardstock import *
+from .views_freeBoardprof import *

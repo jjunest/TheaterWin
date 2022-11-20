@@ -1,0 +1,145 @@
+{% extends "TheaterWinBook/base_header_footer_5.2.html" %}
+{% load static %}
+
+{% block css_script %}
+<style>
+        .ui-datepicker {
+            width: 80%; /*what ever width you want*/
+        }
+
+    </style>
+{{ form.media }}
+
+{% endblock %}
+
+{% block content %}
+<!-- 아래 content는 <div class = container-fluid> 밑에 있는 <div class = row > 부터 오면 됨 --->
+  <div class="wrapper">
+        <div class="container-fluid">
+
+            <!-- Page-Title -->
+            <div class="row">
+                <div class="col-sm-12">
+                    <h4 class="page-title">문의&제안&건의&기타 자유게시판(전문가게시판)</h4>
+                </div>
+            </div>
+
+
+            <div class="card-box">
+
+                <button class="btn btn-info waves-effect waves-light m-b-5" style="width: 100%" id="freeBoardprof_write_btn">
+                    <i
+                            class="fa fa-pencil-square-o "></i> 자유게시판글쓰기
+                    <span>
+
+                </span></button>
+                <br><br>
+                <div class="inbox-widget nicescroll" ">
+                    {% for record in database_list_result_page %}
+                        <a href="/freeBoardprof_detail/{{ record.pk }}">
+                            <div class="inbox-item" style="border-bottom: 1px solid rgba(222,226,230,.5)">
+                                <div class="inbox-item-img text-dark" style="color: #eeeeee">No.{{ forloop.counter }}</div>
+                                <p class="inbox-item-author ellipsis text-dark" style="color: #eeeeee;">
+                                        {% with ''|center:record.freeBoardprof_level_ingorup as range %}
+                                            {% for i in range %}
+                                                &nbsp
+                                                {% if forloop.last %}
+                                                    ┗
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endwith %}
+
+                                        {{ record.freeBoardprof_title }}</p>
+                                        <p class=" inbox-item-text" style="margin-left: 55px">작성자 -
+                                <span> {{ record.user_name }}</span></p>
+                                {% comment %}
+                                <p class="inbox-item-date"><span class="badge badge-success"
+                                                                 style="color: #212529 ;  font-weight: bold;">{{ record.freeBoardprof_isanswer }}</span>
+                                </p>
+                                {% endcomment %}
+                                <p class="inbox-item-date" style="top : 35px">{{ record.writing_date }}</p>
+                            </div>
+                        </a>
+                    {% endfor %}
+
+                </div>
+                <br>
+                <br><br>
+                {% if database_list_result_page.has_other_pages %}
+                    <div class="row">
+                        <nav style="margin: 0 auto;">
+                            <ul class="pagination pagination-lg m-b-0">
+                                <li class="page-item">
+                                    <a class="page-link" href="#" aria-label="Previous" id="pagination_previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+
+                                {% for i in database_list_result_page.custom_page_range %}
+                                    {% if database_list_result_page.pagenum == i %}
+                                        <li class="page-item active"><a class="page-link" href="#">{{ i }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item"><a class="page-link"
+                                                                 href="/freeBoardprof_list?pagenum={{ i }}">{{ i }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                <li class="page-item">
+                                    <a class="page-link" href="#" aria-label="Next" id="pagination_next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                        <span class="sr-only">Next</span>
+                                    </a>
+                                </li>
+
+
+                            </ul>
+                        </nav>
+                    </div>
+                {% endif %}
+            </div>
+
+            <br>
+            <br>
+            <br>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+
+{% block javascript %}
+    <script>
+        $(document).ready(function () {
+            pagination_setting();
+
+            $("#freeBoardprof_write_btn").click(function () {
+                window.location.href = "/freeBoardprof_write/";
+            });
+            // JQuery 적용
+        });
+
+        function pagination_setting() {
+            var start_page = '{{ database_list_result_page.start_page  }}';
+            var end_page = '{{ database_list_result_page.end_page  }}';
+            var end_page = '{{ database_list_result_page.end_page  }}';
+            var total_page_number = '{{ database_list_result_page.total_page_number  }}';
+            var pagination_previous_num = parseInt(start_page) - 1;
+            var pagination_next_num = parseInt(end_page);
+            if (pagination_previous_num < 1) {
+                pagination_previous_num = 1;
+            }
+
+            if (pagination_next_num > total_page_number) {
+                pagination_next_num = total_page_number;
+            }
+
+
+            $("#pagination_previous").attr("href", "/freeBoardprof_list?pagenum=" + pagination_previous_num);
+            $("#pagination_next").attr("href", "/freeBoardprof_list?pagenum=" + pagination_next_num);
+        }
+
+    </script>
+{% endblock %}

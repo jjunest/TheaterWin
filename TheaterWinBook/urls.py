@@ -74,24 +74,6 @@ urlpatterns = [
     url(r'^stock_detail_kor/(?P<stock_code>\d+)/$', views.stock_detail_kor, name='stock_detail_kor'),
     # url(r'^stock_rank_pop_marketsum/(?P<rank_name>[^/]+)/$', views.stock_rank_pop_marketsum, name='stock_rank_pop_marketsum'),
 
-    # 게시판 작성 시 6개 페이지 필요 : list / write (원글+답글) / delete / modify / detail
-    url(r'^freeBoard_list/$', views.freeBoard_list, name='freeBoard_list'),
-    url(r'^freeBoard_write/$', views.freeBoard_write, name='freeBoard_write'),
-    # # 답글을 의미한다.
-    url(r'^freeBoard_write/(?P<freeBoard_pk>\d+)/$', views.freeBoard_write, name='freeBoard_write'),
-    url(r'^freeBoard_delete/$', views.freeBoard_delete, name='freeBoard_delete'),
-    url(r'^freeBoard_modify/$', views.freeBoard_modify, name='freeBoard_modify'),
-    url(r'^freeBoard_detail/$', views.freeBoard_detail, name='freeBoard_detail'),
-
-    # # 게시판 작성 시 6개 페이지 필요 : list / write (원글+답글) / delete / modify / detail
-    # url(r'^userBoard_list/$', views.userBoard_list, name='userBoard_list'),
-    # url(r'^userBoard_write/$', views.userBoard_write, name='userBoard_write'),
-    # # # 답글을 의미한다.
-    # url(r'^userBoard_write/(?P<userBoard_pk>\d+)/$', views.userBoard_write, name='userBoard_write'),
-    # url(r'^userBoard_delete/$', views.userBoard_delete, name='userBoard_delete'),
-    # url(r'^userBoard_modify/$', views.userBoard_modify, name='userBoard_modify'),
-    # url(r'^userBoard_detail/$', views.userBoard_detail, name='userBoard_detail'),
-
     url(r'^template_content_52/$', views.template_content_52, name='template_content_52'),
 
 ]

@@ -23,7 +23,8 @@ SECRET_KEY = 'v4t3@&*^zrj(+fxjpx_=2i_+$royxy5u98)2!8^pa@2l9%dxvj'
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
+
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'www.fullvesting.com', 'fullvesting.com.','fullvesting.com', 'http://fullvesting.com',  '.pythonanywhere.com', '*.pythonanywhere.com', 'http://49.236.136.47/', '49.236.136.47',
                  'theaterwin.com', 'http://theaterwin.com', 'http://106.10.52.182/', '106.10.52.182', '216.137.185.122']

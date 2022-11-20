@@ -8,8 +8,8 @@ from .models import Post,TheaterWinBookRecord,TheaterWinQuestion,\
                     StockList
 
 from .models_freeboard import FreeBoard, FreeBoardInfo, FreeBoardReply
-
-
+from .models_freeboardstock import FreeBoardstock, FreeBoardstockInfo, FreeBoardstockReply
+from .models_freeboardprof import FreeBoardprof, FreeBoardprofInfo, FreeBoardprofReply
 
 admin.site.register(Post)
 admin.site.register(TheaterWinBookRecord)
@@ -28,3 +28,12 @@ admin.site.register(StockList)
 admin.site.register(FreeBoard)
 admin.site.register(FreeBoardInfo)
 admin.site.register(FreeBoardReply)
+
+
+admin.site.register(FreeBoardstock)
+admin.site.register(FreeBoardstockInfo)
+admin.site.register(FreeBoardstockReply)
+
+admin.site.register(FreeBoardprof)
+admin.site.register(FreeBoardprofInfo)
+admin.site.register(FreeBoardprofReply)

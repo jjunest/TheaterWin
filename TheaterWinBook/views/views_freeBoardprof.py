@@ -4,8 +4,8 @@ from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 
 
-from ..forms import freeBoardForm, freeBoardForm
-from ..models_freeboard import FreeBoard, FreeBoardInfo, FreeBoardReply
+from ..forms import freeBoardprofForm
+from ..models_freeboardprof import FreeBoardprof, FreeBoardprofInfo, FreeBoardprofReply
 from django.contrib import messages
 from django.db.models import F
 from django.db.models import Max, Min
@@ -17,12 +17,12 @@ import json
 
 
 
-def freeBoard_list(request):
+def freeBoardprof_list(request):
     pagenum = request.GET.get('pagenum', 1)
     # GET 으로 받은 파라미터는 integer가 아니라, int 처리해줘야 한다....
     pagenum = int(pagenum)
     print("this is pagenum", pagenum)
-    database_list_result = FreeBoard.objects.order_by('-freeBoard_groupnum', 'freeBoard_sequencenum_ingroup')
+    database_list_result = FreeBoardprof.objects.order_by('-freeBoardprof_groupnum', 'freeBoardprof_sequencenum_ingroup')
     # 하나의 페이지당 들어갈 row 개수
     paginator = Paginator(database_list_result, 10)
     print("this is paginator:", paginator)
@@ -53,21 +53,21 @@ def freeBoard_list(request):
         # 에러가 나면 다시 1페이지로로 돌려주자.
         trace_back = traceback.format_exc()
         message = str(e) + " " + str(trace_back)
-        return redirect('freeBoard_list')
-    return render(request, 'TheaterWinBook/freeBoard_list.html',
+        return redirect('freeBoardprof_list')
+    return render(request, 'TheaterWinBook/freeBoardprof_list.html',
                   {"database_list_result_page": database_list_result_page})
 
 
 @login_required(login_url='/login_view')
-def freeBoard_write(request):
-    print("this is freeboard write")
+def freeBoardprof_write(request):
+    print("this is freeboardprof write")
     if request.method == "POST":
         # create a form instance and populate it with data from the request:
-        form = freeBoardForm(request.POST)  # PostForm으로 부터 받은 데이터를 처리하기 위한 인스턴스 생성
+        form = freeBoardprofForm(request.POST)  # PostForm으로 부터 받은 데이터를 처리하기 위한 인스턴스 생성
         is_original = request.POST.get('is_original')
         if is_original == 'freeBoard_original':
             # 새로운 글인지 확인)
-            # 1. freeBoard record에서 가장 높은 pk를 구하고 그것을 +1 해준다.
+            # 1. freeBoardprof record에서 가장 높은 pk를 구하고 그것을 +1 해준다.
             # 2-1. groupnm 에 넣어준다 (첫 글 생성일 경우)
             print("this is isoriginal test", is_original)
             if form.is_valid():  # 폼 검증 메소드
@@ -76,42 +76,43 @@ def freeBoard_write(request):
                 inputForm = form.save(commit=False)  # 오브젝트를 form으로 부터 가져오지만, 실제로 DB반영은 하지 않는다.
                 # 가져 온 후 데이터 처리를 해도 된다.
                 inputForm.user_name = request.user
-                # inputForm.freeBoard_groupnum = 새로 쓴 원본 글이기 때문에 pk 를 groupnum 과 똑같이 해줌.
-                if FreeBoard.objects.last() is None:
-                    inputForm.freeBoard_groupnum = '1'
+                # inputForm.freeBoardprof_groupnum = 새로 쓴 원본 글이기 때문에 pk 를 groupnum 과 똑같이 해줌.
+                if FreeBoardprof.objects.last() is None:
+                    inputForm.freeBoardprof_groupnum = '1'
                 else:
-                    inputForm.freeBoard_groupnum = int(FreeBoard.objects.last().pk)
-                print("inputForm.pk latest : ", inputForm.freeBoard_groupnum)
+                    inputForm.freeBoardprof_groupnum = int(FreeBoardprof.objects.last().pk)
+                print("inputForm.pk latest : ", inputForm.freeBoardprof_groupnum)
                 # sequence num 을 넣어준다 = 1이다
-                inputForm.freeBoard_sequencenum_ingroup = 1
+                inputForm.freeBoardprof_sequencenum_ingroup = 1
                 # level 을 넣어준다. 0이다.
-                inputForm.freeBoard_level_ingroup = 0
+                inputForm.freeBoardprof_level_ingroup = 0
                 # 데이터베이스에 저장하기
-                print("this is content:", inputForm.freeBoard_content)
+                print("this is content:", inputForm.freeBoardprof_content)
                 inputForm.save()
-                freeBoard_fk = inputForm.pk
-                freeBoard_record = FreeBoard.objects.get(pk=freeBoard_fk)
-                freeBoard_info = FreeBoardInfo(freeBoard_fk=freeBoard_record)
-                freeBoard_info.save()
-                # freeBoard_info 로우를 만들어 준다.
-                return redirect('freeBoard_list')
+                freeBoardprof_fk = inputForm.pk
+                freeBoardprof_record = FreeBoardprof.objects.get(pk=freeBoardprof_fk)
+                freeBoardprof_info = FreeBoardprofInfo(freeBoardprof_fk=freeBoardprof_record)
+                freeBoardprof_info.save()
+                # freeBoardprof_info 로우를 만들어 준다.
+                return redirect('freeBoardprof_list')
             else:
                 errors = form.errors.as_data()
                 for error in errors:
                     print('There was an error :', error)
                 messages.error(request, "please enter right field")
-        elif is_original == 'freeBoard_reply':
-            print("this is freeBoard_reply")
+        elif is_original == 'freeBoardprof_reply':
+            print("this is freeBoardprof_reply")
             if form.is_valid():  # 폼 검증 메소드
                 inputForm = form.save(commit=False)
-                parent_freeBoard_pk = request.POST.get('freeBoard_pk')
-                # 부모의 freeBoard_pk를 통해서 부모글의 정보를 가져온다.
-                parent_freeBoard_record = FreeBoard.objects.get(pk=parent_freeBoard_pk)
-                parent_freeBoard_groupnum = parent_freeBoard_record.freeBoard_groupnum
-                parent_freeBoard_sequencenum_ingroup = parent_freeBoard_record.freeBoard_sequencenum_ingroup
-                parent_freeBoard_level_ingroup = parent_freeBoard_record.freeBoard_level_ingorup
+                parent_freeBoardprof_pk = request.POST.get('freeBoardprof_pk')
+                print("this is parent_freeBoardprof_pk:",parent_freeBoardprof_pk)
+                # 부모의 freeBoardprof_pk를 통해서 부모글의 정보를 가져온다.
+                parent_freeBoardprof_record = FreeBoardprof.objects.get(pk=parent_freeBoardprof_pk)
+                parent_freeBoardprof_groupnum = parent_freeBoardprof_record.freeBoardprof_groupnum
+                parent_freeBoardprof_sequencenum_ingroup = parent_freeBoardprof_record.freeBoardprof_sequencenum_ingroup
+                parent_freeBoardprof_level_ingroup = parent_freeBoardprof_record.freeBoardprof_level_ingorup
 
-                print("this is freeBoard_record title:", parent_freeBoard_record)
+                print("this is freeBoardprof_record title:", parent_freeBoardprof_record)
                 # groupnum 은 부모 글의 groupnum 과 같다
                 # 2-2 해당 글이 댓글잉 경우
                 # *공식
@@ -119,10 +120,10 @@ def freeBoard_write(request):
                 #    WHERE  BGROUP = (원글의 BGROUP)
                 #    AND SORTS > (원글의 SORTS)
                 #    AND DEPTH <= (원글의 DEPTH)
-                check = FreeBoard.objects.filter(freeBoard_groupnum=parent_freeBoard_groupnum,
-                                                          freeBoard_sequencenum_ingroup__gt=parent_freeBoard_sequencenum_ingroup,
-                                                          freeBoard_level_ingorup__lte=parent_freeBoard_level_ingroup).aggregate(
-                    Min('freeBoard_sequencenum_ingroup'))["freeBoard_sequencenum_ingroup__min"]
+                check = FreeBoardprof.objects.filter(freeBoardprof_groupnum=parent_freeBoardprof_groupnum,
+                                                          freeBoardprof_sequencenum_ingroup__gt=parent_freeBoardprof_sequencenum_ingroup,
+                                                          freeBoardprof_level_ingorup__lte=parent_freeBoardprof_level_ingroup).aggregate(
+                    Min('freeBoardprof_sequencenum_ingroup'))["freeBoardprof_sequencenum_ingroup__min"]
                 print("this is check:", check);
                 # 2-1. 1번이 0 일 경우
                 # 3. SELECT NVL(MAX(SORTS),0) + 1 FROM BOARD
@@ -132,94 +133,94 @@ def freeBoard_write(request):
                 if check is None:
                     check = 0
                 if check == 0:
-                    new_sequencenum = FreeBoard.objects.filter(
-                        freeBoard_groupnum=parent_freeBoard_groupnum).aggregate(Max('freeBoard_sequencenum_ingroup'))[
-                        "freeBoard_sequencenum_ingroup__max"]
+                    new_sequencenum = FreeBoardprof.objects.filter(
+                        freeBoardprof_groupnum=parent_freeBoardprof_groupnum).aggregate(Max('freeBoardprof_sequencenum_ingroup'))[
+                        "freeBoardprof_sequencenum_ingroup__max"]
                     if new_sequencenum is None:
                         new_sequencenum = 0
                     new_sequencenum = new_sequencenum + 1
-                    inputForm.freeBoard_groupnum = parent_freeBoard_groupnum
-                    inputForm.freeBoard_sequencenum_ingroup = new_sequencenum
-                    inputForm.freeBoard_level_ingorup = parent_freeBoard_level_ingroup + 1
+                    inputForm.freeBoardprof_groupnum = parent_freeBoardprof_groupnum
+                    inputForm.freeBoardprof_sequencenum_ingroup = new_sequencenum
+                    inputForm.freeBoardprof_level_ingorup = parent_freeBoardprof_level_ingroup + 1
                 else:
                     # 2-2. 1번이 0이 아닐 경우
                     #
                     # 3. UPDATE BOARD SET SORTS = SORTS + 1
                     #   WHERE BGROUP =  (원글의 BGROUP)  AND SORTS >= (1번값)
-                    FreeBoard.objects.filter(freeBoard_groupnum=parent_freeBoard_groupnum,
-                                                      freeBoard_sequencenum_ingroup__gte=check).update(
-                        freeBoard_sequencenum_ingroup=F('freeBoard_sequencenum_ingroup') + 1)
+                    FreeBoardprof.objects.filter(freeBoardprof_groupnum=parent_freeBoardprof_groupnum,
+                                                      freeBoardprof_sequencenum_ingroup__gte=check).update(
+                        freeBoardprof_sequencenum_ingroup=F('freeBoardprof_sequencenum_ingroup') + 1)
 
                     # 4. INSERT INTO BOARD VALUES
                     #    (번호, (원글의 BGROUP), (1번값), (원글의 DEPTH +1) ,' 제목')
-                    inputForm.freeBoard_groupnum = parent_freeBoard_groupnum
-                    inputForm.freeBoard_sequencenum_ingroup = check
-                    inputForm.freeBoard_level_ingorup = parent_freeBoard_level_ingroup + 1
+                    inputForm.freeBoardprof_groupnum = parent_freeBoardprof_groupnum
+                    inputForm.freeBoardprof_sequencenum_ingroup = check
+                    inputForm.freeBoardprof_level_ingorup = parent_freeBoardprof_level_ingroup + 1
 
                 # # 데이터베이스에 저장하기
                 inputForm.save()
-                return redirect('freeBoard_list')
+                return redirect('freeBoardprof_list')
             else:
-                print("this is freeBoard_reply form is not valid")
+                print("this is freeBoardprof_reply form is not valid")
                 messages.error(request, "please enter right field")
     else:
         # 단순히 이동하는 작업이다.
         is_original = request.GET.get('is_original')
-        if is_original == 'freeBoard_reply':
-            # freeBoard_pk
-            freeBoard_pk = request.GET.get('freeBoard_pk')
-            print("this is freeBoard_pk:", freeBoard_pk)
-            freeBoard_record = FreeBoard.objects.get(pk=freeBoard_pk)
-            print("this is freeBoard_record title:", freeBoard_record.freeBoard_title)
-            freeBoard_title = 'RE: ' + freeBoard_record.freeBoard_title
-            form = freeBoardForm(initial={'freeBoard_title': freeBoard_title})  # forms.py의 PostForm 클래스의 인스턴스
+        if is_original == 'freeBoardprof_reply':
+            # freeBoardprof_pk
+            freeBoardprof_pk = request.GET.get('freeBoardprof_pk')
+            print("this is freeBoardprof_pk:", freeBoardprof_pk)
+            freeBoardprof_record = FreeBoardprof.objects.get(pk=freeBoardprof_pk)
+            print("this is freeBoardprof_record title:", freeBoardprof_record.freeBoardprof_title)
+            freeBoardprof_title = 'RE: ' + freeBoardprof_record.freeBoardprof_title
+            form = freeBoardprofForm(initial={'freeBoardprof_title': freeBoardprof_title})  # forms.py의 PostForm 클래스의 인스턴스
         else:
             print("this is is_original is not reply_write")
-            form = freeBoardForm()  # forms.py의 PostForm 클래스의 인스턴스
-    return render(request, 'TheaterWinBook/freeBoard_write.html', {'form': form})  # 템플릿 파일 경로 지정, 데이터 전달
+            form = freeBoardprofForm()  # forms.py의 PostForm 클래스의 인스턴스
+    return render(request, 'TheaterWinBook/freeBoardprof_write.html', {'form': form})  # 템플릿 파일 경로 지정, 데이터 전달
 
 
 
 
 
 @login_required(login_url='/login_view')
-def freeBoard_detail(request, freeBoard_pk):
+def freeBoardprof_detail(request, freeBoardprof_pk):
     is_record_owner = 'not_owner'
-    freeBoard_pk = freeBoard_pk
-    # print("this is freeBoard_pk" + freeBoard_pk)
-    target_record = FreeBoard.objects.get(pk=freeBoard_pk)
-    # print("this is freeBoard_content : " + freeBoard_record.freeBoard_content)
-    form = freeBoardForm(instance=target_record)  # forms.py의 PostForm 클래스의 인스턴스
+    freeBoardprof_pk = freeBoardprof_pk
+    # print("this is freeBoardprof_pk" + freeBoardprof_pk)
+    target_record = FreeBoardprof.objects.get(pk=freeBoardprof_pk)
+    # print("this is freeBoardprof_content : " + freeBoardprof_record.freeBoardprof_content)
+    form = freeBoardprofForm(instance=target_record)  # forms.py의 PostForm 클래스의 인스턴스
     # 해당 글이 작성자 본인인지 확인 (본인이면 수정,삭제 버튼 누르자)
     login_user = request.user
     if target_record.user_name == login_user:
         is_record_owner = 'owner'
-    target_record.freeBoard_hit = target_record.freeBoard_hit + 1
+    target_record.freeBoardprof_hit = target_record.freeBoardprof_hit + 1
     target_record.save()
 
     # 추천과 비추천 숫자를 세자. FOREIGNER 외래키를 찾을 때에는 get이 아니라, filter 를 사용해야 한다.
-    thumbup_count = FreeBoardInfo.objects.filter(freeBoard_fk=target_record, freeBoard_thumbup=1).count()
-    thumbdown_count = FreeBoardInfo.objects.filter(freeBoard_fk=target_record, freeBoard_thumbdown=1).count()
-    target_replys = FreeBoardReply.objects.filter(freeBoard_fk=target_record).order_by('reply_groupnum', 'reply_sequencenum_ingroup')
-    return render(request, 'TheaterWinBook/freeBoard_detail.html',
-                  {'freeBoard_record': target_record, 'form': form, 'is_record_owner': is_record_owner,
+    thumbup_count = FreeBoardprofInfo.objects.filter(freeBoardprof_fk=target_record, freeBoardprof_thumbup=1).count()
+    thumbdown_count = FreeBoardprofInfo.objects.filter(freeBoardprof_fk=target_record, freeBoardprof_thumbdown=1).count()
+    target_replys = FreeBoardprofReply.objects.filter(freeBoardprof_fk=target_record).order_by('reply_groupnum', 'reply_sequencenum_ingroup')
+    return render(request, 'TheaterWinBook/freeBoardprof_detail.html',
+                  {'freeBoardprof_record': target_record, 'form': form, 'is_record_owner': is_record_owner,
                    'thumbup_count': thumbup_count, 'thumbdown_count': thumbdown_count, 'target_replys': target_replys,
                    'login_user': login_user})
 
 @login_required(login_url='/login_view')
-def freeBoard_delete(request):
+def freeBoardprof_delete(request):
     # request parameter 로 winbook.pk를 받아온다.
     record_pk = request.POST.get("record_pk", "")
     # 받은 pk로 글의 user를 확인한다.
     login_user = request.user
-    target_record = FreeBoard.objects.get(pk=record_pk)
+    target_record = FreeBoardprof.objects.get(pk=record_pk)
     # 글을 쓴 user와 로그인된 user가 일치하는지 확인
     delete_success = "fail"
     if target_record.user_name == login_user:
         print('this is login user');
         # pk번호를 기준으로 삭제. 삭제는 데이터를 지우는 것이 아니라, title 이랑 content를 수정하는 것으로 하자.
-        target_record.freeBoard_title = '해당 글은 작성자에 의해 삭제되었습니다.'
-        target_record.freeBoard_content = '- 해당 글은 작성자에 의해 삭제되었습니다 - '
+        target_record.freeBoardprof_title = '해당 글은 작성자에 의해 삭제되었습니다.'
+        target_record.freeBoardprof_content = '- 해당 글은 작성자에 의해 삭제되었습니다 - '
         target_record.save()
         delete_success = "success";
     else:
@@ -233,12 +234,12 @@ def freeBoard_delete(request):
 #
 #
 @login_required(login_url='/login_view')
-def freeBoard_modify(request):
+def freeBoardprof_modify(request):
     # user를 확인한다
     # 받은 pk로 글의 user를 확인한다.
     record_pk = request.GET.get("record_pk", "")
     login_user = request.user
-    target_record = FreeBoard.objects.get(pk=record_pk)
+    target_record = FreeBoardprof.objects.get(pk=record_pk)
     print("this is modify1")
     # 글을 쓴 user와 로그인된 user가 일치하는지 확인
     if target_record.user_name == login_user:
@@ -248,8 +249,8 @@ def freeBoard_modify(request):
             print("this is modify3")
             # create a form instance and populate it with data from the request:
             record_pk = request.POST.get("record_pk", "")
-            target_modify_record = FreeBoard.objects.get(pk=record_pk)
-            form = freeBoardForm(request.POST,
+            target_modify_record = FreeBoardprof.objects.get(pk=record_pk)
+            form = freeBoardprofForm(request.POST,
                                           instance=target_modify_record)  # PostForm으로 부터 받은 데이터를 처리하기 위한 인스턴스 생성
             print("this is modify4")
             if form.is_valid():  # 폼 검증 메소드
@@ -264,13 +265,13 @@ def freeBoard_modify(request):
                 modify_winbook_pk = inputForm.pk
                 messages.success(request, 'modify_success', extra_tags=modify_winbook_pk)
                 # 정보를 성공적으로 입력한 후에는, 메세지에 방금 입력된 pk값을 담아서 보내기
-                return redirect('freeBoard_detail', freeBoard_pk=modify_winbook_pk)
+                return redirect('freeBoardprof_detail', freeBoardprof_pk=modify_winbook_pk)
             else:
                 messages.error(request, "please enter right field")
         else:
             #   정상적으로 modify로 이동시켜준다.
-            form = freeBoardForm(instance=target_record)  # forms.py의 PostForm 클래스의 인스턴스
-            return render(request, 'TheaterWinBook/freeBoard_modify.html',
+            form = freeBoardprofForm(instance=target_record)  # forms.py의 PostForm 클래스의 인스턴스
+            return render(request, 'TheaterWinBook/freeBoardprof_modify.html',
                           {'form': form, 'record_pk': record_pk, 'target_record': target_record})
     else:
         #  유저가 확인이 안되면 에러 페이지로 넘김.
@@ -279,23 +280,23 @@ def freeBoard_modify(request):
 
 # 본문의 댓글 쓰기
 @login_required(login_url='/login_view')
-def freeBoard_content_reply_write_ajax(request):
-    print("this is freeBoard_content_reply_write_ajax:")
-    freeBoard_pk = request.POST.get('freeBoard_pk', None)
-    print("freeBoard_pk", freeBoard_pk)
+def freeBoardprof_content_reply_write_ajax(request):
+    print("this is freeBoardprof_content_reply_write_ajax:")
+    freeBoardprof_pk = request.POST.get('freeBoardprof_pk', None)
+    print("freeBoardprof_pk", freeBoardprof_pk)
     content_reply = request.POST.get('content_reply', None)
     print("content_reply", content_reply)
     login_user_name = request.user
-    content_target = FreeBoard.objects.get(pk=freeBoard_pk)
+    content_target = FreeBoardprof.objects.get(pk=freeBoardprof_pk)
 
     # groupnum, sequencenu,, levelnum
-    if FreeBoardReply.objects.last() is None :
+    if FreeBoardprofReply.objects.last() is None :
         reply_groupnum = 1
     else:
-        reply_groupnum = int(FreeBoardReply.objects.last().pk)
+        reply_groupnum = int(FreeBoardprofReply.objects.last().pk)
     sequencenum_ingroup = 1
     level_ingroup = 0
-    content_reply = FreeBoardReply(freeBoard_fk=content_target, freeBoard_reply_content=content_reply,
+    content_reply = FreeBoardprofReply(freeBoardprof_fk=content_target, freeBoardprof_reply_content=content_reply,
                                             by_whom=login_user_name, reply_groupnum = reply_groupnum,
                                             reply_sequencenum_ingroup = sequencenum_ingroup, reply_level_ingorup = level_ingroup)
     content_reply.save()
@@ -309,19 +310,19 @@ def freeBoard_content_reply_write_ajax(request):
 
 
 @login_required(login_url='/login_view')
-def freeBoard_reply_delete(request):
-    # request parameter 로 winbook.pk를 받아온다.
+def freeBoardprof_reply_delete(request):
+    # request pa rameter 로 winbook.pk를 받아온다.
     record_pk = request.POST.get("record_pk", "")
     print("this is recordpk," + record_pk)
     # 받은 pk로 글의 user를 확인한다.
     login_user = request.user
-    target_record = FreeBoardReply.objects.get(pk=record_pk)
+    target_record = FreeBoardprofReply.objects.get(pk=record_pk)
     # 글을 쓴 user와 로그인된 user가 일치하는지 확인
     delete_success = "fail"
     if target_record.by_whom == login_user:
         print('this is login user');
         # pk번호를 기준으로 삭제. 삭제는 데이터를 지우는 것이 아니라, title 이랑 content를 수정하는 것으로 하자.
-        target_record.freeBoard_reply_content = '-해당 댓글은 작성자에 의해 삭제되었습니다-'
+        target_record.freeBoardprof_reply_content = '-해당 댓글은 작성자에 의해 삭제되었습니다-'
         target_record.save()
         delete_success = "success";
     else:
@@ -330,7 +331,7 @@ def freeBoard_reply_delete(request):
 
 
 @login_required(login_url='/login_view')
-def freeBoard_reply_modify(request):
+def freeBoardprof_reply_modify(request):
     # request parameter 로 winbook.pk를 받아온다.
     record_pk = request.POST.get("record_pk", "")
     print("this is get record_pk", record_pk)
@@ -338,13 +339,13 @@ def freeBoard_reply_modify(request):
     print("this is recordpk," + record_pk)
     # 받은 pk로 글의 user를 확인한다.
     login_user = request.user
-    target_record = FreeBoardReply.objects.get(pk=record_pk)
+    target_record = FreeBoardprofReply.objects.get(pk=record_pk)
     # 글을 쓴 user와 로그인된 user가 일치하는지 확인
     delete_success = "fail"
     if target_record.by_whom == login_user:
         print('this is login user');
         # pk번호를 기준으로 삭제. 삭제는 데이터를 지우는 것이 아니라, title 이랑 content를 수정하는 것으로 하자.
-        target_record.freeBoard_reply_content = reply_modify_content
+        target_record.freeBoardprof_reply_content = reply_modify_content
         target_record.save()
         delete_success = "success";
     else:
@@ -353,8 +354,8 @@ def freeBoard_reply_modify(request):
 
 
 @login_required(login_url='/login_view')
-def freeBoard_re_reply_write_ajax(request):
-    print("this is freeBoard_re_reply_write_ajax")
+def freeBoardprof_re_reply_write_ajax(request):
+    print("this is freeBoardprof_re_reply_write_ajax")
     if request.method == "POST":
         # create a form instance and populate it with data from the request:
         is_original = request.POST.get('is_original')
@@ -371,7 +372,7 @@ def freeBoard_re_reply_write_ajax(request):
             print("this is question_re_reply_write_ajax")
             parent_reply_pk = request.POST.get('record_pk')
             # 부모의 question_pk를 통해서 부모글의 정보를 가져온다.
-            parent_reply_record = FreeBoardReply.objects.get(pk=parent_reply_pk)
+            parent_reply_record = FreeBoardprofReply.objects.get(pk=parent_reply_pk)
             parent_reply_groupnum = parent_reply_record.reply_groupnum
             parent_reply_sequencenum_ingroup = parent_reply_record.reply_sequencenum_ingroup
             parent_reply_level_ingroup = parent_reply_record.reply_level_ingorup
@@ -382,7 +383,7 @@ def freeBoard_re_reply_write_ajax(request):
             #    WHERE  BGROUP = (원글의 BGROUP)
             #    AND SORTS > (원글의 SORTS)
             #    AND DEPTH <= (원글의 DEPTH)
-            check = FreeBoardReply.objects.filter(reply_groupnum=parent_reply_groupnum,
+            check = FreeBoardprofReply.objects.filter(reply_groupnum=parent_reply_groupnum,
                                                           reply_sequencenum_ingroup__gt=parent_reply_sequencenum_ingroup,
                                                           reply_level_ingorup__lte=parent_reply_level_ingroup).aggregate(
                     Min('reply_sequencenum_ingroup'))["reply_sequencenum_ingroup__min"]
@@ -395,7 +396,7 @@ def freeBoard_re_reply_write_ajax(request):
             if check is None:
                 check = 0
             if check == 0:
-                new_sequencenum = FreeBoardReply.objects.filter(
+                new_sequencenum = FreeBoardprofReply.objects.filter(
                     reply_groupnum=parent_reply_groupnum).aggregate(Max('reply_sequencenum_ingroup'))[
                     "reply_sequencenum_ingroup__max"]
                 if new_sequencenum is None:
@@ -409,7 +410,7 @@ def freeBoard_re_reply_write_ajax(request):
                 #
                 # 3. UPDATE BOARD SET SORTS = SORTS + 1
                 #   WHERE BGROUP =  (원글의 BGROUP)  AND SORTS >= (1번값)
-                FreeBoardReply.objects.filter(reply_groupnum=parent_reply_groupnum,
+                FreeBoardprofReply.objects.filter(reply_groupnum=parent_reply_groupnum,
                                                       reply_sequencenum_ingroup__gte=check).update(
                         reply_sequencenum_ingroup=F('reply_sequencenum_ingroup') + 1)
 
@@ -424,9 +425,9 @@ def freeBoard_re_reply_write_ajax(request):
             print("this is re_reply re_reply_sequencenum_ingroup:", re_reply_sequencenum_ingroup)
             print("this is re_reply reply_level_ingorup:", re_reply_level_ingorup)
             # # 데이터베이스에 저장하기
-            content_target = FreeBoard.objects.get(pk=target_content_pk)
-            re_reply = FreeBoardReply(freeBoard_fk=content_target,
-                                                        freeBoard_reply_content=re_reply_write_content,
+            content_target = FreeBoardprof.objects.get(pk=target_content_pk)
+            re_reply = FreeBoardprofReply(freeBoardprof_fk=content_target,
+                                                        freeBoardprof_reply_content=re_reply_write_content,
                                                         by_whom=login_user_name,
                                                         reply_groupnum= re_reply_groupnum,
                                                         reply_sequencenum_ingroup= re_reply_sequencenum_ingroup,
@@ -440,24 +441,24 @@ def freeBoard_re_reply_write_ajax(request):
             return JsonResponse(data)
 
 
-# freeBoard 페이지의 thumb up & down 을 위한 AJAX
+# freeBoardprof 페이지의 thumb up & down 을 위한 AJAX
 @login_required(login_url='/login_view')
-def freeBoard_thumb_ajax(request):
-    print("this is freeBoard_thumb_ajax:")
+def freeBoardprof_thumb_ajax(request):
+    print("this is freeBoardprof_thumb_ajax:")
     thumb_style = request.POST.get('thumb_style', None)
-    target_freeBoard_pk = request.POST.get('freeBoard_pk', None)
-    print("this is target_pk:", target_freeBoard_pk)
+    target_freeBoardprof_pk = request.POST.get('freeBoardprof_pk', None)
+    print("this is target_pk:", target_freeBoardprof_pk)
     login_user_name = request.user
     thumb_result = 'thumb_fail'
     if thumb_style == 'up':
-        target_freeBoard = FreeBoard.objects.get(pk=target_freeBoard_pk)
-        checkobject = FreeBoardInfo.objects.filter(freeBoard_fk__pk=target_freeBoard_pk, by_whom=login_user_name,
-                                                            freeBoard_thumbup=1)
+        target_freeBoardprof = FreeBoardprof.objects.get(pk=target_freeBoardprof_pk)
+        checkobject = FreeBoardprofInfo.objects.filter(freeBoardprof_fk__pk=target_freeBoardprof_pk, by_whom=login_user_name,
+                                                            freeBoardprof_thumbup=1)
         if not checkobject:
             #     추천한 기록이 없으면
-            freeBoard_info_record = FreeBoardInfo(freeBoard_fk=target_freeBoard, freeBoard_thumbup=1,
+            freeBoardprof_info_record = FreeBoardprofInfo(freeBoardprof_fk=target_freeBoardprof, freeBoardprof_thumbup=1,
                                                           by_whom=login_user_name)
-            freeBoard_info_record.save()
+            freeBoardprof_info_record.save()
             thumb_result = "up_success"
         else:
             #     만약에 하나라도 있으면, 기존에 있던 추천을 취소하고삭제한다
@@ -465,14 +466,14 @@ def freeBoard_thumb_ajax(request):
             thumb_result = "up_cancel"
 
     if thumb_style == 'down':
-        target_freeBoard = FreeBoard.objects.get(pk=target_freeBoard_pk)
-        checkobject = FreeBoardInfo.objects.filter(freeBoard_fk__pk=target_freeBoard_pk, by_whom=login_user_name,
-                                                            freeBoard_thumbdown=1)
+        target_freeBoardprof = FreeBoardprof.objects.get(pk=target_freeBoardprof_pk)
+        checkobject = FreeBoardprofInfo.objects.filter(freeBoardprof_fk__pk=target_freeBoardprof_pk, by_whom=login_user_name,
+                                                            freeBoardprof_thumbdown=1)
         if not checkobject:
             #     추천한 기록이 없으면
-            freeBoard_info_record = FreeBoardInfo(freeBoard_fk=target_freeBoard, freeBoard_thumbdown=1,
+            freeBoardprof_info_record = FreeBoardprofInfo(freeBoardprof_fk=target_freeBoardprof, freeBoardprof_thumbdown=1,
                                                           by_whom=login_user_name)
-            freeBoard_info_record.save()
+            freeBoardprof_info_record.save()
             thumb_result = "down_success"
         else:
             #     만약에 하나라도 있으면, 기존에 있던 추천을 취소하고삭제한다
@@ -487,13 +488,13 @@ def freeBoard_thumb_ajax(request):
 
 
 @login_required(login_url='/login_view')
-def freeBoard_usercheck(request):
+def freeBoardprof_usercheck(request):
     print("this is user_check")
     # request parameter 로 winbook.pk를 받아온다.
     record_pk = request.POST.get("record_pk", "")
     # 받은 pk로 글의 user를 확인한다.
     login_user = request.user
-    target_record = FreeBoard.objects.get(pk=record_pk)
+    target_record = FreeBoardprof.objects.get(pk=record_pk)
     print(target_record.user_name)
     print(request.user)
     # 글을 쓴 user와 로그인된 user가 일치하는지 확인

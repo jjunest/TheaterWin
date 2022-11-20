@@ -22,5 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     url(r'', include('TheaterWinBook.urls')),
     url(r'', include('TheaterWinBook.urls_freeboard')),
+    url(r'', include('TheaterWinBook.urls_freeboardstock')),
+    url(r'', include('TheaterWinBook.urls_freeboardprof')),
     url('^', include('django.contrib.auth.urls')),
 ]
