@@ -31,7 +31,7 @@ def stock_rank(request):
     return render(request, 'TheaterWinBook/stock_rank.html')
 
 
-def stock_rank_pop(request, rank_name):
+def stock_rank_pop(request, rank_name, market_sum_percent):
     print("this is ranktype:", rank_name)
     latest_date = StockSummaryKr.objects.filter().latest('info_date')
     print("this is lastest_date:", latest_date.info_date)
@@ -39,11 +39,36 @@ def stock_rank_pop(request, rank_name):
     # print("this is latest_date_list", latest_date_list)
     latest_date = StockSummaryKr.objects.filter().latest('info_date')
 
+
+    # Global Condition (like market_sum_percentage)
+    print("this is market_sum_percent:" + market_sum_percent)
+    market_sum_percent = int(market_sum_percent)
+    total_rows = StockSummaryKr.objects.count()
+    print ("this is total_rows:", str(total_rows))
+    num_rows = int(total_rows * market_sum_percent / 100)
+    print ("this is num_rows:" , str(num_rows))
+
+    StockSummaryKr_MarketSumCondition = StockSummaryKr.objects.raw("SELECT * FROM TheaterWinBook_stocksummarykr "
+                                       "WHERE info_date = (SELECT info_date FROM TheaterWinBook_stocksummarykr "
+                                       "ORDER BY info_date DESC LIMIT 1) ORDER BY STOCK_MARKET_SUM DESC LIMIT %s", [num_rows])
+    print("this is num_rows(tobe) ", str(len(list(StockSummaryKr_MarketSumCondition))))
+
     # rank name 에 따라 top stock 10 개 리스트를 추려서 화면에 뿌려줌
     if rank_name == "marketsum":
-        top_stock = StockSummaryKr.objects.raw('SELECT * FROM TheaterWinBook_stocksummarykr '
-                                       'WHERE info_date = (SELECT info_date FROM TheaterWinBook_stocksummarykr '
-                                       'ORDER BY info_date DESC LIMIT 1) ORDER BY STOCK_MARKET_SUM DESC')
+        top_stock = StockSummaryKr.objects.raw("SELECT * FROM TheaterWinBook_stocksummarykr "
+                                            "WHERE info_date = (SELECT info_date FROM TheaterWinBook_stocksummarykr "
+                                            "ORDER BY info_date DESC LIMIT 1) "
+                                            "AND 1=1 "
+                                            "ORDER BY STOCK_MARKET_SUM DESC LIMIT 10")
+
+    # rank name(per_desc) 에 따라 top stock 10 개 리스트를 추려서 화면에 뿌려줌
+    if rank_name == "per_desc":
+        top_stock = StockSummaryKr.objects.raw("SELECT * FROM TheaterWinBook_stocksummarykr "
+                                            "WHERE info_date = (SELECT info_date FROM TheaterWinBook_stocksummarykr "
+                                            "ORDER BY info_date DESC LIMIT 1) "
+                                            "AND 1=1 "
+                                            "AND typeof(stock_per) = 'real'"
+                                            "ORDER BY stock_per DESC LIMIT 10")
 
     for p in top_stock :
         print("%s 번째, %s" % (p.stock_name,p))

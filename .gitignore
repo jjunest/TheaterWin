@@ -1,3 +1,7 @@
+# custom ignore by fullvesitng
+misc.xml
+TheatWin.imi
+
 # manually ignored
 db.sqlite3
 TheaterWinBook/migrations/

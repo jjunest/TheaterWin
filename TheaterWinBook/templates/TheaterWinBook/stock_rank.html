@@ -18,6 +18,14 @@
 <div class="row">
     <div class="col-sm-4">
         <a href="#" class="btn btn-purple rounded-pill w-md waves-effect waves-light mb-3"><i class="mdi mdi-plus"></i> Create Project</a>
+        <form>
+<form>
+    <label for="percentage"> (검색조건) 시가총액 상위 :   <span id="percentageValue">50%</span> <span> 이내 </span></label>
+    <input type="range" id="market_sum_percentage" name="percentage" min="0" max="100" value="50" oninput="updatePercentage(this.value)">
+
+</form>
+</form>
+
     </div>
     <div class="col-sm-8">
         <div class="float-end">
@@ -57,8 +65,59 @@
             <div class="card-body project-box">
                 <div class="badge bg-success float-end">Completed</div>
                 <h4 class="mt-0"><a href="" class="text-dark"></a></h4>
-                <p class="text-success text-uppercase font-13"><a href="#" onclick = "openPopup('{% url 'stock_rank_pop' rank_name='marketsum' %}', ) " class="text-dark">시가총액</a></p>
+                <p class="text-success text-uppercase font-13"><a href="#" onclick = "var popupType = 'marketsum'; openRankingPopup(popupType)" class="text-dark">시가총액</a></p>
                 <p class="text-muted font-13">시가총액<a href="#" class="text-primary">View more</a>
+                </p>
+
+                <ul class="list-inline">
+                    <li class="list-inline-item me-4">
+                        <h4 class="mb-0">56</h4>
+                        <p class="text-muted">Questions</p>
+                    </li>
+                    <li class="list-inline-item">
+                        <h4 class="mb-0">452</h4>
+                        <p class="text-muted">Comments</p>
+                    </li>
+                </ul>
+
+                <div class="project-members mb-2">
+                    <h5 class="float-start me-3">Team :</h5>
+                    <div class="avatar-group">
+                        <a href="#" class="avatar-group-item" data-bs-toggle="tooltip" data-bs-placement="top" title="Mat Helme">
+                            <img src="assets/images/users/user-1.jpg" class="rounded-circle avatar-sm" alt="friend" />
+                        </a>
+
+                        <a href="#" class="avatar-group-item" data-bs-toggle="tooltip" data-bs-placement="top" title="Michael Zenaty">
+                            <img src="assets/images/users/user-2.jpg" class="rounded-circle avatar-sm" alt="friend" />
+                        </a>
+
+                        <a href="#" class="avatar-group-item" data-bs-toggle="tooltip" data-bs-placement="top" title="James Anderson">
+                            <img src="assets/images/users/user-3.jpg" class="rounded-circle avatar-sm" alt="friend" />
+                        </a>
+
+                        <a href="#" class="avatar-group-item" data-bs-toggle="tooltip" data-bs-placement="top" title="Mat Helme">
+                            <img src="assets/images/users/user-4.jpg" class="rounded-circle avatar-sm" alt="friend" />
+                        </a>
+
+                    </div>
+                </div>
+
+                <h5>Progress <span class="text-success float-end">80%</span></h5>
+                <div class="progress progress-bar-alt-success progress-sm">
+                    <div class="progress-bar bg-success progress-animated wow animated animated"
+                         role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"
+                         style="width: 80%; visibility: visible; animation-name: animationProgress;">
+                    </div><!-- /.progress-bar .progress-bar-danger -->
+                </div><!-- /.progress .no-rounded -->
+
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body project-box">
+                <div class="badge bg-success float-end">Completed</div>
+                <h4 class="mt-0"><a href="" class="text-dark"></a></h4>
+                <p class="text-success text-uppercase font-13"><a href="#" onclick = "var popupType = 'per_desc'; openRankingPopup(popupType)" class="text-dark">Per이 낮은 종목</a></p>
+                <p class="text-muted font-13">PER이 낮은 종목<a href="#" class="text-primary">View more</a>
                 </p>
 
                 <ul class="list-inline">
@@ -130,8 +189,32 @@
             var popupY= (window.screen.height / 2) - (300 / 2);
             var options = 'width=850, height=600, location=no';
             window.open (url, name, options);
+        }
+        function updatePercentage(value) {
+            document.getElementById("percentageValue").innerHTML = value + "%";
+        }
+
+        function openRankingPopup(popupType){
+            <!-- 상위 조건 : 매출액 -->
+            var market_sum_rangeInput = document.getElementById("market_sum_percentage");
+            var market_sum_rangeValue = market_sum_rangeInput.value;
+
+            <!-- 랭킹 이름 -->
+            if (popupType == "marketsum") {
+                var url = "{% url 'stock_rank_pop' rank_name='marketsum' market_sum_percent='50' %}".replace(/50/, market_sum_rangeValue );
+                url = url.replace('%s', market_sum_rangeValue);
+                openPopup(url);
+            } else if (popupType == "per_desc"){
+                var url = "{% url 'stock_rank_pop' rank_name='per_desc' market_sum_percent='50' %}".replace(/50/, market_sum_rangeValue );
+                url = url.replace('%s', market_sum_rangeValue);
+                openPopup(url);
+
+            } else {
+
+            }
 
         }
+
 
     </script>
 <!--endblock: javascript -->
