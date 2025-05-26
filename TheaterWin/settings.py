@@ -36,7 +36,6 @@ SECRET_KEY = 'v4t3@&*^zrj(+fxjpx_=2i_+$royxy5u98)2!8^pa@2l9%dxvj'
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# commit test
 DEBUG = True
 
 
