@@ -1,0 +1,121 @@
+{% extends "TheaterWinBook/base_header_footer_5.2.html" %}
+{% load static %}
+
+{% block css_script %}
+<style>
+        .ui-datepicker {
+            width: 80%; /*what ever width you want*/
+        }
+
+    </style>
+
+  <meta charset="utf-8">
+
+
+{{ form.media }}
+
+{% endblock %}
+
+{% block content %}
+<!-- 아래 content는 <div class = container-fluid> 밑에 있는 <div class = row > 부터 오면 됨 --->
+
+    <table>
+        <tr>
+            <th>코인</th>
+            <th>현재 가격 (KRW)</th>
+            <th>전일 대비 변화율 (%)</th>
+        </tr>
+        {% for coin in coins %}
+        <tr>
+            <td>{{ coin.market }}</td>
+            <td>{{ coin.trade_price|floatformat:2 }}</td>
+            <td>{{ coin.signed_change_rate|floatformat:2 }}%</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>업비트 내 자산 현황</h2>
+    <table>
+        <tr>
+            <th>코인</th>
+            <th>보유량</th>
+            <th>평균 매수가</th>
+        </tr>
+        {% for asset in assets %}
+        <tr>
+            <td>{{ asset.currency }}</td>
+            <td>{{ asset.balance }}</td>
+            <td>{{ asset.avg_buy_price }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div>
+     racechart   <svg id = "thisracechart" width="800" height="500"></svg>
+    </div>
+
+{% endblock %}
+
+
+
+{% block javascript %}
+<script>
+        $(document).ready(function () {
+
+            // JQuery 적용
+            //alert("this is test");
+        });
+
+
+    </script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+ <script>
+    const dataByTime = JSON.parse('{{ data_by_time|safe }}');
+
+    const svg = d3.select("svg");
+    const margin = {top: 20, right: 20, bottom: 30, left: 50};
+    const width = +svg.attr("width") - margin.left - margin.right;
+    const height = +svg.attr("height") - margin.top - margin.bottom;
+    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleLinear().range([0, width]);
+    const y = d3.scaleLinear().range([height, 0]);
+
+    const line = d3.line()
+      .x(d => x(d.x))
+      .y(d => y(d.y));
+
+    const xAxis = g.append("g").attr("transform", `translate(0,${height})`);
+    const yAxis = g.append("g");
+
+    const path = g.append("path")
+      .datum(dataByTime[0].data)
+      .attr("fill", "none")
+      .attr("stroke", "steelblue")
+      .attr("stroke-width", 2);
+
+    let i = 0;
+
+    function updateChart() {
+      const current = dataByTime[i];
+      const xExtent = d3.extent(current.data, d => d.x);
+      const yExtent = d3.extent(current.data, d => d.y);
+
+      x.domain(xExtent);
+      y.domain(yExtent);
+
+      xAxis.transition().duration(1000).call(d3.axisBottom(x));
+      yAxis.transition().duration(1000).call(d3.axisLeft(y));
+
+      path.datum(current.data)
+        .transition()
+        .duration(1000)
+        .attr("d", line);
+
+      i = (i + 1) % dataByTime.length;
+    }
+
+    setInterval(updateChart, 2000);
+  </script>
+
+{% endblock %}

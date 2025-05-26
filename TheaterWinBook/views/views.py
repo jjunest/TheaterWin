@@ -8,7 +8,8 @@ from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect
 from django.utils import timezone
-from django.utils.encoding import smart_text
+from django.utils.encoding import smart_str
+# from django.utils.encoding import smart_text
 
 from ..forms import UserForm, LoginForm, TheaterWinBookRecordForm, TheaterWinQuestionForm
 from ..models import Post, TheaterWinBookRecord, TheaterWinQuestion, TheaterWinQuestionInfo, TheaterWinQuestionReply, Full_Chatting_Message, TheaterWinBookRecordInfo, TheaterWinBookRecordReply, StockSummaryKr, StockList
@@ -31,6 +32,7 @@ import json
 #     return render(request, 'TheaterWinBook/post_list.html', {'posts': posts})
 #
 #
+
 
 
 def index_real(request):
@@ -61,10 +63,15 @@ def is_authenticated(user):
 
 
 def index(request):
+    # print("this is index")
+    # return render(request, 'index.html')
+
     if is_authenticated(request.user):
-        return redirect('winbook_insert')
+        return redirect('stock_rank')
+        # return redirect('winbook_insert')
     else:
-        return render(request, 'TheaterWinBook/index.html')
+        return redirect('index_real')
+        # return render(request, 'TheaterWinBook/index.html')
 
 
 def index_real(request):

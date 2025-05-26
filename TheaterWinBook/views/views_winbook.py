@@ -8,7 +8,8 @@ from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect
 from django.utils import timezone
-from django.utils.encoding import smart_text
+from django.utils.encoding import smart_str
+# from django.utils.encoding import smart_text
 
 from ..forms import UserForm, LoginForm, TheaterWinBookRecordForm, TheaterWinQuestionForm
 from ..models import Post, TheaterWinBookRecord, TheaterWinQuestion, TheaterWinQuestionInfo, TheaterWinQuestionReply, Full_Chatting_Message, TheaterWinBookRecordInfo, TheaterWinBookRecordReply, StockSummaryKr, StockList

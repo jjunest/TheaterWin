@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
-from django.utils.datetime_safe import datetime
+# from django.utils.datetime_safe import datetime
+from datetime import datetime
 from tinymce import models as tinymce_models
 
 

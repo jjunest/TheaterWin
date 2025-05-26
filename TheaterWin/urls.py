@@ -14,15 +14,31 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from django.conf.urls import include, url
+# from django.conf.urls import include, url
+from django.urls import include, path, re_path
 from django.contrib import admin
 
+from TheaterWinBook import views  # Import your app views
+
+
+from django.urls import path
+# from . import views  # Import your views
 
 urlpatterns = [
+
+    path('', views.index, name='index'),  # Make sure this exists
+    # path('index/', views.index, name='index'),  # Alternative route for testing
     path('admin/', admin.site.urls),
-    url(r'', include('TheaterWinBook.urls')),
-    url(r'', include('TheaterWinBook.urls_freeboard')),
-    url(r'', include('TheaterWinBook.urls_freeboardstock')),
-    url(r'', include('TheaterWinBook.urls_freeboardprof')),
-    url('^', include('django.contrib.auth.urls')),
+    # 앱 별로 개별 URLConf를 포함하도록 수정
+    path("", include("TheaterWinBook.urls")),
+    path("", include("TheaterWinBook.urls_freeboard")),
+    path("", include("TheaterWinBook.urls_freeboardstock")),
+    path("", include("TheaterWinBook.urls_freeboardprof")),
+    path("", include("TheaterWinBook.urls_coin")),
+    # Django 인증 URL 포함
+    path("accounts/", include("django.contrib.auth.urls")),
+
+    # 기타 URL
+    path("template_content_52/", views.template_content_52, name="template_content_52"),
+
 ]

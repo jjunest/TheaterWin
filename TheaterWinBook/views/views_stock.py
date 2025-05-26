@@ -8,7 +8,8 @@ from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect
 from django.utils import timezone
-from django.utils.encoding import smart_text
+from django.utils.encoding import smart_str
+# from django.utils.encoding import smart_text
 
 from ..forms import UserForm, LoginForm, TheaterWinBookRecordForm, TheaterWinQuestionForm
 from ..models import Post, TheaterWinBookRecord, TheaterWinQuestion, TheaterWinQuestionInfo, TheaterWinQuestionReply, Full_Chatting_Message, TheaterWinBookRecordInfo, TheaterWinBookRecordReply, StockSummaryKr, StockList
@@ -41,7 +42,7 @@ def stock_rank_pop(request, rank_name, market_sum_percent):
 
 
     # Global Condition (like market_sum_percentage)
-    print("this is market_sum_percent:" + market_sum_percent)
+    print("this is market_sum_percent:", market_sum_percent)
     market_sum_percent = int(market_sum_percent)
     total_rows = StockSummaryKr.objects.count()
     print ("this is total_rows:", str(total_rows))
