@@ -173,8 +173,17 @@ STATICFILES_FINDERS = [
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), "media/")
+
+# 추가적인 정적 파일 디렉토리 (앱 내 static 디렉토리 외에)
+# 여기에 your_app/static 이나 별도의 js, css 디렉토리를 추가할 수 있습니다.
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'), # 프로젝트 루트의 static 디렉토리
+    # os.path.join(BASE_DIR, 'assets'), # 다른 정적 파일 디렉토리가 있다면 추가
+]
+
 
 # 로그인 이후 경로 수정
 TEMPLATE_CONTEXT_PROCESSORS = (
