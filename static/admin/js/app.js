@@ -304,6 +304,11 @@ function ($) {
             $this._resetSidebarScroll();
         });
 
+    // app.js log check
+    console.log("jQuery loaded:", typeof jQuery !== 'undefined');
+    console.log("metisMenu function loaded:", typeof $.fn.metisMenu !== 'undefined');
+
+
         // sidebar - main menu
         $("#side-menu").metisMenu();
 
