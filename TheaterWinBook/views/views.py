@@ -189,3 +189,7 @@ def chatting_room(request, room_name):
 
 def template_content_52(request):
     return render(request, 'TheaterWinBook/template_content_52.html')
+
+
+def base_template_250724(request):
+    return render(request, 'TheaterWinBook/base_template_250724.html')
