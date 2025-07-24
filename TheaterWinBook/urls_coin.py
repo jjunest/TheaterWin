@@ -26,8 +26,6 @@ urlpatterns = [
     # 게시판 목록, 작성, 수정, 삭제, 상세보기
     path("coin_alarm/", views.coin_alarm, name="coin_alarm"),
     path("template_250705/", views.template_250705, name="template_250705"),
-
-
-
+    path("base_template_250724/", views.base_template_250724, name="base_template_250724"),
 
 ]
