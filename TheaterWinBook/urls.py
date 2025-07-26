@@ -150,4 +150,5 @@ urlpatterns = [
     # 기타 URL
     path("template_content_52/", views.template_content_52, name="template_content_52"),
     path("base_template_250724/", views.base_template_250724, name="base_template_250724"),
+    path("base_template_datatable_250724/", views.base_template_datatable_250724, name="base_template_datatable_250724"),
 ]

@@ -193,3 +193,7 @@ def template_content_52(request):
 
 def base_template_250724(request):
     return render(request, 'TheaterWinBook/base_template_250724.html')
+
+def base_template_datatable_250724(request):
+    return render(request, 'TheaterWinBook/base_template_datatable_250724.html')
+
