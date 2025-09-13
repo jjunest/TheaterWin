@@ -1,3 +1,4 @@
+import logger
 import requests
 import requests
 import jwt as pyjwt
@@ -11,9 +12,20 @@ UPBIT_API_Account_URL = "https://api.upbit.com/v1/accounts"
 
 
 
+# def get_coin_prices(markets=["KRW-BTC", "KRW-ETH", "KRW-XRP"]):
 def get_coin_prices(markets=["KRW-BTC", "KRW-ETH", "KRW-XRP"]):
     """업비트 API에서 지정된 코인들의 시세를 가져오는 함수"""
     response = requests.get(UPBIT_API_URL, params={"markets": ",".join(markets)})
+
+
+    url = "https://api.upbit.com/v1/market/all?is_details=true"
+
+    headers = {"accept": "application/json"}
+
+    res = requests.get(url, headers=headers)
+
+    res.json()
+    print("this is get_coin_prices:",res)
 
     if response.status_code == 200:
         return response.json()

@@ -36,7 +36,7 @@ SECRET_KEY = 'v4t3@&*^zrj(+fxjpx_=2i_+$royxy5u98)2!8^pa@2l9%dxvj'
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'www.fullvesting.com', 'fullvesting.com.','fullvesting.com', 'http://fullvesting.com',
