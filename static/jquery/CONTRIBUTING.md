@@ -143,7 +143,7 @@ Create and checkout a new branch that includes the ticket #
 ```bash
 $ git checkout -b bug_####
 
-# ( Explanation: this useful command will:
+# ( Explanation: this useful commands will:
 # "checkout" a "-b" (branch) by the name of "bug_####"
 # or create it if it doesn't exist )
 ```
