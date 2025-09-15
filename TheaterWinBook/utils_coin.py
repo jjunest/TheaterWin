@@ -1,4 +1,4 @@
-import logger
+import logging
 import requests
 import requests
 import jwt as pyjwt
