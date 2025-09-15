@@ -13,7 +13,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('Starting Upbit daily candle data collection...'))
 
-        API_URL = "httpss://api.upbit.com/v1/candles/days"
+        API_URL = "https://api.upbit.com/v1/candles/days"
 
         coins_list = CoinsUpbitList.objects.all()
         if not coins_list.exists():
@@ -31,20 +31,41 @@ class Command(BaseCommand):
                     "count": 200  # 최근 200일치 데이터를 가져옵니다.
                 }
 
-                self.stdout.write(f"Fetching datas for {market_code}...")
+                self.stdout.write(f"Fetching data for {market_code}...")
 
                 response = requests.get(API_URL, params=params)
                 response.raise_for_status()
-                print("this is data start")
+
                 data = response.json()
-                print("this is data:", data)
+
                 if not data:
                     self.stdout.write(f"No candle data found for {market_code}. Skipping.")
                     continue
 
                 for candle in data:
-                    print("this is candle:",candle)
                     # update_or_create를 사용하여 데이터가 이미 있으면 업데이트, 없으면 생성
+
+                    # 유효성 검사 및 None 값 처리
+                    opening_price = candle.get('opening_price') if isinstance(candle.get('opening_price'),
+                                                                              (int, float, str)) else None
+                    high_price = candle.get('high_price') if isinstance(candle.get('high_price'),
+                                                                        (int, float, str)) else None
+                    low_price = candle.get('low_price') if isinstance(candle.get('low_price'),
+                                                                      (int, float, str)) else None
+                    closing_price = candle.get('trade_price') if isinstance(candle.get('trade_price'),
+                                                                            (int, float, str)) else None
+                    trade_price = candle.get('trade_price') if isinstance(candle.get('trade_price'),
+                                                                          (int, float, str)) else None
+                    trade_volume = candle.get('candle_acc_trade_volume') if isinstance(
+                        candle.get('candle_acc_trade_volume'), (int, float, str)) else None
+                    # print('this is opening_price:',opening_price)
+                    # print('this is high_price:',high_price)
+                    # print('this is low_price:',low_price)
+                    # print('this is closing_price:',closing_price)
+                    # print('this is trade_price:',trade_price)
+                    # print('this is trade_volume:',trade_volume)
+                    # trade_volume = Decimal(str(trade_volume))
+
                     CoinsUpbitCandle.objects.update_or_create(
                         coins_code=coin,
                         coin_candle_datetime_kst=candle.get('candle_date_time_kst'),
@@ -59,7 +80,7 @@ class Command(BaseCommand):
                         }
                     )
 
-                self.stdout.write(f"Updated/Created candle data for {market_code}.")
+                self.stdout.write(f"Date Updated/Created Completed : candle data for {market_code}.")
                 time.sleep(0.2)  # API 호출 횟수 제한 방지를 위한 딜레이
 
         except requests.exceptions.RequestException as e:
