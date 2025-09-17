@@ -1,3 +1,5 @@
+# Django>models_coins.py 파일
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
@@ -56,14 +58,20 @@ class CoinsUpbitCandle(models.Model):
         db_column='coins_code'
     )
 
-    # 캔들 시간 및 가격 데이터
+    # 캔들 시간 및 가격 데이터 (Upbit API 응답 필드)
+    coin_candle_datetime_utc = models.DateTimeField(null=True, blank=True)
     coin_candle_datetime_kst = models.DateTimeField()
-    coin_opening_price = models.DecimalField(max_digits=20, decimal_places=8, blank=True, null=True)
-    coin_high_price = models.DecimalField(max_digits=20, decimal_places=8, blank=True, null=True)
-    coin_low_price = models.DecimalField(max_digits=20, decimal_places=8, blank=True, null=True)
-    coin_closing_price = models.DecimalField(max_digits=20, decimal_places=8, blank=True, null=True)
-    coin_trade_price = models.DecimalField(max_digits=20, decimal_places=8, blank=True, null=True)
-    coin_trade_volume = models.DecimalField(max_digits=20, decimal_places=8, blank=True, null=True)
+    coin_opening_price = models.DecimalField(max_digits=22, decimal_places=10, null=True, blank=True)
+    coin_high_price = models.DecimalField(max_digits=22, decimal_places=10, null=True, blank=True)
+    coin_low_price = models.DecimalField(max_digits=22, decimal_places=10, null=True, blank=True)
+    coin_trade_price = models.DecimalField(max_digits=22, decimal_places=10, null=True, blank=True)
+    coin_closing_price = models.DecimalField(max_digits=22, decimal_places=10, null=True, blank=True)
+    coin_timestamp = models.BigIntegerField(null=True, blank=True)
+    coin_acc_trade_price = models.DecimalField(max_digits=22, decimal_places=10, null=True, blank=True)
+    coin_acc_trade_volume = models.DecimalField(max_digits=22, decimal_places=10, null=True, blank=True)
+    coin_prev_closing_price = models.DecimalField(max_digits=22, decimal_places=10, null=True, blank=True)
+    coin_change_price = models.DecimalField(max_digits=22, decimal_places=10, null=True, blank=True)
+    coin_change_rate = models.DecimalField(max_digits=22, decimal_places=10, null=True, blank=True)
 
     # 기타 여유 필드
     etc1_string = models.CharField(max_length=1, null=True, blank=True)

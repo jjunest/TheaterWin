@@ -1,3 +1,4 @@
+#TheaterWinBook/management/commands/getinfo_coins_upbit_list.py
 import requests
 import time
 from django.core.management.base import BaseCommand

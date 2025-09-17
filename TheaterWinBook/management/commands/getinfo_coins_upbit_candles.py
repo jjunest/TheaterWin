@@ -1,87 +1,87 @@
+#TheaterWinBook/management/commands/getinfo_coins_upbit_candles.py
 import requests
 import time
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
 from TheaterWinBook.models_coins import CoinsUpbitList, CoinsUpbitCandle
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class Command(BaseCommand):
-    help = 'Fetches Upbit daily candle data for all coins and stores it in the database.'
+    help = 'Fetches Upbit daily candle data for all coins for the last 3 years and stores it in the database.'
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.SUCCESS('Starting Upbit daily candle data collection...'))
+        self.stdout.write(self.style.SUCCESS('Starting Upbit 3-year daily candle data collection...'))
 
         API_URL = "https://api.upbit.com/v1/candles/days"
-
         coins_list = CoinsUpbitList.objects.all()
+
         if not coins_list.exists():
             self.stdout.write(
                 self.style.WARNING("No coins found in CoinsUpbitList. Please run the list collection first."))
             return
 
-        now = datetime.now()
-
         try:
             for coin in coins_list:
                 market_code = coin.coins_code
-                params = {
-                    "market": market_code,
-                    "count": 200  # 최근 200일치 데이터를 가져옵니다.
-                }
+                self.stdout.write(f"Fetching 3-year data for {market_code}...")
 
-                self.stdout.write(f"Fetching data for {market_code}...")
+                # 3년치 데이터를 가져오기 위한 시작점 설정 (365일 * 3 = 1095일)
+                days_to_fetch = 1095
+                current_date = datetime.now()
 
-                response = requests.get(API_URL, params=params)
-                response.raise_for_status()
+                # 필요한 API 호출 횟수 계산
+                call_count = (days_to_fetch + 199) // 200
 
-                data = response.json()
+                # 여러 번의 API 호출을 통해 3년치 데이터 가져오기
+                for i in range(call_count):
+                    # `to` 파라미터는 이전 호출에서 받은 가장 오래된 데이터의 날짜로 설정
+                    params = {
+                        "market": market_code,
+                        "count": 200,
+                        "to": current_date.strftime("%Y-%m-%dT%H:%M:%S")
+                    }
 
-                if not data:
-                    self.stdout.write(f"No candle data found for {market_code}. Skipping.")
-                    continue
+                    response = requests.get(API_URL, params=params)
+                    response.raise_for_status()
+                    data = response.json()
 
-                for candle in data:
-                    # update_or_create를 사용하여 데이터가 이미 있으면 업데이트, 없으면 생성
+                    if not data:
+                        self.stdout.write(f"No more candle data found for {market_code}. Stopping.")
+                        break
 
-                    # 유효성 검사 및 None 값 처리
-                    opening_price = candle.get('opening_price') if isinstance(candle.get('opening_price'),
-                                                                              (int, float, str)) else None
-                    high_price = candle.get('high_price') if isinstance(candle.get('high_price'),
-                                                                        (int, float, str)) else None
-                    low_price = candle.get('low_price') if isinstance(candle.get('low_price'),
-                                                                      (int, float, str)) else None
-                    closing_price = candle.get('trade_price') if isinstance(candle.get('trade_price'),
-                                                                            (int, float, str)) else None
-                    trade_price = candle.get('trade_price') if isinstance(candle.get('trade_price'),
-                                                                          (int, float, str)) else None
-                    trade_volume = candle.get('candle_acc_trade_volume') if isinstance(
-                        candle.get('candle_acc_trade_volume'), (int, float, str)) else None
-                    # print('this is opening_price:',opening_price)
-                    # print('this is high_price:',high_price)
-                    # print('this is low_price:',low_price)
-                    # print('this is closing_price:',closing_price)
-                    # print('this is trade_price:',trade_price)
-                    # print('this is trade_volume:',trade_volume)
-                    # trade_volume = Decimal(str(trade_volume))
+                    # 받아온 데이터 처리
+                    for candle in data:
+                        print("data:",data)
+                        CoinsUpbitCandle.objects.update_or_create(
+                            coins_code=coin,
+                            coin_candle_datetime_kst=candle.get('candle_date_time_kst'),
+                            defaults={
+                                'bat_time': datetime.now(),
+                                'coin_candle_datetime_utc': candle.get('candle_date_time_utc'),
+                                'coin_opening_price': candle.get('opening_price'),
+                                'coin_high_price': candle.get('high_price'),
+                                'coin_low_price': candle.get('low_price'),
+                                'coin_trade_price': candle.get('trade_price'),
+                                'coin_closing_price': candle.get('trade_price'),
+                                'coin_timestamp': candle.get('timestamp'),
+                                'coin_acc_trade_price': candle.get('candle_acc_trade_price'),
+                                'coin_acc_trade_volume': candle.get('candle_acc_trade_volume'),
+                                'coin_prev_closing_price': candle.get('prev_closing_price'),
+                                'coin_change_price': candle.get('change_price'),
+                                'coin_change_rate': candle.get('change_rate'),
+                            }
+                        )
 
-                    CoinsUpbitCandle.objects.update_or_create(
-                        coins_code=coin,
-                        coin_candle_datetime_kst=candle.get('candle_date_time_kst'),
-                        defaults={
-                            'bat_time': now,
-                            'coin_opening_price': candle.get('opening_price'),
-                            'coin_high_price': candle.get('high_price'),
-                            'coin_low_price': candle.get('low_price'),
-                            'coin_closing_price': candle.get('trade_price'),
-                            'coin_trade_price': candle.get('trade_price'),
-                            'coin_trade_volume': candle.get('candle_acc_trade_volume'),
-                        }
-                    )
+                    # 다음 API 호출을 위해 가장 오래된 데이터의 시간으로 current_date 업데이트
+                    oldest_candle_time_str = data[-1]['candle_date_time_kst']
+                    # `T`를 추가하여 파싱 가능한 형식으로 변경
+                    current_date = datetime.strptime(oldest_candle_time_str, '%Y-%m-%dT%H:%M:%S') - timedelta(days=1)
 
-                self.stdout.write(f"Date Updated/Created Completed : candle data for {market_code}.")
-                time.sleep(0.2)  # API 호출 횟수 제한 방지를 위한 딜레이
+                    self.stdout.write(
+                        f"Batch {i + 1} for {market_code} completed. Next batch will start from {current_date.strftime('%Y-%m-%d')}.")
+                    time.sleep(0.2)  # 업비트 가이드 상 1초당 10회 미만으로 호출 필요/ 현재 1초에 5회 호출 = 1/0.2 = 5
 
         except requests.exceptions.RequestException as e:
             self.stdout.write(self.style.ERROR(f"API Request Error: {e}"))
