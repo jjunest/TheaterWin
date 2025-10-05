@@ -53,7 +53,7 @@ class Command(BaseCommand):
 
                     # 받아온 데이터 처리
                     for candle in data:
-                        print("data:",data)
+                        print("this is from upbit data:",data)
                         CoinsUpbitCandle.objects.update_or_create(
                             coins_code=coin,
                             coin_candle_datetime_kst=candle.get('candle_date_time_kst'),

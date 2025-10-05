@@ -10,7 +10,7 @@ from .models import Post,TheaterWinBookRecord,TheaterWinQuestion,\
 from .models_freeboard import FreeBoard, FreeBoardInfo, FreeBoardReply
 from .models_freeboardstock import FreeBoardstock, FreeBoardstockInfo, FreeBoardstockReply
 from .models_freeboardprof import FreeBoardprof, FreeBoardprofInfo, FreeBoardprofReply
-from .models_coins import CoinsUpbitList, CoinsUpbitCandle
+from .models_coins import CoinsUpbitList, CoinsUpbitCandle, CoinsUpbitTicker
 
 admin.site.register(Post)
 admin.site.register(TheaterWinBookRecord)
@@ -42,3 +42,4 @@ admin.site.register(FreeBoardprofReply)
 
 admin.site.register(CoinsUpbitList)
 admin.site.register(CoinsUpbitCandle)
+admin.site.register(CoinsUpbitTicker)

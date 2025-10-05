@@ -1,0 +1,114 @@
+{% extends "TheaterWinBook/base_header_footer_250724.html" %}
+{% load static %}
+
+{% block css_script %}
+    <style>
+        .ui-datepicker {
+            width: 80%; /*what ever width you want*/
+        }
+        .content-page{
+            margin-top: 10px  !important;
+        }
+
+    </style>
+{{ form.media }}
+
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="header-title">
+                    {{ coin_ticker }} 캔들 차트
+                </h4>
+                <div dir="ltr">
+                    <div id="candlestick-with-line-popup" class="apex-charts" style="min-height: 500px;"></div>
+                </div>
+
+                <div class="text-center mt-3">
+                    <button type="button" class="btn btn-secondary" onclick="window.close()">팝업 닫기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+{% block javascript %}
+<script src="{% static 'TheaterWinBook/assets/vendor/apexcharts/apexcharts.min.js'%}"></script>
+
+
+<script>
+ $(document).ready(function () {
+        // 1. Django에서 전달받은 JSON 데이터를 파싱
+        // 'safe' 필터를 사용하여 JSON 문자열이 HTML 이스케이프되지 않도록 합니다.
+        const ohlcData = JSON.parse('{{ ohlc_data_json | safe }}');
+        const lineData = JSON.parse('{{ line_data_json | safe }}');
+        const coinTicker = '{{ coin_ticker }}';
+        alert("this is coinTicker"+coinTicker);
+        alert("this is ohlcData"+ohlcData);
+
+        // 2. ApexCharts 옵션 정의 (Candlestick + Line)
+        var options = {
+            series: [
+                {
+                    name: coinTicker + " Candle",
+                    type: 'candlestick',
+                    data: ohlcData
+                },
+                {
+                    name: coinTicker + " Close", // 라인 시리즈 (종가)
+                    type: 'line',
+                    data: lineData
+                }
+            ],
+            chart: {
+                height: 500,
+                type: 'line', // Mix Chart를 위해 기본 Type은 'line'으로 설정 가능
+                id: 'coin-candlestick-chart', // 차트 인스턴스 ID
+                toolbar: {
+                    show: true,
+                    autoSelected: 'zoom'
+                }
+            },
+            title: {
+                text: coinTicker + ' Price & Candle',
+                align: 'left'
+            },
+            xaxis: {
+                type: 'datetime', // 시간 축 사용
+                tooltip: {
+                    enabled: true
+                }
+            },
+            yaxis: {
+                tooltip: {
+                    enabled: true
+                }
+            },
+            stroke: {
+                width: [1, 1] // 캔들 폭 1, 라인 굵기 1
+            },
+            plotOptions: {
+                candlestick: {
+                    colors: {
+                        up: '#10c469', // 상승 (Green)
+                        down: '#fa5c7c' // 하락 (Red)
+                    }
+                }
+            }
+            // 툴팁 포맷팅 (선택 사항)
+            // ...
+        };
+
+        // 3. 차트 렌더링
+        var chart = new ApexCharts(document.querySelector("#candlestick-with-line-popup"), options);
+        chart.render();
+    });
+
+    </script>
+{% endblock %}

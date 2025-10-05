@@ -1,8 +1,27 @@
+<!--django > template> TheaterWinBook > coin_alarm.html 파일 -->
 {% extends "TheaterWinBook/base_header_footer_250724.html" %}
 {% load static %}
 {% block css_script %}
 <!--custom css -->
-
+<style>
+    /* 알람 상태를 시각화하기 위한 CSS */
+    .alarm-badge {
+        display: inline-block;
+        padding: .25em .4em;
+        font-size: 75%;
+        font-weight: 700;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: .25rem;
+        transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    }
+    .badge-warning { color: #212529; background-color: #ffc107; }
+    .badge-danger { color: #fff; background-color: #dc3545; }
+    .badge-info { color: #fff; background-color: #17a2b8; }
+    .badge-success { color: #fff; background-color: #28a745; }
+</style>
 
 <!-- for Adminto.Datatables page css -->
 <link href="{% static 'TheaterWinBook/assets/vendor/datatables.net-bs5/css/dataTables.bootstrap5.min.css'%}"
@@ -28,7 +47,21 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
+                <div class="mb-3">
+                    <button id="openAlarmSettingPopup"
+                            class="btn btn-primary waves-effect waves-light"
+                            onclick="openAlarmSettingPopup()"
+                            disabled>
+                        <i class="mdi mdi-bell-plus"></i> 선택된 코인 알람 설정
+                    </button>
 
+                    <button id="openChartPopup"
+                            class="btn btn-info waves-effect waves-light ms-2"
+                            onclick="openChartPopup()"
+                            disabled>
+                        <i class="mdi mdi-chart-line"></i> 차트 보기
+                    </button>
+                </div>
                 <h4 class="header-title">Multi item selection</h4>
                 <p class="text-muted">
                     This example shows the multi option. Note how a click on a row will toggle its selected state
@@ -39,27 +72,38 @@
                 <table id="selection-datatable" class="table table-striped dt-responsive nowrap w-100">
                     <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Position</th>
-                        <th>Office</th>
-                        <th>Age</th>
-                        <th>Start date</th>
-                        <th>Salary</th>
-                    </tr>
+                        <th>코인 한글이름</th>
+                        <th>코인 Ticker</th>
+                        <th>현재가 (KRW)</th>
+                        <th>등락률 (%)</th>
+                        <th>경보 정보</th>                    </tr>
                     </thead>
                     <tbody>
 
-                    {% for coin in coins %}
+     {% for coin in coins %}
                     <tr>
-                        <td>{{ coin.market }}</td>
+                        <td>{{ coin.name_kor }}</td>
+                        <td>{{ coin.ticker }}</td>
                         <td>{{ coin.trade_price|floatformat:2 }}</td>
-                        <td>{{ coin.signed_change_rate|floatformat:2 }}%</td>
-                        <td>43</td>
-                        <td>2012/12/18</td>
-                        <td>$313,500</td>
+                        <td>
+                            {% if coin.signed_change_rate > 0 %}
+                                <span class="text-danger">{{ coin.signed_change_rate|floatformat:2 }}%</span>
+                            {% elif coin.signed_change_rate < 0 %}
+                                <span class="text-primary">{{ coin.signed_change_rate|floatformat:2 }}%</span>
+                            {% else %}
+                                <span>{{ coin.signed_change_rate|floatformat:2 }}%</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if coin.warning %}<span class="alarm-badge badge-danger">경고</span>{% endif %}
+                            {% if coin.price_fluctuations %}<span class="alarm-badge badge-warning">급등락</span>{% endif %}
+                            {% if coin.trading_volume_soaring %}<span class="alarm-badge badge-info">거래량 급증</span>{% endif %}
+                            {% if coin.deposit_amount_soaring %}<span class="alarm-badge badge-success">입금량 급증</span>{% endif %}
+                            {% if coin.global_price_differences %}<span class="alarm-badge badge-warning">글로벌 시세 차이</span>{% endif %}
+                            {% if coin.concentration_of_small_accounts %}<span class="alarm-badge badge-info">소액 계좌 집중</span>{% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
-
                     </tbody>
                 </table>
 
@@ -92,12 +136,91 @@
 
 
 <script>
+        // DataTables 인스턴스를 저장할 변수
+    let dataTableInstance = null;
+    const alarmButton = $('#openAlarmSettingPopup');
+    const chartButton = $('#openChartPopup');      // 차트 버튼 추가
     $(document).ready(function () {
 
         // JQuery 적용
 <!--            alert("this is test");-->
+// DataTables 초기화 (datables.init.js에서 처리하지만, 혹시 몰라 전역 변수에 인스턴스 저장)
+        dataTableInstance = $('#selection-datatable').DataTable();
+
+        // 초기 로드 시 버튼 비활성화
+        alarmButton.prop('disabled', true);
+        chartButton.prop('disabled', true);
+ // 1. DataTables row 선택/선택 해제 이벤트 처리
+        dataTableInstance.on('select deselect', function (e, dt, type, indexes) {
+            if (type === 'row') {
+                const selectedRowsCount = dataTableInstance.rows({ selected: true }).count();
+                              // **핵심: Ticker (두 번째 열, 인덱스 1)만 추출합니다.**
+
+               // 선택된 모든 행의 데이터를 배열로 가져옵니다. (여기서 selectedData 정의)
+                const selectedData = dataTableInstance.rows({ selected: true }).data().toArray();
+               // Ticker (두 번째 열, 인덱스 1)만 추출합니다.
+                const selectedTickers = selectedData.map(rowData => rowData[1]);
+      // Ticker 목록을 alert으로 출력합니다.
+                alert(`선택된 코인 개수: ${selectedRowsCount}\n선택된 Ticker: ${selectedTickers.join(', ')}`);
+
+
+
+              // --- 버튼 활성화/비활성화 로직 ---
+
+                // 1) 알람 버튼: 1개 이상 선택 시 활성화 (기존 로직)
+                if (selectedRowsCount > 0) {
+                    alarmButton.prop('disabled', false).text(`선택된 코인 ${selectedRowsCount}개 알람 설정`);
+                } else {
+                    alarmButton.prop('disabled', true).text('선택된 코인 알람 설정');
+                }
+
+                // 2) 차트 버튼: **오직 1개만 선택 시** 활성화 🚀
+                if (selectedRowsCount === 1) {
+                    chartButton.prop('disabled', false).text(`차트 보기: ${selectedTickers[0]}`);
+                } else {
+                    chartButton.prop('disabled', true).text('차트 보기');
+                }
+            }
+        });
+
+                // 초기 로드 시 버튼 비활성화
+        alarmButton.prop('disabled', true);
+
+
     });
 
+    function openChartPopup() {
+        if (!dataTableInstance) return;
+
+        const selectedData = dataTableInstance.rows({ selected: true }).data().toArray();
+        const selectedRowsCount = selectedData.length;
+
+        if (selectedRowsCount !== 1) {
+            alert('차트는 한 번에 하나의 코인만 볼 수 있습니다. 코인을 하나만 선택해 주세요.');
+            return;
+        }
+
+        // 선택된 단일 코인의 Ticker (두 번째 열, 인덱스 1)
+        const coinTicker = selectedData[0][1];
+
+        // TODO: Django URL 패턴 'coin_chart_pop'을 새로 정의해야 합니다.
+        // 예시: /coin/chart/BTC/
+        const url = `{% url 'coin_chart_pop' coin_ticker='__TICKER_PLACEHOLDER__' %}`.replace('__TICKER_PLACEHOLDER__', coinTicker);
+        alert("this is url"+url);
+        // 차트는 보통 크게 봐야 하므로 팝업 크기를 크게 설정합니다.
+        openPopup(url, 'coinChartPopup', 1200, 800);
+    }
+
+        /**
+     * 팝업을 엽니다.
+     */
+    function openPopup(url, name, width = 850, height = 600) {
+        var popupX = (window.screen.width / 2) - (width / 2);
+        var popupY = (window.screen.height / 2) - (height / 2);
+        var options = `width=${width}, height=${height}, left=${popupX}, top=${popupY}, location=no, scrollbars=yes`;
+        window.open(url, name, options);
+    }
 
 </script>
+
 {% endblock %}
