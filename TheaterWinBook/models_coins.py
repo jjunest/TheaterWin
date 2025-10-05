@@ -11,7 +11,7 @@ from tinymce import models as tinymce_models
 class CoinsUpbitList(models.Model):
     id = models.AutoField(primary_key=True)  # id 필드는 Django가 자동으로 생성하므로 삭제하거나 그대로 둡니다. ID 필드를 기본 키로 명시적으로 설정
     bat_time = models.DateTimeField(null=True, blank=True)
-    info_date = models.DateField()
+    info_date = models.DateField(null=True, blank=True)
     coins_code = models.CharField(max_length=10, unique=True)
     coins_name_kor = models.CharField(max_length=10)
     coins_name_eng = models.CharField(max_length=10)
@@ -37,8 +37,6 @@ class CoinsUpbitList(models.Model):
     class Meta:
         # DB 테이블명 지정 (일반적으로 Django가 자동으로 생성하지만 명시적으로 지정하는 것이 좋습니다.)
         db_table = 'coins_upbit_list'
-        # PK(Primary Key)가 여러 개인 경우 composite key 설정
-        unique_together = (('info_date', 'coins_code'),)
 
     def __str__(self):
         return f'{self.coins_name_kor} ({self.coins_code})'
