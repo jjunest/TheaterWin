@@ -21,9 +21,7 @@ class CoinsUpbitList(models.Model):
     deposit_amount_soaring = models.BooleanField()
     global_price_differences = models.BooleanField()
     concentration_of_small_accounts = models.BooleanField()
-    is_active = models.BooleanField(
-        default=True
-    )
+    is_active = models.BooleanField()
     etc1_string = models.CharField(max_length=1, null=True, blank=True)
     etc2_string = models.CharField(max_length=1, null=True, blank=True)
     etc3_string = models.CharField(max_length=1, null=True, blank=True)
