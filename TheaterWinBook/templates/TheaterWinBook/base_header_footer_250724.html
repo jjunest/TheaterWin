@@ -158,7 +158,7 @@
                 </li>
 
                 <li class="side-nav-item">
-                    <a href="{% url 'coin_alarm' %}" class="side-nav-link">
+                    <a href="{% url 'coin_list' %}" class="side-nav-link">
                         <span class="menu-icon"><i class="ti ti-dashboard"></i></span>
                         <span class="menu-text"> 코인랭킹 </span>
                         <span class="badge bg-danger rounded-pill"></span>
@@ -223,6 +223,15 @@
                         <span class="badge bg-danger rounded-pill"></span>
                     </a>
                 </li>
+
+                <li class="side-nav-item">
+                    <a href="{% url 'base_template_content_251011' %}" class="side-nav-link">
+                        <span class="menu-icon"><i class="ti ti-dashboard"></i></span>
+                        <span class="menu-text"> 모바일UX(Sticky Mobile) </span>
+                        <span class="badge bg-danger rounded-pill"></span>
+                    </a>
+                </li>
+
 
                 <li class="side-nav-title mt-2">
                     Old-Page
@@ -740,6 +749,10 @@
 
         </div> <!-- container -->
 
+
+
+
+
         <!-- Footer Start -->
         <footer class="footer">
             <div class="page-container">
@@ -1206,7 +1219,6 @@
 
 <!-- Adminto.App js -->
 <script src="{% static 'TheaterWinBook/assets/js/app.js'%}"></script>
-
 
 
 {% block javascript %}

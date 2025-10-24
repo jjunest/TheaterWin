@@ -14,14 +14,16 @@ class CoinsUpbitList(models.Model):
     info_date = models.DateField(null=True, blank=True)
     coins_code = models.CharField(max_length=10, unique=True)
     coins_name_kor = models.CharField(max_length=10)
-    coins_name_eng = models.CharField(max_length=10)
+    coins_name_eng = models.CharField(max_length=15)
     warning = models.BooleanField()
     price_fluctuations = models.BooleanField()
     trading_volume_soaring = models.BooleanField()
     deposit_amount_soaring = models.BooleanField()
     global_price_differences = models.BooleanField()
     concentration_of_small_accounts = models.BooleanField()
-
+    is_active = models.BooleanField(
+        default=True
+    )
     etc1_string = models.CharField(max_length=1, null=True, blank=True)
     etc2_string = models.CharField(max_length=1, null=True, blank=True)
     etc3_string = models.CharField(max_length=1, null=True, blank=True)
@@ -89,7 +91,7 @@ class CoinsUpbitCandle(models.Model):
         return f'{self.coins_code.coins_code} - {self.coin_candle_datetime_kst}'
 
 
-# ==============================================================================
+# ========================================================================= =====
 # 3. CoinsUpbitTicker (신규 현재가/Ticker 모델)
 # ==============================================================================
 class CoinsUpbitTicker(models.Model):

@@ -27,6 +27,10 @@ UPBIT_SECRET_KEY = env('UPBIT_SECRET_KEY')
 DEBUG = env.bool('DEBUG', default=False)
 
 
+# 텔레그램 추가 251023 env 패키지를 활용해서 텔레그램 환경 변수 가져오기
+TELEGRAM_BOT_TOKEN = env('TELEGRAM_BOT_TOKEN')
+TELEGRAM_CHAT_ID = env('TELEGRAM_CHAT_ID')
+# 텔레그램 추가 251023 env 패키지를 활용해서 텔레그램 환경 변수 가져오기
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
@@ -42,8 +46,9 @@ DEBUG = True
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'www.fullvesting.com', 'fullvesting.com.','fullvesting.com', 'http://fullvesting.com',
                  'theaterwin.com', 'http://theaterwin.com', 'http://158.247.218.118/', '158.247.218.118']
 
-# Application definition
 
+
+# Application definition
 INSTALLED_APPS = (
     # 'channels',
     # 'django_channels',
@@ -211,3 +216,36 @@ TINYMCE_DEFAULT_CONFIG = {
     'image_advtab': True,
 
 }
+
+
+# ----------------------------------------------------
+# 이메일 (SMTP) 설정 추가 시작 251023
+# ----------------------------------------------------
+# 1. 백엔드 설정: Django의 표준 SMTP 백엔드를 사용합니다.
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# 2. 호스트 및 포트 설정: Gmail SMTP 서버 기준
+# 🚨 Gmail이 아닌 다른 서비스를 사용한다면 해당 서비스의 설정을 사용해야 합니다.
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587  # TLS/STARTTLS를 사용할 경우 587 (권장)
+
+# 3. 보안 설정
+EMAIL_USE_TLS = True  # STARTTLS를 사용하여 연결을 암호화합니다.
+EMAIL_USE_SSL = False # TLS를 사용하면 SSL은 False로 둡니다.
+
+# 4. 인증 정보 (가장 중요)
+# env 파일을 통해 환경 변수에서 불러오도록 설정합니다.
+EMAIL_HOST_USER = env('EMAIL_HOST_USER') # 발신자 이메일 주소 (예: jjunest@gmail.com)
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD') # 앱 비밀번호 (일반 비밀번호 아님!)
+
+# 5. 기본 발신자 설정 (코드에서 from_email을 지정하지 않을 경우 사용됨)
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# 6. 관리자 이메일 (Optional, Django 에러 로그 수신용)
+ADMINS = [
+    ('CTO', EMAIL_HOST_USER),
+]
+SERVER_EMAIL = EMAIL_HOST_USER # 서버 에러 발생 시 이메일을 보낼 주소
+# ----------------------------------------------------
+# 이메일 (SMTP) 설정 추가 시작 251023
+# ----------------------------------------------------

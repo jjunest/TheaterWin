@@ -25,7 +25,7 @@ from ..utils_coin import *
 
 
 
-def coin_alarm(request):
+def coin_list(request):
     """코인 시세와 경보 정보를 웹 페이지에 표시하는 뷰"""
 
     # 1. DB에서 모든 코인 Ticker(coins_code)를 가져옵니다.
@@ -66,7 +66,7 @@ def coin_alarm(request):
         "assets": assets,
     }
     print("this is context:",context)
-    return render(request, 'TheaterWinBook/coin_alarm.html', context)
+    return render(request, 'TheaterWinBook/coin_list.html', context)
 
 
 def get_coin_candle(request, coin_code):
@@ -185,5 +185,5 @@ def coin_chart_pop(request, coin_ticker):
     return render(request, 'TheaterWinBook/coin_chart_pop.html', context)
 
 # def coin_prices_view(request):
-    # return render(request, 'TheaterWinBook/coin_alarm.html', {"coins": coins})
+    # return render(request, 'TheaterWinBook/coin_list.html', {"coins": coins})
 

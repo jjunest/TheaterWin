@@ -1,0 +1,763 @@
+{% extends "TheaterWinBook/base_header_footer_251011.html" %}
+{% load static %}
+
+{% block css_script %}
+
+
+{% endblock %}
+
+{% block page-content-class-inside %}
+
+
+<div class="card card-style mx-0 mb-0 rounded-0" data-card-height="280"
+     style="background-image:url('{% static 'TheaterWinBook/images/listing/11m.jpg'%}')">
+    <div class="card-bottom mb-4">
+        <h1 class="color-white text-center mb-0 font-26">업비트 코인 정보</h1>
+        <p class="color-white text-center mb-3 ">Search for the perfect home for you!</p>
+    </div>
+    <div class="card-overlay bg-gradient rounded-0"></div>
+</div>
+
+<!-- Search -->
+<div class="content mt-n4">
+    <div class="search-box bg-theme color-theme rounded-m shadow-l">
+        <i class="fa fa-search"></i>
+        <input type="text" class="border-0" placeholder="코인명, 티커 등으로 검색" data-search>
+        <a href="#" class="clear-search disabled no-click mt-0"></a>
+        <a href="#" data-menu="menu-filter" class="color-theme"><i class="fa fa-sliders me-n3"></i></a>
+    </div>
+    <div class="search-results disabled-search-list mt-3">
+        <div class="card card-style mx-0 px-2 p-0 mb-0">
+<!--     Searching 검색창 내 검색리스트       -->
+            <a href="#" class="d-flex py-1" data-filter-item data-filter-name="검색 단어 필터">
+                <div>
+                    <img src="{% static 'TheaterWinBook/images/listing/10s.jpg'%}" class="rounded-sm me-3" width="45" alt="img">
+                </div>
+                <div>
+                    <span class="color-highlight font-500 d-block pt-0 text-uppercase font-10">Coast of Italy</span>
+                    <strong class="color-theme font-15 d-block mt-n2">Summer Villa</strong>
+                </div>
+                <div class="ms-auto text-end align-self-center pe-2">
+                    <h5 class="line-height-xs font-18 pt-3">$400.000</h5>
+                    <span class="font-10 d-block mt-n2">Rental Property </span>
+                </div>
+            </a>
+<!--     Searching 검색창 내 검색리스트       -->
+        </div>
+    </div>
+</div>
+<div class="search-no-results disabled mt-4">
+    <div class="card card-style">
+        <div class="content">
+            <h1>검색 결과 없음</h1>
+            <p>
+                코인명, 코인티커 등으로 검색해주세요
+            </p>
+        </div>
+    </div>
+</div>
+
+
+<div id="tab-group">
+    <div class="card card-style bg-theme pb-0 mb-3">
+        <div class="tab-controls tabs-rounded tabs-large" data-highlight="bg-highlight">
+            <a href="#" class="font-14 font-600" data-bs-toggle="collapse" data-bs-target="#tab-1" data-active><span
+                    class="opacity-80">업비트</span></a>
+            <a href="#" class="font-14 font-600" data-bs-toggle="collapse" data-bs-target="#tab-2"><span
+                    class="opacity-80">관심코인</span></a>
+            <!--            <a href="#" class="font-14 font-600" data-bs-toggle="collapse" data-bs-target="#tab-3"><span-->
+            <!--                    class="opacity-80">Offers</span></a>-->
+        </div>
+    </div>
+    <!-- Tab 1 -->
+    <div data-bs-parent="#tab-group" class="collapse show" id="tab-1">
+        <div class="card card-style p-0">
+            <table id="coin-table" class="display responsive nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th data-priority="1">코인명</th>
+                        <th data-priority="2">티커</th>
+                        <th data-priority="3">현재가 (KRW)</th>
+                        <th data-priority="4">변동률 (24H)</th>
+                        <th data-priority="5">경고</th>
+                        <th data-priority="6">거래량 급등</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for coin in coins %}
+                    <tr data-warning="{{ coin.warning|yesno:'Y,N' }}" data-volume-soaring="{{ coin.trading_volume_soaring|yesno:'Y,N' }}" data-ticker="{{ coin.ticker }}">
+                        <td>{{ coin.name_kor }}</td>
+                        <td data-sort="{{ coin.ticker }}">{{ coin.ticker }}</td>
+                        <td data-order="{{ coin.trade_price }}">₩{{ coin.trade_price|floatformat:2|default:'-' }}</td>
+                        <td data-order="{{ coin.signed_change_rate }}">
+                             <span class="{% if coin.signed_change_rate > 0 %}color-red-dark{% elif coin.signed_change_rate < 0 %}color-blue-dark{% else %}color-theme{% endif %}">
+                                 {{ coin.signed_change_rate|floatformat:2|default:'-' }}%
+                             </span>
+                        </td>
+                        <td>
+                            {% if coin.warning %}<i class="fa fa-exclamation-triangle color-red-dark"></i>{% else %}-{% endif %}
+                        </td>
+                        <td>
+                            {% if coin.trading_volume_soaring %}<i class="fa fa-chart-line color-green-dark"></i>{% else %}-{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- Tab 2 -->
+    <div data-bs-parent="#tab-group" class="collapse" id="tab-2">
+        <div class="card card-style">
+            <div class="card card-style m-2" data-card-height="200"
+                 style="background-image:url(images/listing/12m.jpg)">
+                <div class="card-top m-2">
+                    <span class="badge bg-blue-dark scale-box rounded-sm px-3 py-2 font-11 text-uppercase">GREAT PRICE</span>
+                    <a href="#" class="icon icon-s rounded-sm bg-red-light text-uppercase font-700 float-end"><i
+                            class="fa fa-heart color-white"></i></a>
+                </div>
+            </div>
+            <div class="content mt-2">
+                <div class="d-flex">
+                    <div class="align-self-center">
+                        <h3 class="mb-0 font-24">22,500 USD <i class="fa fa-caret-down color-green-dark"></i></h1>
+                    </div>
+                    <div class="align-self-center ms-auto">
+                        <h5 class="mb-0 opacity-50 font-13 font-500">Added: 2 hours ago</h5>
+                    </div>
+                </div>
+                <div class="d-flex pt-1">
+                    <h5 class="pe-3 font-600 font-14 opacity-80">4 Rooms</h5>
+                    <h5 class="pe-3 font-600 font-14 opacity-80">132 ft.</h5>
+                    <h5 class="pe-3 font-600 font-14 opacity-80">4/6 floor</h5>
+                    <h5 class="ms-auto mb-0 opacity-50 font-14 font-500">Realtor</h5>
+                </div>
+                <h5 class="font-14 font-600 opacity-40 pb-2">California, Palo Alto, 11 536 Apple Lane</h5>
+                <div class="d-flex mt-2">
+                    <a href="#" class="me-3 btn btn-sm rounded-sm w-100 bg-blue-dark text-uppercase font-700">Schedule
+                        Viewing</a>
+                    <a href="#" data-bs-toggle="dropdown"
+                       class="show-on-theme-dark icon icon-s rounded-sm bg-night-light text-uppercase font-700"><i
+                            class="fa fa-ellipsis-h color-white"></i></a>
+                    <a href="#" data-bs-toggle="dropdown"
+                       class="show-on-theme-light icon icon-s rounded-sm bg-gray-light text-uppercase font-700"><i
+                            class="fa fa-ellipsis-h color-dark-dark"></i></a>
+                    <div class="dropdown-menu border-0 bg-theme rounded-m shadow-xl px-2 mt-n4">
+                        <div class="list-group list-custom-small mt-n2 mb-n2">
+                            <a href="#" class="color-theme"><i
+                                    class="fa font-14 fa-heart color-red-dark opacity-60"></i>Save For Later<i
+                                    class="fa fa-angle-right"></i></a>
+                            <a href="#" class="color-theme"><i
+                                    class="fa font-14 fa-envelope color-blue-dark opacity-60"></i>Send Email<i
+                                    class="fa fa-angle-right"></i></a>
+                            <a href="#" class="color-theme"><i
+                                    class="fa font-14 fa-exclamation-triangle color-yellow-dark opacity-60"></i>Report
+                                Listing<i class="fa fa-angle-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card card-style">
+            <div class="card card-style m-2" data-card-height="200"
+                 style="background-image:url(images/listing/11m.jpg)">
+                <div class="card-top m-2">
+                    <span class="badge bg-yellow-dark scale-box rounded-sm px-3 py-2 font-11 text-uppercase">BEST LOCATION</span>
+                    <a href="#" class="icon icon-s rounded-sm bg-red-light text-uppercase font-700 float-end"><i
+                            class="fa fa-heart color-white"></i></a>
+                </div>
+            </div>
+            <div class="content mt-2">
+                <div class="d-flex">
+                    <div class="align-self-center">
+                        <h3 class="mb-0 font-24">53,315 USD <i class="fa fa-caret-down color-green-dark"></i></h1>
+                    </div>
+                    <div class="align-self-center ms-auto">
+                        <h5 class="mb-0 opacity-50 font-13 font-500">Added: 2 hours ago</h5>
+                    </div>
+                </div>
+                <div class="d-flex pt-1">
+                    <h5 class="pe-3 font-600 font-14 opacity-80">4 Rooms</h5>
+                    <h5 class="pe-3 font-600 font-14 opacity-80">132 ft.</h5>
+                    <h5 class="pe-3 font-600 font-14 opacity-80">4/6 floor</h5>
+                    <h5 class="ms-auto mb-0 opacity-50 font-14 font-500">Realtor</h5>
+                </div>
+                <h5 class="font-14 font-600 opacity-40 pb-2">California, Palo Alto, 11 536 Apple Lane</h5>
+                <div class="d-flex mt-2">
+                    <a href="#" class="me-3 btn btn-sm rounded-sm w-100 bg-yellow-dark text-uppercase font-700">Offer
+                        Pending! Hurry</a>
+                    <a href="#" data-bs-toggle="dropdown"
+                       class="show-on-theme-dark icon icon-s rounded-sm bg-night-light text-uppercase font-700"><i
+                            class="fa fa-ellipsis-h color-white"></i></a>
+                    <a href="#" data-bs-toggle="dropdown"
+                       class="show-on-theme-light icon icon-s rounded-sm bg-gray-light text-uppercase font-700"><i
+                            class="fa fa-ellipsis-h color-dark-dark"></i></a>
+                    <div class="dropdown-menu border-0 bg-theme rounded-m shadow-xl px-2 mt-n4">
+                        <div class="list-group list-custom-small mt-n2 mb-n2">
+                            <a href="#" class="color-theme"><i
+                                    class="fa font-14 fa-heart color-red-dark opacity-60"></i>Save For Later<i
+                                    class="fa fa-angle-right"></i></a>
+                            <a href="#" class="color-theme"><i
+                                    class="fa font-14 fa-envelope color-blue-dark opacity-60"></i>Send Email<i
+                                    class="fa fa-angle-right"></i></a>
+                            <a href="#" class="color-theme"><i
+                                    class="fa font-14 fa-exclamation-triangle color-yellow-dark opacity-60"></i>Report
+                                Listing<i class="fa fa-angle-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card card-style">
+            <div class="card card-style m-2" data-card-height="200"
+                 style="background-image:url(images/listing/10m.jpg)">
+                <div class="card-top m-2">
+                    <span class="badge bg-green-dark rounded-sm px-3 py-2 font-11 text-uppercase">New Construction</span>
+                    <a href="#" class="icon icon-s rounded-sm bg-red-light text-uppercase font-700 float-end"><i
+                            class="fa fa-heart color-white"></i></a>
+                </div>
+            </div>
+            <div class="content mt-2">
+                <div class="d-flex">
+                    <div class="align-self-center">
+                        <h3 class="mb-0 font-24">68,873 USD <i class="fa fa-caret-down color-green-dark"></i></h1>
+                    </div>
+                    <div class="align-self-center ms-auto">
+                        <h5 class="mb-0 opacity-50 font-13 font-500">Added: 2 hours ago</h5>
+                    </div>
+                </div>
+                <div class="d-flex pt-1">
+                    <h5 class="pe-3 font-600 font-14 opacity-80">4 Rooms</h5>
+                    <h5 class="pe-3 font-600 font-14 opacity-80">132 ft.</h5>
+                    <h5 class="pe-3 font-600 font-14 opacity-80">4/6 floor</h5>
+                    <h5 class="ms-auto mb-0 opacity-50 font-14 font-500">Realtor</h5>
+                </div>
+                <h5 class="font-14 font-600 opacity-40 pb-2">California, Palo Alto, 11 536 Apple Lane</h5>
+                <div class="d-flex mt-2">
+                    <a href="#" class="me-3 btn btn-sm rounded-sm w-100 bg-green-dark text-uppercase font-700">Call
+                        Now</a>
+                    <a href="#" data-bs-toggle="dropdown"
+                       class="show-on-theme-dark icon icon-s rounded-sm bg-night-light text-uppercase font-700"><i
+                            class="fa fa-ellipsis-h color-white"></i></a>
+                    <a href="#" data-bs-toggle="dropdown"
+                       class="show-on-theme-light icon icon-s rounded-sm bg-gray-light text-uppercase font-700"><i
+                            class="fa fa-ellipsis-h color-dark-dark"></i></a>
+                    <div class="dropdown-menu border-0 bg-theme rounded-m shadow-xl px-2 mt-n4">
+                        <div class="list-group list-custom-small mt-n2 mb-n2">
+                            <a href="#" class="color-theme"><i
+                                    class="fa font-14 fa-heart color-red-dark opacity-60"></i>Save For Later<i
+                                    class="fa fa-angle-right"></i></a>
+                            <a href="#" class="color-theme"><i
+                                    class="fa font-14 fa-envelope color-blue-dark opacity-60"></i>Send Email<i
+                                    class="fa fa-angle-right"></i></a>
+                            <a href="#" class="color-theme"><i
+                                    class="fa font-14 fa-exclamation-triangle color-yellow-dark opacity-60"></i>Report
+                                Listing<i class="fa fa-angle-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>     <!-- Tab 2 END -->
+
+
+</div>
+
+
+{% endblock %}
+
+
+{% block out-of-pagecontent %}
+
+<!-- Menu Sidebar Sidebar Filters-->
+<div id="menu-filter" class="menu menu-box-left jj-fixed-mobile" data-menu-height="cover" data-menu-width="cover">
+    <div class="notch-clear"></div>
+    <div class="menu-title ms-n1"><h1>Filter Results</h1>
+        <p class="color-highlight">Filter your Search Results</p><a href="#" class="close-menu"><i
+                class="fa fa-times"></i></a></div>
+    <p class="mb-3 mx-3 mt-n1">
+        Filters can be expanded by default or collapsed. You can use any checkbox or radio style found in <a
+            href="component-inputs.html">Component Inputs</a>. We have plenty of options to make your
+        filters rich and powerful.
+    </p>
+    <div class="divider divider-margins"></div>
+    <div class="content mt-n3 ps-1 mb-0">
+        <!-- Property Type -->
+        <h5 class="mb-2 font-15 font-700">Property Type</h5>
+        <div class="row mb-2">
+            <div class="col-6">
+                <div class="form-check icon-check">
+                    <input class="form-check-input" type="checkbox" value="" id="acheck412fg" checked>
+                    <label class="form-check-label font-14" for="acheck412fg">House</label>
+                    <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                    <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+                </div>
+                <div class="form-check icon-check">
+                    <input class="form-check-input" type="checkbox" value="" id="acheck423fg">
+                    <label class="form-check-label font-14" for="acheck423fg">Condo</label>
+                    <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                    <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+                </div>
+                <div class="form-check icon-check">
+                    <input class="form-check-input" type="checkbox" value="" id="acheck434fg">
+                    <label class="form-check-label font-14" for="acheck434fg">Co-op</label>
+                    <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                    <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="form-check icon-check">
+                    <input class="form-check-input" type="checkbox" value="" id="acheck435fg">
+                    <label class="form-check-label font-14" for="acheck435fg">Multi-Family</label>
+                    <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                    <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+                </div>
+                <div class="form-check icon-check">
+                    <input class="form-check-input" type="checkbox" value="" id="acheck436fg">
+                    <label class="form-check-label font-14" for="acheck436fg">Town House</label>
+                    <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                    <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+                </div>
+                <div class="form-check icon-check">
+                    <input class="form-check-input" type="checkbox" value="" id="acheck4786fg">
+                    <label class="form-check-label font-14" for="acheck4786fg">Other Types</label>
+                    <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                    <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+                </div>
+            </div>
+        </div>
+        <div class="divider my-3"></div>
+
+        <!-- Price Range -->
+        <h5 class="mb-3 font-15 mt-2">Price Range</h5>
+        <div class="row mb-0">
+            <div class="col-6">
+                <div class="input-style has-borders no-icon mb-4 input-style-always-active">
+                    <label for="form-4" class="color-highlight text-uppercase font-700 font-11">Min Price</label>
+                    <select id="form-4">
+                        <option value="default" disabled>From</option>
+                        <option value="1a">$10.000</option>
+                        <option value="2a">$50.000</option>
+                        <option value="3a" selected>$100.000</option>
+                        <option value="4a">$250.000</option>
+                        <option value="5a">$500.000</option>
+                    </select>
+                    <span><i class="fa fa-chevron-down"></i></span>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="input-style has-borders no-icon mb-4 input-style-always-active">
+                    <label for="form-4" class="color-highlight text-uppercase font-700 font-11">Max Price</label>
+                    <select id="form-4">
+                        <option value="default" disabled>To</option>
+                        <option value="1a">$10.000</option>
+                        <option value="2a">$25.000</option>
+                        <option value="3a">$100.000</option>
+                        <option value="4a" selected>$250.000</option>
+                        <option value="5a">$500.000</option>
+                    </select>
+                    <span><i class="fa fa-chevron-down"></i></span>
+                </div>
+            </div>
+        </div>
+        <!-- Property Facts -->
+        <h5 class="mb-3 font-15">Square Feet</h5>
+        <div class="row mb-0">
+            <div class="col-6">
+                <div class="input-style has-borders no-icon mb-4 input-style-always-active">
+                    <label for="form-4b" class="color-highlight text-uppercase font-700 font-11">Min Sq Ft.</label>
+                    <select id="form-4b">
+                        <option value="default" disabled>From</option>
+                        <option value="1a" selected>500</option>
+                        <option value="2a">750</option>
+                        <option value="3a">1.000</option>
+                        <option value="4a">1.250</option>
+                        <option value="5a">1.500</option>
+                        <option value="6a">1.750</option>
+                        <option value="7a">2.000</option>
+                    </select>
+                    <span><i class="fa fa-chevron-down"></i></span>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="input-style has-borders no-icon mb-4 input-style-always-active">
+                    <label for="form-4c" class="color-highlight text-uppercase font-700 font-11">Max Sq. Ft.</label>
+                    <select id="form-4c">
+                        <option value="default" disabled>To</option>
+                        <option value="1a">500</option>
+                        <option value="2a">750</option>
+                        <option value="3a">1.000</option>
+                        <option value="4a">1.250</option>
+                        <option value="5a" selected>1.500</option>
+                        <option value="6a">1.750</option>
+                        <option value="7a">2.000</option>
+                    </select>
+                    <span><i class="fa fa-chevron-down"></i></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Year Built -->
+        <h5 class="mb-3 font-15">Year Built</h5>
+        <div class="row mb-0">
+            <div class="col-6">
+                <div class="input-style has-borders no-icon mb-4 input-style-always-active">
+                    <label for="form-4" class="color-highlight text-uppercase font-700 font-11">From</label>
+                    <select id="form-4">
+                        <option value="default" disabled>From</option>
+                        <option value="1a" selected>2015</option>
+                        <option value="2a">2016</option>
+                        <option value="3a">2017</option>
+                        <option value="4a">2018</option>
+                        <option value="5a">2019</option>
+                        <option value="6a">2020</option>
+                        <option value="7a">2021</option>
+                        <option value="8a">2022</option>
+                    </select>
+                    <span><i class="fa fa-chevron-down"></i></span>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="input-style has-borders no-icon mb-4 input-style-always-active">
+                    <label for="form-4" class="color-highlight text-uppercase font-700 font-11">To</label>
+                    <select id="form-4">
+                        <option value="default" disabled>To</option>
+                        <option value="1a">2015</option>
+                        <option value="2a">2016</option>
+                        <option value="3a">2017</option>
+                        <option value="4a">2018</option>
+                        <option value="5a">2019</option>
+                        <option value="6a">2020</option>
+                        <option value="7a">2021</option>
+                        <option value="8a" selected>2022</option>
+                    </select>
+                    <span><i class="fa fa-chevron-down"></i></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider mt-2 mb-3"></div>
+
+        <!-- Must Have -->
+        <h5 class="mb-2 font-17 font-700">Must Have</h5>
+        <div class="row mb-2">
+            <div class="col-6">
+                <div class="form-check icon-check">
+                    <input class="form-check-input" type="checkbox" value="" id="check412fg" checked>
+                    <label class="form-check-label font-14" for="check412fg">Parking Space</label>
+                    <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                    <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+                </div>
+                <div class="form-check icon-check">
+                    <input class="form-check-input" type="checkbox" value="" id="check423fg">
+                    <label class="form-check-label font-14" for="check423fg">Dryer in Unit</label>
+                    <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                    <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+                </div>
+                <div class="form-check icon-check">
+                    <input class="form-check-input" type="checkbox" value="" id="check434fg">
+                    <label class="form-check-label font-14" for="check434fg">Dormitory Room</label>
+                    <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                    <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="form-check icon-check">
+                    <input class="form-check-input" type="checkbox" value="" id="check435fg">
+                    <label class="form-check-label font-14" for="check435fg">Air Conditioning</label>
+                    <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                    <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+                </div>
+                <div class="form-check icon-check">
+                    <input class="form-check-input" type="checkbox" value="" id="check436fg">
+                    <label class="form-check-label font-14" for="check436fg">Central Heating</label>
+                    <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                    <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+                </div>
+                <div class="form-check icon-check">
+                    <input class="form-check-input" type="checkbox" value="" id="check4786fg">
+                    <label class="form-check-label font-14" for="check4786fg">School Nearby</label>
+                    <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                    <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sort By -->
+        <div class="list-group list-custom-small list-icon-0">
+            <a data-bs-toggle="collapse" class="border-0" href="#collapse-filter-1">
+                <span class="font-15 font-600">Sort By</span>
+                <i class="fa fa-angle-down"></i>
+            </a>
+        </div>
+        <div class="collapse" id="collapse-filter-1">
+            <div class="form-check icon-check">
+                <input class="form-check-input" type="checkbox" value="" id="check412" checked>
+                <label class="form-check-label font-14" for="check412">Featured</label>
+                <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+            </div>
+            <div class="form-check icon-check">
+                <input class="form-check-input" type="checkbox" value="" id="check423">
+                <label class="form-check-label font-14" for="check423">Price: Low to High</label>
+                <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+            </div>
+            <div class="form-check icon-check">
+                <input class="form-check-input" type="checkbox" value="" id="check434">
+                <label class="form-check-label font-14" for="check434">Price: High to Low</label>
+                <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+            </div>
+            <div class="form-check icon-check">
+                <input class="form-check-input" type="checkbox" value="" id="check435">
+                <label class="form-check-label font-14" for="check435">Avg. Customer Review</label>
+                <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+            </div>
+            <div class="form-check icon-check">
+                <input class="form-check-input" type="checkbox" value="" id="check436">
+                <label class="form-check-label font-14" for="check436">New Arrivals</label>
+                <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+            </div>
+            <div class="mb-3"></div>
+        </div>
+
+        <!-- Category -->
+        <div class="list-group list-custom-small list-icon-0">
+            <a data-bs-toggle="collapse" class="border-0" href="#collapse-filter-1a">
+                <span class="font-15 font-600">Category</span>
+                <i class="fa fa-angle-down"></i>
+            </a>
+        </div>
+        <div class="collapse" id="collapse-filter-1a">
+            <div class="form-check icon-check">
+                <input class="form-check-input" type="checkbox" value="" id="check412a" checked>
+                <label class="form-check-label font-14" for="check412a">For Rent</label>
+                <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+            </div>
+            <div class="form-check icon-check">
+                <input class="form-check-input" type="checkbox" value="" id="check434b">
+                <label class="form-check-label font-14" for="check434b">For Sale</label>
+                <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+            </div>
+            <div class="mb-3"></div>
+        </div>
+
+        <!-- Sold by-->
+        <div class="list-group list-custom-small list-icon-0">
+            <a data-bs-toggle="collapse" class="border-0" href="#collapse-filter-2">
+                <span class="font-15 font-600">Sold By</span>
+                <i class="fa fa-angle-down"></i>
+            </a>
+        </div>
+        <div class="collapse" id="collapse-filter-2">
+            <div class="form-check icon-check">
+                <input class="form-check-input" type="checkbox" value="" id="check412ad" checked>
+                <label class="form-check-label font-14" for="check412ad">Realtor</label>
+                <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+            </div>
+            <div class="form-check icon-check">
+                <input class="form-check-input" type="checkbox" value="" id="check434bd">
+                <label class="form-check-label font-14" for="check434bd">Owner</label>
+                <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+            </div>
+            <div class="mb-3"></div>
+        </div>
+        <div class="list-group list-custom-small list-icon-0">
+            <a data-bs-toggle="collapse" class="border-0" href="#collapse-filter-2a">
+                <span class="font-15 font-600">Price</span>
+                <i class="fa fa-angle-down"></i>
+            </a>
+        </div>
+        <div class="collapse" id="collapse-filter-2a">
+            <div class="form-check icon-check">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" value="" id="radio1" checked>
+                <label class="form-check-label" for="radio1">All Prices</label>
+                <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+            </div>
+            <div class="form-check icon-check">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" value="" id="radio1a">
+                <label class="form-check-label" for="radio1a">25.0000USD - 50.000 USD</label>
+                <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+            </div>
+            <div class="form-check icon-check">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" value="" id="radio1b">
+                <label class="form-check-label" for="radio1b">50.000USD - 100.000 USD</label>
+                <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+            </div>
+            <div class="form-check icon-check">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" value="" id="radio1c">
+                <label class="form-check-label" for="radio1c">100.000USD - 250.000 USD</label>
+                <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+            </div>
+            <div class="form-check icon-check">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" value="" id="radio1d">
+                <label class="form-check-label" for="radio1d">Over 250.000 USD</label>
+                <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+            </div>
+            <div class="mb-3"></div>
+        </div>
+        <!-- Rating-->
+        <div class="list-group list-custom-small list-icon-0">
+            <a data-bs-toggle="collapse" class="border-0" href="#collapse-filter-3">
+                <span class="font-15 font-600">Rating</span>
+                <i class="fa fa-angle-down"></i>
+            </a>
+        </div>
+        <div class="collapse" id="collapse-filter-3">
+            <div class="form-check icon-check">
+                <input class="form-check-input" type="checkbox" value="" id="check412adg" checked>
+                <label class="form-check-label font-14" for="check412adg">
+                    <i class="fa fa-star position-relative start-0 color-yellow-dark me-n1"
+                       style="transform:translateY(-2px);"></i>
+                    <i class="fa fa-star position-relative start-0 color-yellow-dark me-n1"
+                       style="transform:translateY(-2px);"></i>
+                    <i class="fa fa-star position-relative start-0 color-yellow-dark me-n1"
+                       style="transform:translateY(-2px);"></i>
+                    <i class="fa fa-star position-relative start-0 color-yellow-dark me-n1"
+                       style="transform:translateY(-2px);"></i>
+                    <i class="fa fa-star position-relative start-0 color-yellow-dark me-n1"
+                       style="transform:translateY(-2px);"></i>
+                </label>
+                <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+            </div>
+            <div class="form-check icon-check">
+                <input class="form-check-input" type="checkbox" value="" id="check434bdg">
+                <label class="form-check-label font-14" for="check434bdg">
+                    <i class="fa fa-star position-relative start-0 color-yellow-dark me-n1"
+                       style="transform:translateY(-2px);"></i>
+                    <i class="fa fa-star position-relative start-0 color-yellow-dark me-n1"
+                       style="transform:translateY(-2px);"></i>
+                    <i class="fa fa-star position-relative start-0 color-yellow-dark me-n1"
+                       style="transform:translateY(-2px);"></i>
+                    <i class="fa fa-star position-relative start-0 color-yellow-dark me-n1"
+                       style="transform:translateY(-2px);"></i>
+                    <i class="fa fa-star position-relative start-0 color-gray-light me-n1"
+                       style="transform:translateY(-2px);"></i>
+                </label>
+                <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+            </div>
+            <div class="form-check icon-check">
+                <input class="form-check-input" type="checkbox" value="" id="check435cdg">
+                <label class="form-check-label font-14" for="check435cdg">
+                    <i class="fa fa-star position-relative start-0 color-yellow-dark me-n1"
+                       style="transform:translateY(-2px);"></i>
+                    <i class="fa fa-star position-relative start-0 color-yellow-dark me-n1"
+                       style="transform:translateY(-2px);"></i>
+                    <i class="fa fa-star position-relative start-0 color-yellow-dark me-n1"
+                       style="transform:translateY(-2px);"></i>
+                    <i class="fa fa-star position-relative start-0 color-gray-light me-n1"
+                       style="transform:translateY(-2px);"></i>
+                    <i class="fa fa-star position-relative start-0 color-gray-light me-n1"
+                       style="transform:translateY(-2px);"></i>
+                </label>
+                <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+            </div>
+            <div class="form-check icon-check">
+                <input class="form-check-input" type="checkbox" value="" id="check435cdga">
+                <label class="form-check-label font-14" for="check435cdga">
+                    <i class="fa fa-star position-relative start-0 color-yellow-dark me-n1"
+                       style="transform:translateY(-2px);"></i>
+                    <i class="fa fa-star position-relative start-0 color-yellow-dark me-n1"
+                       style="transform:translateY(-2px);"></i>
+                    <i class="fa fa-star position-relative start-0 color-gray-light me-n1"
+                       style="transform:translateY(-2px);"></i>
+                    <i class="fa fa-star position-relative start-0 color-gray-light me-n1"
+                       style="transform:translateY(-2px);"></i>
+                    <i class="fa fa-star position-relative start-0 color-gray-light me-n1"
+                       style="transform:translateY(-2px);"></i>
+                </label>
+                <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+            </div>
+            <div class="form-check icon-check">
+                <input class="form-check-input" type="checkbox" value="" id="check435cdgb">
+                <label class="form-check-label font-14" for="check435cdgb">
+                    <i class="fa fa-star position-relative start-0 color-yellow-dark me-n1"
+                       style="transform:translateY(-2px);"></i>
+                    <i class="fa fa-star position-relative start-0 color-gray-light me-n1"
+                       style="transform:translateY(-2px);"></i>
+                    <i class="fa fa-star position-relative start-0 color-gray-light me-n1"
+                       style="transform:translateY(-2px);"></i>
+                    <i class="fa fa-star position-relative start-0 color-gray-light me-n1"
+                       style="transform:translateY(-2px);"></i>
+                    <i class="fa fa-star position-relative start-0 color-gray-light me-n1"
+                       style="transform:translateY(-2px);"></i>
+                </label>
+                <i class="icon-check-1 far fa-circle color-gray-dark font-16"></i>
+                <i class="icon-check-2 fa fa-check-circle font-16 color-green-dark"></i>
+            </div>
+            <div class="mb-3"></div>
+        </div>
+    </div>
+    <div class="divider divider-margins mt-2 mb-4"></div>
+    <a href="#" class="close-menu btn btn-full mx-3 btn-m bg-highlight rounded-sm font-700 text-uppercase">Apply
+        Filters</a>
+    <div class="divider divider-margins mt-4 mb-4"></div>
+    <div class="content pb-4 color-theme opacity-60 line-height-s font-12">
+        Use any element you wish from the <a href="component-inputs.html">Component Inputs</a>. We have plenty of
+        options to make your
+        filters rich and powerful.
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block javascript %}
+
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+<script type="text/javascript" src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<script type="text/javascript" src="https://cdn.datatables.net/fixedheader/3.4.0/js/dataTables.fixedHeader.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // DataTables 초기화
+        const coinTable = $('#coin-table').DataTable({
+            // ✨ 헤더 고정 옵션 추가
+            // 🌟 FixedHeader 상세 옵션 적용
+            // 1. 열 정렬 (Sorting)
+            // 기본적으로 모든 열에 대해 정렬 가능. 숫자형 열은 data-order 속성으로 정확한 정렬을 유도했습니다.
+            order: [[2, 'desc']], // 초기 정렬: 현재가(인덱스 2) 기준 내림차순(desc)
+
+            // 2. 검색 (Searching)
+            searching: true, // 검색 기능 활성화
+
+            // DataTables 기본 옵션 설정
+            paging: true, // 페이지네이션 사용
+            pageLength: 50, // 한 페이지에 50개 항목 표시
+            responsive: true, // 반응형 활성화 (모바일에서 유용)
+            info: true, // 정보 표시 (Showing 1 to 10 of 57 entries)
+            language: { // 사용자 친화적인 메시지 설정
+                paginate: {
+                    next: '다음',
+                    previous: '이전'
+                },
+                lengthMenu: " 한번에 _MENU_ 표시",
+                search: "검색 : ", // DataTables 기본 검색창 숨김 (아래에서 커스텀 검색창 연동)
+                info: "총 _TOTAL_개 중 _START_에서 _END_ 표시",
+                zeroRecords: "검색 결과가 없습니다.",
+                infoEmpty: "표시할 데이터가 없습니다.",
+            }
+        });
+
+    });
+</script>
+{% endblock %}
+
