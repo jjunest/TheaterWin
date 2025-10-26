@@ -81,7 +81,7 @@ class Command(BaseCommand):
             send_notification_telegram(f"{batch_info_header}\n\n{warning_msg}", level="WARNING")
             return
 
-        DAYS_TO_FETCH = 7
+        DAYS_TO_FETCH = 14
 
         # 1. 메인 루프: 에러 발생 시 중단 없이 다음 코인으로 진행
         for coin in coins_list:

@@ -21,7 +21,7 @@ class CoinsUpbitList(models.Model):
     deposit_amount_soaring = models.BooleanField()
     global_price_differences = models.BooleanField()
     concentration_of_small_accounts = models.BooleanField()
-    is_active = models.BooleanField()
+    is_active = models.BooleanField(blank=True)
     etc1_string = models.CharField(max_length=1, null=True, blank=True)
     etc2_string = models.CharField(max_length=1, null=True, blank=True)
     etc3_string = models.CharField(max_length=1, null=True, blank=True)
@@ -89,52 +89,68 @@ class CoinsUpbitCandle(models.Model):
         return f'{self.coins_code.coins_code} - {self.coin_candle_datetime_kst}'
 
 
-# ========================================================================= =====
-# 3. CoinsUpbitTicker (신규 현재가/Ticker 모델)
+# TheaterWinBook/models_coins.py 파일에 추가/수정될 내용 (CoinsUpbitList 모델이 이미 있다고 가정)
+
+# ==============================================================================
+# 3. CoinsUpbitTicker (시계열 Ticker 데이터 모델)
 # ==============================================================================
 class CoinsUpbitTicker(models.Model):
-    """업비트 현재가(Ticker) 스냅샷 정보를 저장하는 모델"""
+    """
+    업비트 현재가(Ticker) 정보를 주기적으로 저장하는 모델.
+    (CoinsUpbitList와 ForeignKey로 연결되며, bat_time 별로 여러 레코드 저장)
+    """
+    id = models.AutoField(primary_key=True)
 
-    # coins_code를 PK로 사용하여 CoinsUpbitList와 1:1 연결 (단일 최신 레코드만 유지)
-    coins_code = models.OneToOneField(
+    # 1. 외래키 (CoinsUpbitList의 coins_code를 참조)
+    coins_code = models.ForeignKey(
         'CoinsUpbitList',
         on_delete=models.CASCADE,
         to_field='coins_code',
-        primary_key=True,
         db_column='coins_code',
-        # 기존: verbose_name='마켓 코드' -> 제거
     )
 
-    # 데이터 수집 시간
-    bat_time = models.DateTimeField(null=True, blank=True)  # 배치 스크립트 실행 시간
+    # 2. 데이터 수집 시간 (시계열 데이터의 핵심)
+    bat_time = models.DateTimeField(
+        default=timezone.now,
+        db_index=True
+    )
 
-    # 주요 가격 정보 (API 응답 필드와 매핑)
-    ticker_trade_price = models.DecimalField(max_digits=25, decimal_places=10)
-    ticker_opening_price = models.DecimalField(max_digits=25, decimal_places=10)
-    ticker_high_price = models.DecimalField(max_digits=25, decimal_places=10)
-    ticker_low_price = models.DecimalField(max_digits=25, decimal_places=10)
-    ticker_prev_closing_price = models.DecimalField(max_digits=25, decimal_places=10)
+    # 3. 주요 가격 및 상태 정보 (Upbit Ticker API 필드 매핑)
+    ticker_trade_price = models.DecimalField(max_digits=25, decimal_places=10, verbose_name='최신 체결 가격')
+    ticker_opening_price = models.DecimalField(max_digits=25, decimal_places=10, null=True, blank=True,
+                                               verbose_name='당일 시가')
+    ticker_high_price = models.DecimalField(max_digits=25, decimal_places=10, null=True, blank=True,
+                                            verbose_name='당일 고가')
+    ticker_low_price = models.DecimalField(max_digits=25, decimal_places=10, null=True, blank=True,
+                                           verbose_name='당일 저가')
+    ticker_prev_closing_price = models.DecimalField(max_digits=25, decimal_places=10, null=True, blank=True,
+                                                    verbose_name='전일 종가')
 
-    # 변화 상태 및 지표 (UI에서 직관적 표시 핵심)
-    ticker_change = models.CharField(max_length=4)
-    ticker_signed_change_price = models.DecimalField(max_digits=25, decimal_places=10)
-    ticker_signed_change_rate = models.DecimalField(max_digits=25, decimal_places=15)
+    # 변화 상태 및 지표
+    ticker_change = models.CharField(max_length=4, null=True, blank=True, verbose_name='전일 대비 (RISE, EVEN, FALL)')
+    ticker_signed_change_price = models.DecimalField(max_digits=25, decimal_places=10, null=True, blank=True,
+                                                     verbose_name='부호 포함 변화액')
+    ticker_signed_change_rate = models.DecimalField(max_digits=25, decimal_places=15, null=True, blank=True,
+                                                    verbose_name='부호 포함 변화율')
 
-    # 거래량 및 거래액 (유동성 및 관심도 지표)
-    ticker_trade_volume = models.DecimalField(max_digits=25, decimal_places=10)
-    ticker_acc_trade_price_24h = models.DecimalField(max_digits=30, decimal_places=10)
-    ticker_acc_trade_volume_24h = models.DecimalField(max_digits=30, decimal_places=10)
+    # 거래량 및 거래액
+    ticker_trade_volume = models.DecimalField(max_digits=25, decimal_places=10, null=True, blank=True,
+                                              verbose_name='최근 체결 거래량')
+    ticker_acc_trade_price_24h = models.DecimalField(max_digits=30, decimal_places=10, null=True, blank=True,
+                                                     verbose_name='24시간 누적 거래 대금')
+    ticker_acc_trade_volume_24h = models.DecimalField(max_digits=30, decimal_places=10, null=True, blank=True,
+                                                      verbose_name='24시간 누적 거래량')
 
     # 52주 신고/신저가
-    ticker_highest_52_week_price = models.DecimalField(max_digits=25, decimal_places=10)
-    ticker_highest_52_week_date = models.DateField()
-    ticker_lowest_52_week_price = models.DecimalField(max_digits=25, decimal_places=10)
-    ticker_lowest_52_week_date = models.DateField()
+    ticker_highest_52_week_price = models.DecimalField(max_digits=25, decimal_places=10, null=True, blank=True)
+    ticker_highest_52_week_date = models.DateField(null=True, blank=True)
+    ticker_lowest_52_week_price = models.DecimalField(max_digits=25, decimal_places=10, null=True, blank=True)
+    ticker_lowest_52_week_date = models.DateField(null=True, blank=True)
 
     # 시간 정보
-    ticker_trade_date = models.CharField(max_length=8)
-    ticker_trade_time = models.CharField(max_length=6)
-    ticker_timestamp = models.BigIntegerField()
+    ticker_trade_date = models.CharField(max_length=8, null=True, blank=True)
+    ticker_trade_time = models.CharField(max_length=6, null=True, blank=True)
+    ticker_timestamp = models.BigIntegerField(null=True, blank=True)
 
     # 기타 여유 필드
     etc1_string = models.CharField(max_length=20, null=True, blank=True)
@@ -143,6 +159,10 @@ class CoinsUpbitTicker(models.Model):
 
     class Meta:
         db_table = 'coins_upbit_ticker'
+        # 코인 코드와 수집 시간이 중복되지 않음을 보장 (5분마다 하나의 레코드)
+        unique_together = (('coins_code', 'bat_time'),)
+        ordering = ['-bat_time']
 
     def __str__(self):
-        return f'{self.coins_code.coins_code} - {self.ticker_trade_price}'
+        return f'{self.coins_code.coins_code} - {self.ticker_trade_price} ({self.bat_time.strftime("%Y-%m-%d %H:%M")})'
+

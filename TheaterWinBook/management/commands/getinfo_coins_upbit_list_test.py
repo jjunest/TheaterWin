@@ -1,4 +1,4 @@
-# getinfo_coins_upbit_list.py
+# getinfo_coins_upbit_list_day.py
 
 import requests
 import time
