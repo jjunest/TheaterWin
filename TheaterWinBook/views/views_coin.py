@@ -16,57 +16,89 @@ from django.utils.safestring import mark_safe
 import json
 
 # 필요한 DB 모델을 import 합니다.
-from ..models_coins import CoinsUpbitList, CoinsUpbitCandle
+from ..models_coins import CoinsUpbitList, CoinsUpbitCandle, CoinsUpbitTicker
 from ..utils_coin import *
 from django.shortcuts import render
 from django.conf import settings
 from ..utils_coin import *
-
-
+from decimal import Decimal # Decimal 타입 임포트
+from django.shortcuts import render, get_object_or_404
 
 
 def coin_list(request):
-    """코인 시세와 경보 정보를 웹 페이지에 표시하는 뷰"""
+    """
+        CoinsUpbitList와 CoinsUpbitTicker를 결합하여
+        활성화된 코인의 이름, 티커, 최신 가격을 보여주는 뷰.
+        """
 
-    # 1. DB에서 모든 코인 Ticker(coins_code)를 가져옵니다.
-    db_coins = CoinsUpbitList.objects.all()
-    # Ticker 목록만 추출하여 리스트로 만듭니다.
-    db_tickers = [coin.coins_code for coin in db_coins]
+    # 1. 활성화된 코인 리스트를 가져옵니다. (is_active=True)
+    active_coins = CoinsUpbitList.objects.filter(is_active=True).values(
+        'coins_code',
+        'coins_name_kor',
+        'coins_name_eng'
+    )
 
-    # 2. DB Ticker 목록을 get_coin_prices 함수에 전달하여 실시간 시세를 가져옵니다.
-    realtime_prices = get_coin_prices(markets=db_tickers)
+    # 2. 각 코인별 최신 Ticker 데이터를 조회합니다.
+    coin_list_data = []
 
-    # 3. DB 데이터와 실시간 시세 데이터를 결합합니다.
-    # 딕셔너리로 변환하여 Ticker를 키(key)로 사용하면 데이터 결합이 용이합니다.
-    realtime_price_dict = {price['market']: price for price in realtime_prices} if realtime_prices else {}
-    print("this is realtime_price_dict",realtime_price_dict)
-    combined_coins = []
-    for db_coin in db_coins:
-        # DB 데이터에 실시간 가격 정보 추가
-        realtime_data = realtime_price_dict.get(db_coin.coins_code)
-        if realtime_data:
-            combined_data = {
-                'name_kor': db_coin.coins_name_kor,
-                'ticker': db_coin.coins_code,
-                'warning': db_coin.warning,
-                'price_fluctuations': db_coin.price_fluctuations,
-                'trading_volume_soaring': db_coin.trading_volume_soaring,
-                'deposit_amount_soaring': db_coin.deposit_amount_soaring,
-                'global_price_differences': db_coin.global_price_differences,
-                'concentration_of_small_accounts': db_coin.concentration_of_small_accounts,
-                'trade_price': realtime_data.get('trade_price'),
-                'signed_change_rate': realtime_data.get('signed_change_rate'),
-            }
-            combined_coins.append(combined_data)
+    for coin in active_coins:
+        coin_code = coin['coins_code']
 
-    assets = get_upbit_assets(settings.UPBIT_ACCESS_KEY, settings.UPBIT_SECRET_KEY)
+        latest_ticker = CoinsUpbitTicker.objects.filter(
+            coins_code__coins_code=coin_code  # ForeignKey를 통해 coins_code 필드 참조
+        ).order_by('-bat_time').first()  # bat_time이 가장 최근인 레코드를 선택
+
+        # 3. 데이터 통합
+        price = latest_ticker.ticker_trade_price if latest_ticker else 'N/A'
+        bat_time = latest_ticker.bat_time if latest_ticker else 'N/A'
+
+        # 3. 데이터 통합 및 정렬을 위한 값 처리 🚨 수정된 부분
+        price_value = latest_ticker.ticker_trade_price if latest_ticker and latest_ticker.ticker_trade_price is not None else Decimal(-1)
+        display_price = latest_ticker.ticker_trade_price if latest_ticker and latest_ticker.ticker_trade_price is not None else '가격정보없음'
+
+
+        coin_list_data.append({
+            'name_kor': coin['coins_name_kor'],
+            'name_eng': coin['coins_name_eng'],
+            'ticker': coin_code.split('-')[-1],  # KRW-BTC -> BTC
+            'full_code': coin_code,
+            # 💡 DataTables 정렬용: N/A인 경우 -1이 들어갑니다.
+            'sort_price': price_value,
+            # 💡 사용자 표시용: '가격정보없음' 텍스트 또는 포맷되지 않은 Decimal
+            'latest_price': display_price,
+            'updated_at': latest_ticker.bat_time if latest_ticker and latest_ticker.bat_time is not None else 'N/A'
+        })
 
     context = {
-        "coins": combined_coins,  # 결합된 데이터
-        "assets": assets,
+        'coin_list': coin_list_data,
+        'title': '실시간 코인 가격 현황'
     }
-    print("this is context:",context)
+
     return render(request, 'TheaterWinBook/coin_list.html', context)
+
+
+def coin_detail_view(request, coin_code):
+    """
+    특정 코인 코드(KRW-BTC)를 받아 상세 정보를 보여주는 뷰.
+    """
+    # 1. DB에서 해당 코인 정보 로드
+    coin_list_info = get_object_or_404(CoinsUpbitList, coins_code=coin_code)
+
+    # 2. 가장 최신 Ticker 데이터 로드 (선택 사항: 상세 정보 페이지에 활용)
+    latest_ticker = CoinsUpbitTicker.objects.filter(
+        coins_code__coins_code=coin_code
+    ).order_by('-bat_time').first()
+
+    context = {
+        'coin_code': coin_code,
+        'name_kor': coin_list_info.coins_name_kor,
+        'ticker_data': latest_ticker,
+        'page_title': f'{coin_list_info.coins_name_kor} 상세 분석',
+        # ... 여기에 차트 데이터나 추가 정보를 로드하여 context에 포함 ...
+    }
+    return render(request, 'TheaterWinBook/coin_detail.html', context)
+
+
 
 
 def get_coin_candle(request, coin_code):

@@ -31,6 +31,9 @@ urlpatterns = [
 
     # 2. **코인 차트 팝업 (새로 추가)** 🚀
     path('coin/chart/<str:coin_ticker>/', views.coin_chart_pop, name='coin_chart_pop'),
+
+    # 🚨 코인 상세 페이지 URL 패턴 추가
+    path('coin/detail/<str:coin_code>/', views.coin_detail_view, name='coin_detail'),
 ]
 
 

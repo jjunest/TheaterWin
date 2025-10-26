@@ -2,7 +2,36 @@
 {% load static %}
 
 {% block css_script %}
+<style>
+    /* 🚨 테이블 셀의 콘텐츠를 줄 바꿈 없이 강제로 고정 */
+    #coin-table td, #coin-table th {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis; /* 텍스트가 셀을 넘어가면 ...으로 표시 */
+    }
 
+    /* 각 열의 너비를 고정 (필요에 따라 픽셀(px) 또는 퍼센트(%)로 조정) */
+    #coin-table thead th:nth-child(1), /* 코인명 */
+    #coin-table tbody td:nth-child(1) {
+        width: 35%;
+        max-width: 150px;
+    }
+    #coin-table thead th:nth-child(2), /* 티커 */
+    #coin-table tbody td:nth-child(2) {
+        width: 15%;
+        max-width: 60px;
+    }
+    #coin-table thead th:nth-child(3), /* 현재가 */
+    #coin-table tbody td:nth-child(3) {
+        width: 30%;
+        max-width: 120px;
+    }
+    #coin-table thead th:nth-child(4), /* 종목비교 */
+    #coin-table tbody td:nth-child(4) {
+        width: 20%;
+        max-width: 70px;
+    }
+</style>
 
 {% endblock %}
 
@@ -77,29 +106,28 @@
                     <tr>
                         <th data-priority="1">코인명</th>
                         <th data-priority="2">티커</th>
-                        <th data-priority="3">현재가 (KRW)</th>
-                        <th data-priority="4">변동률 (24H)</th>
-                        <th data-priority="5">경고</th>
-                        <th data-priority="6">거래량 급등</th>
+                        <th data-priority="3">현재가(원)</th>
+                        <th data-priority="4">비교</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for coin in coins %}
+                    {% for coin in coin_list %}
                     <tr data-warning="{{ coin.warning|yesno:'Y,N' }}" data-volume-soaring="{{ coin.trading_volume_soaring|yesno:'Y,N' }}" data-ticker="{{ coin.ticker }}">
-                        <td>{{ coin.name_kor }}</td>
+                        <td>
+                            <a href="{% url 'coin_detail' coin_code=coin.full_code %}" class="color-theme">
+                                <strong>{{ coin.name_kor }}</strong>
+                            <br> ({{ coin.name_eng }})
+                            </a>
+                        </td>
+
                         <td data-sort="{{ coin.ticker }}">{{ coin.ticker }}</td>
-                        <td data-order="{{ coin.trade_price }}">₩{{ coin.trade_price|floatformat:2|default:'-' }}</td>
-                        <td data-order="{{ coin.signed_change_rate }}">
-                             <span class="{% if coin.signed_change_rate > 0 %}color-red-dark{% elif coin.signed_change_rate < 0 %}color-blue-dark{% else %}color-theme{% endif %}">
-                                 {{ coin.signed_change_rate|floatformat:2|default:'-' }}%
-                             </span>
+                        <td data-order="{{ coin.sort_price }}"> {% if coin.latest_price == '가격정보없음' %}
+                            <span class="text-danger">{{ coin.latest_price }}</span>
+                        {% else %}
+                            ₩ {{ coin.latest_price|floatformat:4 }}
+                        {% endif %}
                         </td>
-                        <td>
-                            {% if coin.warning %}<i class="fa fa-exclamation-triangle color-red-dark"></i>{% else %}-{% endif %}
-                        </td>
-                        <td>
-                            {% if coin.trading_volume_soaring %}<i class="fa fa-chart-line color-green-dark"></i>{% else %}-{% endif %}
-                        </td>
+                        <td> <input class="form-check-input" type="checkbox" value="" id="check1" > </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -120,7 +148,7 @@
             <div class="content mt-2">
                 <div class="d-flex">
                     <div class="align-self-center">
-                        <h3 class="mb-0 font-24">22,500 USD <i class="fa fa-caret-down color-green-dark"></i></h1>
+                        <h3 class="mb-0 font-24">22,500 USD <i class="fa fa-caret-down color-green-dark"></i></h3>
                     </div>
                     <div class="align-self-center ms-auto">
                         <h5 class="mb-0 opacity-50 font-13 font-500">Added: 2 hours ago</h5>
