@@ -23,50 +23,161 @@ from django.conf import settings
 from ..utils_coin import *
 from decimal import Decimal # Decimal 타입 임포트
 from django.shortcuts import render, get_object_or_404
+from django.utils import timezone # 🕒 시간대 처리 및 포매팅을 위해 추가
+import locale
+import platform
+# 💡 Timezone 관련 문제 해결을 위해 TimeZone 객체를 가져옵니다.
+from pytz import timezone as pytz_timezone
+
+
+if platform.system() == "Windows":
+    locale.setlocale(locale.LC_ALL, 'Korean')
+else:
+    # Linux/Mac 환경은 ko_KR.UTF-8을 사용하는 것이 일반적입니다.
+    # 그러나 Django 템플릿 필터 사용이 더 간편할 수 있습니다.
+    # 여기서는 포맷팅을 뷰에서 직접 처리하는 로직만 반영합니다.
+    pass
+# 한국 시간대 객체 정의 (settings.py의 TIME_ZONE이 'Asia/Seoul'일 경우)
+KST = pytz_timezone('Asia/Seoul')
+
+
+# 💡 재사용을 위해 Ticker 데이터 포맷팅 함수 정의
+def format_ticker_data(latest_ticker):
+    """최신 Ticker 데이터를 상세 페이지 표시용으로 포맷합니다."""
+    if not latest_ticker:
+        return None
+
+    price_value = latest_ticker.ticker_trade_price
+
+    # 1. 가격 포맷팅 및 소수점 처리
+    display_price = '가격정보없음'
+    if price_value is not None:
+        decimal_places = get_price_display_format(price_value)
+        formatted_price_with_comma = f"{price_value:,.{decimal_places}f}"
+        display_price = formatted_price_with_comma
+
+    # 2. 등락률 처리
+    signed_change_rate = None
+    if latest_ticker.ticker_signed_change_rate is not None:
+        signed_change_rate = latest_ticker.ticker_signed_change_rate * Decimal(100)
+
+    # 3. 시간 처리 (Naive Datetime 오류 방지 로직 재사용)
+    bat_time = latest_ticker.bat_time
+    formatted_bat_time = ''
+    if bat_time:
+        try:
+            aware_bat_time = timezone.make_aware(bat_time, KST)
+            bat_time_kst = timezone.localtime(aware_bat_time)
+            formatted_bat_time = bat_time_kst.strftime('%Y/%m/%d %H:%M:%S')
+        except Exception as e:
+            formatted_bat_time = '시간 오류'
+
+    return {
+        # 최신 가격 요약
+        'trade_price_display': display_price,
+        'change_rate': signed_change_rate,
+        'prev_closing_price': latest_ticker.ticker_prev_closing_price,
+        'high_price': latest_ticker.ticker_high_price,
+        'low_price': latest_ticker.ticker_low_price,
+
+        # 시간 정보
+        'updated_at_formatted': formatted_bat_time,
+
+        # 원본 데이터 (필요한 경우)
+        'ticker_data': latest_ticker,
+    }
+
+
+
+# 💡 코인별 포맷팅 자릿수 결정 함수
+def get_price_display_format(price: Decimal):
+    """가격의 크기에 따라 표시할 소수점 자릿수와 포맷팅을 결정합니다."""
+    # KRW-BTC (수천만원 이상) -> 소수점 0~2자리
+    if price >= Decimal(1000):
+        return 0  # 1,000원 이상: 소수점 0자리 (원 단위만)
+    # KRW-ETH (수백만원) -> 소수점 2~4자리
+    elif price >= Decimal(100):
+        return 2  # 100원 이상: 소수점 2자리
+    # KRW-WAXP (수십원~수백원) -> 소수점 4자리
+    elif price >= Decimal(1):
+        return 4  # 1원 이상: 소수점 4자리
+    # KRW-BTT (0.1원 미만) -> 소수점 6자리 (비트토렌트와 같은 극저가 코인)
+    else:
+        return 6  # 1원 미만: 소수점 6자리
 
 
 def coin_list(request):
     """
-        CoinsUpbitList와 CoinsUpbitTicker를 결합하여
-        활성화된 코인의 이름, 티커, 최신 가격을 보여주는 뷰.
-        """
-
-    # 1. 활성화된 코인 리스트를 가져옵니다. (is_active=True)
+    CoinsUpbitList와 CoinsUpbitTicker를 결합하여
+    활성화된 코인의 이름, 티커, 최신 가격, 등락률, 업데이트 시각을 보여주는 뷰.
+    """
+    # ... (활성화된 코인 리스트 조회는 동일) ...
     active_coins = CoinsUpbitList.objects.filter(is_active=True).values(
         'coins_code',
         'coins_name_kor',
         'coins_name_eng'
     )
-
-    # 2. 각 코인별 최신 Ticker 데이터를 조회합니다.
     coin_list_data = []
 
     for coin in active_coins:
         coin_code = coin['coins_code']
 
         latest_ticker = CoinsUpbitTicker.objects.filter(
-            coins_code__coins_code=coin_code  # ForeignKey를 통해 coins_code 필드 참조
-        ).order_by('-bat_time').first()  # bat_time이 가장 최근인 레코드를 선택
+            coins_code__coins_code=coin_code
+        ).order_by('-bat_time').first()
 
-        # 3. 데이터 통합
-        price = latest_ticker.ticker_trade_price if latest_ticker else 'N/A'
-        bat_time = latest_ticker.bat_time if latest_ticker else 'N/A'
+        # 3. 데이터 통합 및 처리
+        price_value = latest_ticker.ticker_trade_price if latest_ticker and latest_ticker.ticker_trade_price is not None else Decimal(
+            -1)
 
-        # 3. 데이터 통합 및 정렬을 위한 값 처리 🚨 수정된 부분
-        price_value = latest_ticker.ticker_trade_price if latest_ticker and latest_ticker.ticker_trade_price is not None else Decimal(-1)
-        display_price = latest_ticker.ticker_trade_price if latest_ticker and latest_ticker.ticker_trade_price is not None else '가격정보없음'
+        # (3), (4) 가격 포맷팅 및 소수점 처리
+        display_price = '가격정보없음'
+        if price_value != Decimal(-1) and price_value is not None:
+            # 💡 소수점 자릿수 결정
+            decimal_places = get_price_display_format(price_value)
 
+            # 💡 천 단위 콤마 포맷팅 및 소수점 처리
+            # Django 템플릿에서 humanize 필터를 사용하기 위해 포맷되지 않은 Decimal 그대로 전달
+            # 템플릿에서 'intcomma' 필터를 사용하도록 변경합니다.
+            display_price_raw = price_value
+
+            # 💡 소수점 자릿수 정보를 템플릿에 전달
+            formatted_price_with_comma = f"{price_value:,.{decimal_places}f}"
+            display_price = formatted_price_with_comma
+
+        # (3) 등락률: ticker_signed_change_rate를 100을 곱하여 퍼센트(%)로 변환
+        if latest_ticker and latest_ticker.ticker_signed_change_rate is not None:
+            signed_change_rate = latest_ticker.ticker_signed_change_rate * Decimal(100)
+        else:
+            signed_change_rate = None
+
+        # (2) 현재가에 대한 시간 기준 처리 (Naive Datetime 오류 방지 로직 유지)
+        bat_time = latest_ticker.bat_time if latest_ticker else None
+        formatted_bat_time = ''
+        bat_time_sort_value = 0
+
+        if bat_time:
+            try:
+                # Naive Datetime 처리 유지
+                aware_bat_time = timezone.make_aware(bat_time, KST)
+                bat_time_kst = timezone.localtime(aware_bat_time)
+                formatted_bat_time = bat_time_kst.strftime('%Y/%m/%d %H:%M:%S')
+                bat_time_sort_value = bat_time_kst.timestamp()
+            except Exception as e:
+                print(f"Timezone Conversion Error: {e}")
+                formatted_bat_time = '시간 오류'
 
         coin_list_data.append({
             'name_kor': coin['coins_name_kor'],
             'name_eng': coin['coins_name_eng'],
-            'ticker': coin_code.split('-')[-1],  # KRW-BTC -> BTC
+            'ticker': coin_code.split('-')[-1],
             'full_code': coin_code,
-            # 💡 DataTables 정렬용: N/A인 경우 -1이 들어갑니다.
             'sort_price': price_value,
-            # 💡 사용자 표시용: '가격정보없음' 텍스트 또는 포맷되지 않은 Decimal
-            'latest_price': display_price,
-            'updated_at': latest_ticker.bat_time if latest_ticker and latest_ticker.bat_time is not None else 'N/A'
+            # 💡 포맷팅된 문자열을 전달
+            'latest_price_display': display_price,
+            'signed_change_rate': signed_change_rate,
+            'updated_at_formatted': formatted_bat_time,
+            'updated_at_sort': bat_time_sort_value,
         })
 
     context = {

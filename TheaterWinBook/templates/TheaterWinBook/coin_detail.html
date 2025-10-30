@@ -1,53 +1,294 @@
-{% extends "TheaterWinBook/base_header_footer_251011.html" %}
+{% extends "TheaterWinBook/base_header_footer_250724.html" %}
 {% load static %}
-
 {% block css_script %}
-<!--custom css -->
-
+<style>
+    /* ... (기존 CSS 스타일 유지) ... */
+    .summary-box {
+        padding: 20px;
+        border-radius: 5px;
+        background-color: #f8f9fa; /* Light grey background */
+        margin-bottom: 20px;
+        border: 1px solid #e9ecef;
+    }
+    /* ... (기존 CSS 스타일 유지) ... */
+    #chart-container {
+        min-height: 500px; /* 차트가 표시될 최소 높이 */
+        width: 100%;
+    }
+    
+    /* 💡 탭 콘텐츠 영역의 높이를 확보하여 차트 로딩 시 레이아웃 흔들림 방지 */
+    .tab-content {
+        min-height: 600px; 
+    }
+</style>
 {% endblock %}
 
-{% block page-content-class-inside %}
-		<div class="card card-style">
-			<div class="content mb-3">
-				<h1>Meet Sticky Mobile</h1>
-				<p class="pb-2">
-					I'm sticky Mobile. Please don't forget to read the documentation attached. It will help you learn everything there is to know about our file.
-				</p>
-				<a href="index.html" class="btn btn-full btn-m rounded-sm font-700 text-uppercase bg-highlight">Get Started</a>
-			</div>
-		</div>
-		<div class="card card-style">
-            {{coin_code}}
-            {% for coin in coin_list %}
-            <tr class="clickable-row" data-full-code="{{ coin.full_code }}">
-                <td>
-                    <strong>{{ coin.name_kor }}</strong>
-                    <br> ({{ coin.name_eng }})
-                </td>
-
-                <td data-sort="{{ coin.ticker }}">{{ coin.ticker }}</td>
-                <td> <input class="form-check-input no-link" type="checkbox" value="{{ coin.full_code }}" id="check-{{ coin.full_code }}"> </td>
-            </tr>
-            {% endfor %}
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box">
+            <h4 class="page-title">{{ page_title }}</h4>
+            <p class="text-muted">퀀트 분석 및 실시간 시장 상황을 확인하세요.</p>
         </div>
-{% endblock %}
+    </div>
+</div>
 
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                
+                <ul class="nav nav-pills bg-nav-pills nav-justified mb-3">
+                    <li class="nav-item">
+                        <a href="#tab-basic-info" data-bs-toggle="tab" aria-expanded="true"
+                           class="nav-link rounded-0 active">
+                            <i class="mdi mdi-information-outline me-1"></i> 코인 기본 정보
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#tab-chart" data-bs-toggle="tab" aria-expanded="false"
+                           class="nav-link rounded-0">
+                            <i class="mdi mdi-chart-bar me-1"></i> 코인 차트
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#tab-analysis" data-bs-toggle="tab" aria-expanded="false"
+                           class="nav-link rounded-0">
+                            <i class="mdi mdi-brain me-1"></i> 코인 데이터 분석
+                        </a>
+                    </li>
+                </ul>
 
+                <div class="tab-content">
+                    
+                    <div class="tab-pane show active" id="tab-basic-info">
+                        
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="card summary-box">
+                                    <h5 class="mb-3">💰 실시간 시세 ({{ ticker }})</h5>
 
-{% block out-of-pagecontent %}
+                                    <div class="d-flex align-items-center mb-4">
+                                        <span class="main-price">₩ {{ ticker_summary.trade_price_display|default:"N/A" }}</span>
+                                        {% with rate=ticker_summary.change_rate %}
+                                            {% if rate > 0.0 %}
+                                                <span class="change-rate-large change-up-large">{{ rate|floatformat:2 }}% ▲</span>
+                                            {% elif rate < 0.0 %}
+                                                <span class="change-rate-large change-down-large">{{ rate|floatformat:2 }}% ▼</span>
+                                            {% else %}
+                                                <span class="change-rate-large change-even-large">0.00%</span>
+                                            {% endif %}
+                                        {% endwith %}
+                                    </div>
 
+                                    <p class="detail-label mb-2">업데이트 시각:</p>
+                                    <h5 class="mb-3">{{ ticker_summary.updated_at_formatted|default:"정보 없음" }}</h5>
+
+                                    <div class="row mt-4">
+                                        <div class="col-4">
+                                            <p class="detail-label">고가</p>
+                                            <h5 class="text-danger">{{ ticker_summary.high_price|floatformat:4|default:"N/A" }}</h5>
+                                        </div>
+                                        <div class="col-4">
+                                            <p class="detail-label">저가</p>
+                                            <h5 class="text-primary">{{ ticker_summary.low_price|floatformat:4|default:"N/A" }}</h5>
+                                        </div>
+                                        <div class="col-4">
+                                            <p class="detail-label">전일 종가</p>
+                                            <h6>{{ ticker_summary.prev_closing_price|floatformat:4|default:"N/A" }}</h6>
+                                        </div>
+                                    </div>
+
+                                    <hr>
+                                    <p class="text-muted small">코인 코드: **{{ coin_code }}** ({{ name_eng }})</p>
+
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="header-title mb-3">📰 코인 상장 및 유의 정보</h5>
+                                        <p>코인 상장일, 발행처 정보 등을 표시할 영역입니다.</p>
+                                        <ul class="list-group">
+                                            <li class="list-group-item">
+                                                <i class="mdi mdi-alert-circle-outline me-2"></i> 
+                                                **유의 종목 경고:** {% if latest_ticker.warning %} <span class="badge bg-danger">예</span> {% else %} <span class="badge bg-success">아니오</span> {% endif %}
+                                            </li>
+                                            <li class="list-group-item">
+                                                <i class="mdi mdi-trending-up me-2"></i>
+                                                **급등락 경고:** {% if latest_ticker.price_fluctuations %} <span class="badge bg-warning">예</span> {% else %} <span class="badge bg-success">아니오</span> {% endif %}
+                                            </li>
+                                            </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div> <div class="tab-pane" id="tab-chart">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="header-title mb-3">📈 실시간 캔들 차트 (300봉)</h5>
+                                <div id="coinCandleChart" style="min-height: 500px;">
+                                    </div>
+                            </div>
+                        </div>
+                    </div> <div class="tab-pane" id="tab-analysis">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="header-title mb-3">🧠 퀀트 데이터 분석 결과</h5>
+                                <p>기술 지표 (RSI, MACD), 거래량 분석, 시장 심리 지표 등 퀀트 투자에 필요한 분석 결과를 담을 영역입니다.</p>
+
+                                <div class="alert alert-info" role="alert">
+                                    <strong>현재 개발 중:</strong> 미국 주식 데이터 수집 및 분석 기능이 추가되면, 여기에 퀀트 스코어링 및 시그널이 표시될 예정입니다.
+                                </div>
+
+                                <table class="table table-bordered mt-4">
+                                    <thead>
+                                        <tr>
+                                            <th>분석 지표</th>
+                                            <th>현재 값</th>
+                                            <th>시그널</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>RSI (14일)</td>
+                                            <td>(계산 필요)</td>
+                                            <td>중립</td>
+                                        </tr>
+                                        <tr>
+                                            <td>MACD (Hist.)</td>
+                                            <td>(계산 필요)</td>
+                                            <td>매수/매도 시그널</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div> </div> </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}
 
 {% block javascript %}
-<script>
-        $(document).ready(function () {
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
-            // JQuery 적용
-<!--            alert("this is test");-->
+<script>
+    const coinCode = "{{ coin_code }}";
+    const chartApiUrl = "{% url 'get_coin_candle' coin_code='__CODE__' %}"
+        .replace('__CODE__', coinCode);
+    let chartInstance = null;
+    let chartLoaded = false; // 차트 로딩 상태 플래그 추가
+
+    $(document).ready(function() {
+        console.log(`코인 상세 페이지 로드: ${coinCode}`);
+
+        // 💡 탭이 전환될 때마다 이벤트 처리
+        $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+            const targetId = $(e.target).attr("href"); // 활성화된 탭의 ID (예: #tab-chart)
+
+            // '코인 차트' 탭이 활성화되었고, 아직 차트가 로드되지 않았다면 로드
+            if (targetId === '#tab-chart' && !chartLoaded) {
+                loadCandleChart();
+            }
+            // 🚨 차트 탭으로 돌아올 때 ApexCharts가 크기를 다시 계산하도록 강제 업데이트
+            if (targetId === '#tab-chart' && chartInstance) {
+                 chartInstance.updateOptions({});
+            }
         });
 
+        // 기본 탭이 차트 탭일 경우 (현재는 기본정보 탭이므로 주석 처리)
+        // if ($('#tab-chart').hasClass('active') && !chartLoaded) {
+        //     loadCandleChart();
+        // }
+    });
 
-    </script>
+    function loadCandleChart() {
+        // ... (기존 loadCandleChart 함수 유지) ...
+        $.ajax({
+            url: chartApiUrl,
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                if (response.status === 'success') {
+                    if (response.data && response.data.length > 0) {
+                        renderApexChart(response.data, response.coin_name_kor);
+                        chartLoaded = true; // 로드 성공 플래그 설정
+                    } else {
+                        $('#coinCandleChart').html('<div class="text-center py-5 text-muted">캔들 데이터가 충분하지 않습니다.</div>');
+                    }
+                } else {
+                    $('#coinCandleChart').html('<div class="text-center py-5 text-danger">데이터 로드 중 오류 발생: ' + response.message + '</div>');
+                }
+            },
+            error: function() {
+                $('#coinCandleChart').html('<div class="text-center py-5 text-danger">서버 통신 오류가 발생했습니다.</div>');
+            }
+        });
+    }
+
+    // ... (기존 renderApexChart 함수 유지) ...
+    function renderApexChart(ohlcData, coinName) {
+        const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--ct-primary').trim();
+        const dangerColor = getComputedStyle(document.documentElement).getPropertyValue('--ct-danger').trim();
+
+        const options = {
+            series: [{
+                name: '캔들',
+                type: 'candlestick',
+                data: ohlcData
+            }],
+            chart: {
+                height: 500,
+                type: 'candlestick',
+                toolbar: { show: true },
+                zoom: { enabled: true },
+                // 한국어 로컬라이제이션 설정 유지
+                locales: [{
+                    name: 'ko',
+                    options: {
+                        months: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+                        shortMonths: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+                        days: ['일', '월', '화', '수', '목', '금', '토'],
+                        shortDays: ['일', '월', '화', '수', '목', '금', '토'],
+                        toolbar: {
+                            exportToSVG: "SVG 다운로드",
+                            exportToPNG: "PNG 다운로드",
+                            exportToCSV: "CSV 다운로드",
+                            menu: "메뉴", selection: "선택", selectionZoom: "선택 확대/축소",
+                            zoomIn: "확대", zoomOut: "축소", pan: "이동", reset: "줌 초기화",
+                        }
+                    }
+                }],
+                defaultLocale: 'ko'
+            },
+            title: { text: `${coinName} 캔들 차트 (일봉 기준)`, align: 'left' },
+            xaxis: {
+                type: 'datetime',
+                labels: { datetimeFormatter: { year: 'yyyy년', month: 'MM월', day: 'MM/dd', hour: 'HH:mm', } },
+                tooltip: { enabled: true }
+            },
+            yaxis: { tooltip: { enabled: true } },
+            tooltip: { x: { format: 'yyyy년 MM월 dd일 HH:mm:ss' } },
+            plotOptions: {
+                candlestick: {
+                    colors: {
+                        up: dangerColor || '#dc3545',
+                        down: primaryColor || '#007bff'
+                    }
+                }
+            }
+        };
+
+        if (chartInstance) {
+            chartInstance.updateOptions(options);
+        } else {
+            chartInstance = new ApexCharts(document.querySelector("#coinCandleChart"), options);
+            chartInstance.render();
+        }
+    }
+</script>
 {% endblock %}
-

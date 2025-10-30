@@ -26,6 +26,9 @@ UPBIT_ACCESS_KEY = env('UPBIT_ACCESS_KEY')
 UPBIT_SECRET_KEY = env('UPBIT_SECRET_KEY')
 DEBUG = env.bool('DEBUG', default=False)
 
+# env 패키지를 활용해서 EVOS .env 환경 변수 가져오기 251030
+ECOS_API_KEY = env('ECOS_API_KEY')
+
 
 # 텔레그램 추가 251023 env 패키지를 활용해서 텔레그램 환경 변수 가져오기
 TELEGRAM_BOT_TOKEN = env('TELEGRAM_BOT_TOKEN')
@@ -44,7 +47,7 @@ DEBUG = False
 
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'www.fullvesting.com', 'fullvesting.com.','fullvesting.com', 'http://fullvesting.com',
-                 'theaterwin.com', 'http://theaterwin.com', 'http://158.247.218.118/', '158.247.218.118']
+                 'theaterwin.com', 'http://theaterwin.com', 'http://158.247.218.118/', '158.247.218.118','0.0.0.0']
 
 
 
@@ -249,3 +252,4 @@ SERVER_EMAIL = EMAIL_HOST_USER # 서버 에러 발생 시 이메일을 보낼 �
 # ----------------------------------------------------
 # 이메일 (SMTP) 설정 추가 시작 251023
 # ----------------------------------------------------
+

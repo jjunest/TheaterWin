@@ -34,7 +34,8 @@ urlpatterns = [
 
     # 🚨 코인 상세 페이지 URL 패턴 추가
     path('coin/detail/<str:coin_code>/', views.coin_detail_view, name='coin_detail'),
+
+    # urls.py에 정의되어야 함
+    path('api/coin/candle/<str:coin_code>/', views.get_coin_candle, name='get_coin_candle'),
+
 ]
-
-
-

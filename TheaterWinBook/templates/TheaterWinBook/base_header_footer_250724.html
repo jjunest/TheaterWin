@@ -27,6 +27,20 @@
     <!-- Adminto.Icons css -->
     <link href="{% static 'TheaterWinBook/assets/css/icons.min.css' %}" rel="stylesheet" type="text/css"/>
 
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+    /* 💡💡💡 [NEW] 전체 글꼴 적용 💡💡💡 */
+    /* body에 적용하면 상속되어 대부분의 텍스트에 적용됩니다. */
+    body {
+        /* Noto Sans KR을 최우선으로 적용하고, 실패 시 Sans-serif 계열 기본 글꼴을 사용 */
+        font-family: 'Noto Sans KR', sans-serif !important;
+    }
+
+    </style>
+
     {% block css_script %}
     <!--    custom css 파일 넣는 위치 -->
 

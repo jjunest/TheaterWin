@@ -194,7 +194,7 @@ def template_content_52(request):
     return render(request, 'TheaterWinBook/template_content_52.html')
 
 def base_template_content_251011(request):
-    return render(request, 'TheaterWinBook/base_template_content_251011.html')
+    return render(request, 'TheaterWinBook/base_template_content_251011_stickymobile.html')
 
 def base_template_250724(request):
     return render(request, 'TheaterWinBook/base_template_250724.html')
