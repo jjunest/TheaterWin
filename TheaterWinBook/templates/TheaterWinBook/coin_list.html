@@ -104,10 +104,22 @@
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
+<div class="row" style="
+    padding-left: 0px;
+    padding-right: 0px;
+">
+    <div class="col-12" style="
+    padding-left: 0px;
+    padding-right: 0px;
+">
+        <div class="card" style="
+    padding-left: 0px;
+    padding-right: 0px;
+">
+            <div class="card-body"style="
+    padding-left: 0px;
+    padding-right: 0px;
+">
                 <h4 class="header-title mb-2">🚀 업비트 코인 실시간 시세 및 분석 목록</h4>
                 <p class="text-muted mb-3">
                     코인을 클릭하여 상세 분석 차트를 확인하세요.
@@ -119,7 +131,7 @@
                         <th>코인 정보</th>
                         <th>현재가 (KRW)</th>
                         <th>전날대비 (%)</th>
-                        <th class="d-none">업데이트 시간 (정렬용)</th>
+<!--                        <th class="d-none">업데이트 시간 (정렬용)</th>-->
                     </tr>
                     </thead>
                     <tbody>
@@ -154,9 +166,7 @@
                             {% endif %}
                         </td>
 
-                        <td class="d-none" data-order="{{ coin.updated_at_sort }}">
-                             {{ coin.updated_at_sort }}
-                        </td>
+
 
                     </tr>
                     {% endfor %}
@@ -205,6 +215,30 @@
              responsive: true,
              // (1) select 관련 language 설정 제거
              "autoWidth": true,
+             // ✅ 검색창 텍스트를 포함하는 언어 설정 객체
+     "language": {
+         // 검색창 앞에 표시되는 'Search:' 텍스트를 변경합니다.
+         "search": "",
+
+         // 💡 (선택 사항) 검색창 내부 Placeholder 텍스트를 변경하려면 아래 코드를 추가합니다.
+         "searchPlaceholder": "코인명/티커 검색",
+
+         // 나머지 필수 한국어 설정 (이전 요청에서 추가됨)
+         "processing": "처리 중...",
+         "lengthMenu": "_MENU_ 개씩 보기",
+         "zeroRecords": "검색 결과가 없습니다.",
+         "info": "현재 _START_ 에서 _END_ 까지 표시합니다. 총 _TOTAL_ 건",
+         "infoEmpty": "데이터가 없습니다.",
+         "infoFiltered": "( _MAX_ 건의 데이터에서 필터링됨 )",
+         "paginate": {
+             "first": "처음",
+             "previous": "이전",
+             "next": "다음",
+             "last": "마지막"
+         }
+     },
+
+
         });
 
         // --- 행 클릭 시 상세 페이지 이동 이벤트 추가 (유지) ---

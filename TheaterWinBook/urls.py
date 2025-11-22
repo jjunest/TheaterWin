@@ -79,7 +79,8 @@ urlpatterns = [
 
     # 기본 페이지 및 앱
     path("", views.index_real, name="index_real"),
-    path("index_real/", views.index_real, name="index_real"),
+    # 시작 첫페이지를 보여주는 view : 현재 coin_list
+    path("index_real/", views.coin_list, name="index_real"),
     path("appchat/", views.appchat, name="appchat"),
 
     # WYSIWYG Editor

@@ -37,7 +37,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                
+
                 <ul class="nav nav-pills bg-nav-pills nav-justified mb-3">
                     <li class="nav-item">
                         <a href="#tab-basic-info" data-bs-toggle="tab" aria-expanded="true"
@@ -60,9 +60,9 @@
                 </ul>
 
                 <div class="tab-content">
-                    
+
                     <div class="tab-pane show active" id="tab-basic-info">
-                        
+
                         <div class="row">
                             <div class="col-lg-6">
                                 <div class="card summary-box">
@@ -104,7 +104,7 @@
 
                                 </div>
                             </div>
-                            
+
                             <div class="col-lg-6">
                                 <div class="card">
                                     <div class="card-body">
@@ -112,7 +112,7 @@
                                         <p>코인 상장일, 발행처 정보 등을 표시할 영역입니다.</p>
                                         <ul class="list-group">
                                             <li class="list-group-item">
-                                                <i class="mdi mdi-alert-circle-outline me-2"></i> 
+                                                <i class="mdi mdi-alert-circle-outline me-2"></i>
                                                 **유의 종목 경고:** {% if latest_ticker.warning %} <span class="badge bg-danger">예</span> {% else %} <span class="badge bg-success">아니오</span> {% endif %}
                                             </li>
                                             <li class="list-group-item">
@@ -133,11 +133,68 @@
                                     </div>
                             </div>
                         </div>
-                    </div> <div class="tab-pane" id="tab-analysis">
+                    </div>
+
+
+<div class="tab-pane" id="tab-analysis">
                         <div class="card">
                             <div class="card-body">
                                 <h5 class="header-title mb-3">🧠 퀀트 데이터 분석 결과</h5>
                                 <p>기술 지표 (RSI, MACD), 거래량 분석, 시장 심리 지표 등 퀀트 투자에 필요한 분석 결과를 담을 영역입니다.</p>
+
+                                <h6 class="mt-4 mb-3"><i class="mdi mdi-trending-down text-danger me-2"></i> 기간별 최대 낙폭 (MDD) 분석</h6>
+
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-sm table-hover text-center">
+                                        <thead>
+                                            <tr class="table-light">
+                                                <th>기간</th>
+                                                <th>최고가 (Peak)</th>
+                                                <th>현재가</th>
+                                                <th>MDD (%)</th>
+                                                <th>리스크 스코어 (임시)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for key, result in mdd_results.items %}
+                                                <tr>
+                                                    <td>
+                                                        <span class="badge bg-primary">{{ result.label }}</span>
+                                                    </td>
+                                                    <td class="text-danger">
+                                                        ₩ {{ result.peak_price }}
+                                                    </td>
+                                                    <td>
+                                                        {# Decimal 타입을 포맷팅하여 표시. 쉼표는 세팅에 따라 적용됨 #}
+                                                        ₩ {{ result.current_price|floatformat:0 }}
+                                                    </td>
+                                                    <td>
+                                                        {% with mdd_percent=result.mdd_percent %}
+                                                            {% if mdd_percent > 0 %}
+                                                                {# MDD는 항상 양수로 표시하되, 낙폭을 강조하기 위해 색상 적용 #}
+                                                                <span class="text-danger fw-bold">
+                                                                    -{{ mdd_percent|floatformat:2 }}%
+                                                                </span>
+                                                            {% else %}
+                                                                <span class="text-success">0.00%</span>
+                                                            {% endif %}
+                                                        {% endwith %}
+                                                    </td>
+                                                    <td>
+                                                        {# mdd_rank_percent는 Decimal 타입이므로 floatformate 적용 #}
+                                                        <span class="fw-bold">{{ result.mdd_rank_percent|floatformat:2 }}</span> 점
+                                                    </td>
+                                                </tr>
+                                            {% empty %}
+                                                <tr>
+                                                    <td colspan="5" class="text-muted">MDD 데이터를 불러올 수 없습니다.</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <hr class="my-4">
 
                                 <div class="alert alert-info" role="alert">
                                     <strong>현재 개발 중:</strong> 미국 주식 데이터 수집 및 분석 기능이 추가되면, 여기에 퀀트 스코어링 및 시그널이 표시될 예정입니다.
@@ -166,7 +223,10 @@
                                 </table>
                             </div>
                         </div>
-                    </div> </div> </div>
+                    </div>
+
+
+                </div> </div>
         </div>
     </div>
 </div>

@@ -28,6 +28,8 @@ import locale
 import platform
 # 💡 Timezone 관련 문제 해결을 위해 TimeZone 객체를 가져옵니다.
 from pytz import timezone as pytz_timezone
+from datetime import date, timedelta
+import pandas as pd
 
 
 if platform.system() == "Windows":
@@ -39,6 +41,152 @@ else:
     pass
 # 한국 시간대 객체 정의 (settings.py의 TIME_ZONE이 'Asia/Seoul'일 경우)
 KST = pytz_timezone('Asia/Seoul')
+
+
+def calculate_all_coin_mdd_rank(target_coin_code, days):
+    """
+    특정 기간(days) 동안의 전체 코인에 대한 MDD를 계산하고
+    대상 코인의 순위 및 백분율을 반환합니다.
+    """
+    all_coins = CoinsUpbitList.objects.all()
+    all_mdd_results = []
+    end_date = timezone.now().date()
+    start_date = end_date - timedelta(days=days)
+
+    # 1. 모든 코인에 대해 MDD 계산 및 데이터 수집
+    for coin in all_coins:
+        # 해당 기간의 캔들 데이터 조회 (종가/coin_trade_price 기준)
+        prices_queryset = CoinsUpbitCandle.objects.filter(
+            coins_code__coins_code=coin.coins_code,  # 조회 최적화를 위해 코드로 필터링
+            coin_candle_datetime_kst__date__range=[start_date, end_date]
+        ).order_by('coin_candle_datetime_kst').values('coin_trade_price')
+
+        if prices_queryset.exists():
+            prices_data_list = [
+                {'trade_price': float(p['coin_trade_price'])}
+                for p in prices_queryset
+                if p['coin_trade_price'] is not None
+            ]
+
+            if prices_data_list:
+                prices_df = pd.DataFrame(prices_data_list)
+                latest_price = prices_df['trade_price'].iloc[-1]
+
+                # calculate_mdd 함수 호출 (Peak Price는 필요 없으므로 _로 처리)
+                _, _, mdd_percentage = calculate_mdd(prices_df, latest_price)
+
+                all_mdd_results.append({
+                    'code': coin.coins_code,
+                    'mdd_percent': Decimal(str(mdd_percentage)),  # Decimal로 저장
+                })
+
+    # 2. MDD 기준 오름차순 정렬 (MDD 값이 작을수록 = 낙폭이 적을수록 순위가 높음)
+    sorted_mdd = sorted(all_mdd_results, key=lambda x: x['mdd_percent'])
+
+    # 3. 대상 코인의 순위 및 백분율 계산
+    total_count = len(sorted_mdd)
+    target_rank = 0
+
+    for i, result in enumerate(sorted_mdd):
+        if result['code'] == target_coin_code:
+            target_rank = i + 1
+            break
+
+    rank_percentage = (target_rank / total_count) * 100 if total_count > 0 else Decimal('0.0')
+
+    return {
+        'total_count': total_count,
+        'rank': target_rank,
+        'rank_percent': Decimal(str(rank_percentage)),  # 백분율을 Decimal로
+    }
+
+def calculate_mdd(prices_df, current_price, days=180):
+    """
+    주어진 기간(days) 내 최고가 대비 현재 가격의 MDD(Maximum Drawdown)를 계산합니다.
+    prices_df: 해당 기간의 가격 데이터프레임 (예: ['trade_price'] 컬럼 포함)
+    current_price: 가장 최근의 현재 가격
+    """
+    if prices_df.empty:
+        return None, None, 0.0, 0.0
+
+    # 1. 해당 기간 내 최고가 (Peak Price) 계산
+    peak_price = prices_df['trade_price'].max()
+    # 계산을 위해 float 타입을 decimal 타입으로 변경
+    peak_price_decimal = Decimal(str(peak_price))
+    print("this is peak_price:",peak_price)
+    print("this is current_price:",current_price)
+
+    # 2. 현재 MDD 계산
+    # (최고가 - 현재가) / 최고가 * 100
+
+    # 나눗셈 시 ZeroDivisionError 방지를 위해 체크
+    if peak_price_decimal == Decimal('0'):
+        mdd_percentage = Decimal('0')
+    else:
+        # (Decimal - Decimal) / Decimal * Decimal 연산으로 안전하게 수행
+        mdd_percentage = ((peak_price_decimal - current_price) / peak_price_decimal) * Decimal('100')
+    print("this is mdd_percentage:",mdd_percentage)
+    # 3. 데이터프레임을 이용한 실제 MDD 계산 (참고용, 사용자에게는 현재 MDD를 보여줌)
+    # cum_max = prices_df['trade_price'].cummax()
+    # drawdowns = (prices_df['trade_price'] - cum_max) / cum_max
+    # max_drawdown_actual = drawdowns.min() * 100 # 전체 기간 중 최대 낙폭
+
+    return peak_price, current_price, mdd_percentage
+
+
+# 💡 재사용을 위해 Ticker 데이터 포맷팅 함수를 Candle 데이터 포맷팅 함수로 변경/정의
+def format_candle_data(latest_candle, latest_ticker_for_rate):
+    """
+    최신 Candle 데이터를 상세 페이지 표시용으로 포맷하고,
+    실시간 등락률을 위해 Ticker 데이터를 병합합니다.
+    """
+    if not latest_candle:
+        return None
+
+    # ⭐️ Candle의 종가(trade_price)를 현재가로 사용
+    price_value = latest_candle.coin_trade_price
+
+    # 1. 가격 포맷팅 및 소수점 처리
+    display_price = '가격정보없음'
+    if price_value is not None:
+        decimal_places = get_price_display_format(price_value)
+        formatted_price_with_comma = f"{price_value:,.{decimal_places}f}"
+        display_price = formatted_price_with_comma
+
+    # 2. 등락률 처리 (Candle에는 등락률 필드가 없으므로, Ticker에서 가져옵니다.)
+    signed_change_rate = None
+    if latest_ticker_for_rate and latest_ticker_for_rate.ticker_signed_change_rate is not None:
+        signed_change_rate = latest_ticker_for_rate.ticker_signed_change_rate * Decimal(100)
+
+    # 3. 시간 처리 (Candle의 시간 사용)
+    bat_time = latest_candle.coin_candle_datetime_kst
+    formatted_bat_time = ''
+    if bat_time:
+        try:
+            # Candle 시간 필드는 보통 이미 Timezone-aware이거나, 최소한 KST 기준이므로
+            # Naive/Aware 처리 로직을 조정합니다. (기존 로직 유지)
+            aware_bat_time = timezone.make_aware(bat_time, KST)
+            bat_time_kst = timezone.localtime(aware_bat_time)
+            formatted_bat_time = bat_time_kst.strftime('%Y/%m/%d %H:%M:%S')
+        except Exception as e:
+            formatted_bat_time = '시간 오류'
+
+    return {
+        # ⭐️ 최신 가격 요약 (Candle 기반)
+        'trade_price_display': display_price,
+        'change_rate': signed_change_rate,  # Ticker 기반
+        # ⭐️ Candle의 가격 정보 사용
+        'prev_closing_price': latest_candle.coin_opening_price,  # 캔들에서는 시가(Open)를 전일 종가처럼 임시 사용하거나, 별도 필드 활용
+        'high_price': latest_candle.coin_high_price,
+        'low_price': latest_candle.coin_low_price,
+
+        # 시간 정보 (Candle 기반)
+        'updated_at_formatted': formatted_bat_time,
+
+        # ⭐️ 원본 데이터 (필요한 경우)
+        'candle_data': latest_candle,
+    }
+
 
 
 # 💡 재사용을 위해 Ticker 데이터 포맷팅 함수 정의
@@ -122,12 +270,12 @@ def coin_list(request):
     for coin in active_coins:
         coin_code = coin['coins_code']
 
-        latest_ticker = CoinsUpbitTicker.objects.filter(
+        latest_candle = CoinsUpbitCandle.objects.filter(
             coins_code__coins_code=coin_code
-        ).order_by('-bat_time').first()
+        ).order_by('-coin_candle_datetime_kst').first()
 
-        # 3. 데이터 통합 및 처리
-        price_value = latest_ticker.ticker_trade_price if latest_ticker and latest_ticker.ticker_trade_price is not None else Decimal(
+        # 가격: coin_trade_price (종가)
+        price_value = latest_candle.coin_trade_price if latest_candle and latest_candle.coin_trade_price is not None else Decimal(
             -1)
 
         # (3), (4) 가격 포맷팅 및 소수점 처리
@@ -145,20 +293,24 @@ def coin_list(request):
             formatted_price_with_comma = f"{price_value:,.{decimal_places}f}"
             display_price = formatted_price_with_comma
 
-        # (3) 등락률: ticker_signed_change_rate를 100을 곱하여 퍼센트(%)로 변환
-        if latest_ticker and latest_ticker.ticker_signed_change_rate is not None:
-            signed_change_rate = latest_ticker.ticker_signed_change_rate * Decimal(100)
+        # ⭐️ 등락률을 위해 Ticker를 다시 가져오는 로직 추가 (Candle의 시간/가격은 유지)
+        latest_ticker_for_change_rate = CoinsUpbitTicker.objects.filter(
+            coins_code__coins_code=coin_code
+        ).order_by('-bat_time').first()
+
+        if latest_ticker_for_change_rate and latest_ticker_for_change_rate.ticker_signed_change_rate is not None:
+            signed_change_rate = latest_ticker_for_change_rate.ticker_signed_change_rate * Decimal(100)
         else:
             signed_change_rate = None
 
         # (2) 현재가에 대한 시간 기준 처리 (Naive Datetime 오류 방지 로직 유지)
-        bat_time = latest_ticker.bat_time if latest_ticker else None
+        bat_time = latest_candle.coin_candle_datetime_kst if latest_candle else None
         formatted_bat_time = ''
         bat_time_sort_value = 0
 
         if bat_time:
             try:
-                # Naive Datetime 처리 유지
+                # Candle 시간은 이미 KST로 저장되어 있을 가능성이 높지만, Timezone 처리는 유지
                 aware_bat_time = timezone.make_aware(bat_time, KST)
                 bat_time_kst = timezone.localtime(aware_bat_time)
                 formatted_bat_time = bat_time_kst.strftime('%Y/%m/%d %H:%M:%S')
@@ -175,8 +327,11 @@ def coin_list(request):
             'sort_price': price_value,
             # 💡 포맷팅된 문자열을 전달
             'latest_price_display': display_price,
+            # ⭐️ 등락률은 Ticker에서 가져온 값 사용
             'signed_change_rate': signed_change_rate,
+            # ⭐️ Candle의 기준 시간 사용
             'updated_at_formatted': formatted_bat_time,
+            # ⭐️ Candle의 기준 시간 정렬 값 사용
             'updated_at_sort': bat_time_sort_value,
         })
 
@@ -189,23 +344,118 @@ def coin_list(request):
 
 
 def coin_detail_view(request, coin_code):
-    """
-    특정 코인 코드(KRW-BTC)를 받아 상세 정보를 보여주는 뷰.
-    """
+    print("this is coin_view_detail")
     # 1. DB에서 해당 코인 정보 로드
     coin_list_info = get_object_or_404(CoinsUpbitList, coins_code=coin_code)
 
-    # 2. 가장 최신 Ticker 데이터 로드 (선택 사항: 상세 정보 페이지에 활용)
-    latest_ticker = CoinsUpbitTicker.objects.filter(
+    # ⭐️ 변경: Ticker 대신 최신 Candle 데이터 로드 (MDD의 기준 가격이 됩니다)
+    latest_candle = CoinsUpbitCandle.objects.filter(
+        coins_code__coins_code=coin_code
+    ).order_by('-coin_candle_datetime_kst').first()
+
+    # ⭐️ 추가: 등락률 계산을 위해 최신 Ticker 데이터도 로드 (Ticker의 실시간 등락률을 사용합니다)
+    latest_ticker_for_rate = CoinsUpbitTicker.objects.filter(
         coins_code__coins_code=coin_code
     ).order_by('-bat_time').first()
 
+    # ⭐️ 변경: Candle 데이터를 기반으로 요약 데이터 포맷팅
+    ticker_summary = format_candle_data(latest_candle, latest_ticker_for_rate)
+
+    # ⭐️ Candle의 종가(coin_trade_price)를 현재 MDD 계산의 기준 가격으로 사용
+    current_price = latest_candle.coin_trade_price if latest_candle else None
+    print("this is current_price (from Candle):", current_price)
+    # 2. 기간 설정 및 MDD 계산
+    time_periods = {
+        '1m': 30,  # 3개월 (약 90일)
+        '3m': 90,  # 3개월 (약 90일)
+        '6m': 180,  # 6개월 (약 180일)
+        '12m': 365,  # 12개월 (약 365일)
+        '18m': 548,  # 18개월 (약 548일)
+    }
+
+    mdd_results = {}
+
+    if current_price:
+        end_date = timezone.now().date()
+
+        for key, days in time_periods.items():
+            start_date = end_date - timedelta(days=days)
+            print("this is end_date:", end_date)
+            print("this is start_date:",start_date)
+
+            # 해당 기간의 캔들 데이터 조회 (종가/coin_trade_price 기준) (이하 동일)
+            prices_queryset = CoinsUpbitCandle.objects.filter(
+                coins_code__coins_code=coin_code,
+                coin_candle_datetime_kst__date__range=[start_date, end_date]
+            ).order_by('coin_candle_datetime_kst').values('coin_trade_price')
+
+            peak_price = None
+            mdd_percentage = 0.0
+
+            if prices_queryset.exists():
+                prices_data_list = [
+                    {'trade_price': float(p['coin_trade_price'])}
+                    for p in prices_queryset
+                    if p['coin_trade_price'] is not None
+                ]
+
+                if prices_data_list:
+                    prices_df = pd.DataFrame(prices_data_list)
+                    print("this is price_df:",prices_df)
+
+                    # MDD 계산 함수 호출
+                    peak_price, _, mdd_percentage = calculate_mdd(prices_df, current_price)
+                    print("this is peak_price:",peak_price)
+                    print("this is mdd_percentage:",mdd_percentage)
+
+                    # 💡 Peak Price 포맷팅 (쉼표 및 소수점 0자리)
+                    peak_price_formatted = f"{Decimal(peak_price):,.0f}" if peak_price is not None else 'N/A'
+                    print("this is peak_price_formatted:",peak_price_formatted)
+                    # 💡 MDD 순위 (임시 값)
+                    # 💡 수정 코드: 모든 상수(25.5, 0.1)를 Decimal 타입으로 변환
+                    # 4. 기준 기간 MDD 순위 계산 및 결과에 추가
+                    # 💡 기간별 MDD 순위 계산 및 반영 (추가된 핵심 로직)
+                    try:
+                        mdd_rank_info = calculate_all_coin_mdd_rank(coin_code, days)
+                        mdd_rank = mdd_rank_info['rank']
+                        mdd_total = mdd_rank_info['total_count']
+                        mdd_rank_percent = mdd_rank_info['rank_percent']  # Decimal 타입
+                    except Exception as e:
+                        print(f"기간 {key} MDD 순위 계산 오류: {e}")
+                        mdd_rank = 'N/A'
+                        mdd_total = 'N/A'
+                        mdd_rank_percent = Decimal('0.0')
+
+                    mdd_results[key] = {
+                        'label': f"{days}일",
+                        'peak_price': peak_price_formatted,
+                        'current_price': current_price,
+                        'mdd_percent': mdd_percentage,
+                        # 💡 순위 정보를 mdd_results에 추가
+                        'mdd_rank': mdd_rank,
+                        'mdd_total_count': mdd_total,
+                        'mdd_rank_percent': mdd_rank_percent,
+                    }
+                    print("mdd_rank:",mdd_rank)
+                else:
+                    mdd_results[key] = {'label': f"{days}일", 'peak_price': '데이터 부족', 'mdd_percent': 0.0,
+                                        'mdd_rank': 'N/A', 'mdd_total_count': 'N/A', 'mdd_rank_percent': Decimal('0.0')}
+
+            else:
+                mdd_results[key] = {'label': f"{days}일", 'peak_price': '데이터 없음', 'mdd_percent': 0.0,
+                                    'mdd_rank': 'N/A', 'mdd_total_count': 'N/A', 'mdd_rank_percent': Decimal('0.0')}
+
     context = {
         'coin_code': coin_code,
+        'ticker': coin_code.split('-')[-1],
         'name_kor': coin_list_info.coins_name_kor,
-        'ticker_data': latest_ticker,
+        'name_eng': coin_list_info.coins_name_eng,
+        # ⭐️ latest_ticker 대신 latest_candle 원본 객체 전달 (필요시 사용)
+        'latest_candle': latest_candle,
+        # ⭐️ Candle 기반의 요약 데이터 전달
+        'ticker_summary': ticker_summary,
         'page_title': f'{coin_list_info.coins_name_kor} 상세 분석',
-        # ... 여기에 차트 데이터나 추가 정보를 로드하여 context에 포함 ...
+        'mdd_results': mdd_results,  # 💡 기간별 MDD 결과 데이터 추가
     }
     return render(request, 'TheaterWinBook/coin_detail.html', context)
 
