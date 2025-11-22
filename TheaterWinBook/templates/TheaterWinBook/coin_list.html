@@ -1,143 +1,98 @@
 {% extends "TheaterWinBook/base_header_footer_250724.html" %}
 {% load static %}
+
 {% block css_script %}
 <style>
-    /* 알람 상태를 시각화하기 위한 CSS */
-    .alarm-badge {
-        display: inline-block;
-        padding: .25em .4em;
-        font-size: 75%;
-        font-weight: 700;
-        line-height: 1;
-        text-align: center;
-        white-space: nowrap;
-        vertical-align: baseline;
-        border-radius: .25rem;
-        transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
-    }
-    .badge-warning { color: #212529; background-color: #ffc107; }
-    .badge-danger { color: #fff; background-color: #dc3545; }
-    .badge-info { color: #fff; background-color: #17a2b8; }
-    .badge-success { color: #fff; background-color: #28a745; }
-
-    /* 💡 [NEW] 데이터 가독성을 위한 스타일 */
+    /* ------------------------------------------------------------- */
+    /* 1. 가독성 및 상태 표시 스타일 */
+    /* ------------------------------------------------------------- */
     .coin-name {
-        font-weight: 600; /* 코인 한글 이름 볼드 */
+        font-weight: 700;
         font-size: 1.05em;
+        color: #333;
     }
     .coin-ticker {
-        font-size: 0.9em;
-        color: #6c757d; /* 회색으로 티커 구분 */
+        font-size: 0.85em;
+        color: #888;
+        margin-top: 2px;
     }
     .price-value {
-        font-weight: 700; /* 현재가 볼드 */
+        font-weight: 700;
         font-size: 1.1em;
+        font-family: 'Roboto', sans-serif; /* 숫자 가독성 폰트 추천 */
     }
+
+    /* 2. 등락률 색상 (업비트 스타일: 상승=빨강, 하락=파랑) */
     .change-up {
         font-weight: 700;
-        color: #dc3545 !important; /* Adminto/Bootstrap danger color */
+        color: #d60000 !important;
     }
     .change-down {
         font-weight: 700;
-        color: #007bff !important; /* Adminto/Bootstrap primary color (파란색) */
+        color: #0051c7 !important;
+    }
+    .change-flat {
+        font-weight: 700;
+        color: #333 !important;
     }
 
-    /* 💡 [NEW] 테이블 셀 텍스트 오버플로우 처리 */
-    #selection-datatable td, #selection-datatable th {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-/* 💡 [NEW] 마우스 오버 커서 추가: 클릭 가능한 행임을 시각적으로 보여줌 */
+    /* 3. 테이블 인터랙션 */
     #selection-datatable tbody tr {
         cursor: pointer;
+        transition: background-color 0.2s;
     }
-</style>
-<style>
+    #selection-datatable tbody tr:hover {
+        background-color: #f1f3f5 !important; /* 마우스 오버 시 연한 회색 */
+    }
+    #selection-datatable td {
+        vertical-align: middle; /* 셀 내용 수직 중앙 정렬 */
+    }
 
-    /* 💡💡💡 [NEW] 고정된 DataTables 헤더 스타일 추가 💡💡💡 */
-    /* DataTables FixedHeader가 생성하는 클래스는 dtfh-floating-top 입니다. */
+    /* 4. 고정 헤더 스타일 (FixedHeader) */
     .dtfh-floating-top {
-        /* 배경색을 흰색 또는 템플릿의 기본 배경색으로 지정 */
-        background-color: #D1D1D1 !important;
-        /* 테이블 경계선 추가 */
-        border-bottom: 2px solid #e3e3e3 !important;
-        /* 부유하는 느낌을 주기 위한 그림자 */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        /* Adminto 기본 콘텐츠 위에 보이도록 z-index를 높게 설정 */
+        background-color: #f8f9fa !important;
+        border-bottom: 2px solid #dee2e6 !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         z-index: 1050;
     }
-
-    /* 고정된 헤더 내부의 폰트 및 패딩 조정 (선명도 확보) */
     .dtfh-floating-top th {
+        color: #495057 !important;
         font-weight: 700 !important;
-        /* 배경색과 대비되는 진한 글자색 (푸른 계열에 어울리는 네이비 느낌의 회색) */
-        color: #333366 !important;
-        padding-top: 12px !important; /* 패딩을 약간 늘려 시원한 느낌 추가 */
-        padding-bottom: 12px !important;
-        /* 마우스 오버 시 스타일 변경을 위한 transition 추가 */
-        transition: background-color 0.2s ease;
-    }
-
-    /* 💡 [NEW] 테이블 셀 텍스트 오버플로우 처리 (겹치지 않도록 유지) */
-    #selection-datatable td, #selection-datatable th {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        padding-top: 15px !important;
+        padding-bottom: 15px !important;
+        border-bottom: none !important;
     }
 </style>
-<link href="{% static 'TheaterWinBook/assets/vendor/datatables.net-bs5/css/dataTables.bootstrap5.min.css'%}"
-      rel="stylesheet" type="text/css"/>
-<link href="{% static 'TheaterWinBook/assets/vendor/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css'%}"
-      rel="stylesheet" type="text/css"/>
-<link href="{% static 'TheaterWinBook/assets/vendor/datatables.net-fixedcolumns-bs5/css/fixedColumns.bootstrap5.min.css'%}"
-      rel="stylesheet" type="text/css"/>
-<link href="{% static 'TheaterWinBook/assets/vendor/datatables.net-fixedheader-bs5/css/fixedHeader.bootstrap5.min.css'%}"
-      rel="stylesheet" type="text/css"/>
-<link href="{% static 'TheaterWinBook/assets/vendor/datatables.net-buttons-bs5/css/buttons.bootstrap5.min.css'%}"
-      rel="stylesheet" type="text/css"/>
-<link href="{% static 'TheaterWinBook/assets/vendor/datatables.net-select-bs5/css/select.bootstrap5.min.css'%}"
-      rel="stylesheet" type="text/css"/>
 
-
+<link href="{% static 'TheaterWinBook/assets/vendor/datatables.net-bs5/css/dataTables.bootstrap5.min.css'%}" rel="stylesheet" type="text/css"/>
+<link href="{% static 'TheaterWinBook/assets/vendor/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css'%}" rel="stylesheet" type="text/css"/>
+<link href="{% static 'TheaterWinBook/assets/vendor/datatables.net-fixedheader-bs5/css/fixedHeader.bootstrap5.min.css'%}" rel="stylesheet" type="text/css"/>
 {% endblock %}
 
 {% block content %}
-<div class="row" style="
-    padding-left: 0px;
-    padding-right: 0px;
-">
-    <div class="col-12" style="
-    padding-left: 0px;
-    padding-right: 0px;
-">
-        <div class="card" style="
-    padding-left: 0px;
-    padding-right: 0px;
-">
-            <div class="card-body"style="
-    padding-left: 0px;
-    padding-right: 0px;
-">
-                <h4 class="header-title mb-2">🚀 업비트 코인 실시간 시세 및 분석 목록</h4>
-                <p class="text-muted mb-3">
-                    코인을 클릭하여 상세 분석 차트를 확인하세요.
-                </p>
+<div class="row g-0"> <div class="col-12">
+        <div class="card shadow-sm border-0"> <div class="card-body pt-4">
 
-                <table id="selection-datatable" class="table table-striped dt-responsive w-100">
-                    <thead class = "dtfh-floating-top">
+                <div class="mb-4">
+                    <h4 class="header-title mt-0 mb-1">🚀 실시간 코인 시세 (Ticker)</h4>
+                    <p class="text-muted font-14">
+                        업비트(Upbit) 실시간 체결 데이터를 기반으로 제공됩니다.<br>
+                        행을 클릭하여 상세 퀀트 분석(MDD, 백테스팅 등)을 확인하세요.
+                    </p>
+                </div>
+
+                <table id="selection-datatable" class="table table-hover dt-responsive nowrap w-100">
+                    <thead>
                     <tr>
-                        <th>코인 정보</th>
-                        <th>현재가 (KRW)</th>
-                        <th>전날대비 (%)</th>
-<!--                        <th class="d-none">업데이트 시간 (정렬용)</th>-->
-                    </tr>
+                        <th style="width: 30%;">코인명/티커</th>
+                        <th style="width: 30%;">현재가 (KRW)</th>
+                        <th style="width: 25%;">전일대비</th>
+                        <th class="d-none">업데이트 정렬용</th> </tr>
                     </thead>
                     <tbody>
-
                     {% for coin in coin_list %}
                     <tr data-full-code="{{ coin.full_code }}">
+
                         <td>
                             <div class="coin-name">{{ coin.name_kor }}</div>
                             <div class="coin-ticker">{{ coin.ticker }}</div>
@@ -145,39 +100,37 @@
 
                         <td data-order="{{ coin.sort_price|default:'-1' }}">
                             {% if coin.latest_price_display == '가격정보없음' %}
-                                <span class="text-danger price-value">정보 없음</span>
+                                <span class="text-muted small">정보 없음</span>
                             {% else %}
-                                <span class="price-value">₩ {{ coin.latest_price_display }}</span>
-                                <div class="text-muted" style="font-size: 0.8em;">**({{ coin.updated_at_formatted }})**</div>
+                                <div class="price-value">₩ {{ coin.latest_price_display }}</div>
+                                <div class="text-muted small mt-1">
+                                    <i class="mdi mdi-clock-outline"></i> {{ coin.updated_at_formatted }}
+                                </div>
                             {% endif %}
                         </td>
 
                         <td data-order="{{ coin.signed_change_rate|default:0 }}">
                             {% if coin.signed_change_rate is not None %}
-                                {% if coin.signed_change_rate > 0.0 %}
-                                    <span class="change-up">{{ coin.signed_change_rate|floatformat:2 }}% ▲</span>
-                                {% elif coin.signed_change_rate < 0.0 %}
+                                {% if coin.signed_change_rate > 0 %}
+                                    <span class="change-up">+{{ coin.signed_change_rate|floatformat:2 }}% ▲</span>
+                                {% elif coin.signed_change_rate < 0 %}
                                     <span class="change-down">{{ coin.signed_change_rate|floatformat:2 }}% ▼</span>
                                 {% else %}
-                                    <span>0.00%</span>
+                                    <span class="change-flat">0.00% -</span>
                                 {% endif %}
                             {% else %}
-                                <span class="text-muted">N/A</span>
+                                <span class="text-muted">-</span>
                             {% endif %}
                         </td>
 
-
+                        <td class="d-none">{{ coin.updated_at_sort }}</td>
 
                     </tr>
                     {% endfor %}
                     </tbody>
                 </table>
 
-            </div>
-        </div>
-    </div>
-</div>
-
+            </div> </div> </div> </div>
 {% endblock %}
 
 {% block javascript %}
@@ -185,76 +138,63 @@
 <script src="{% static 'TheaterWinBook/assets/vendor/datatables.net-bs5/js/dataTables.bootstrap5.min.js'%}"></script>
 <script src="{% static 'TheaterWinBook/assets/vendor/datatables.net-responsive/js/dataTables.responsive.min.js'%}"></script>
 <script src="{% static 'TheaterWinBook/assets/vendor/datatables.net-responsive-bs5/js/responsive.bootstrap5.min.js'%}"></script>
-<script src="{% static 'TheaterWinBook/assets/vendor/datatables.net-fixedcolumns-bs5/js/fixedColumns.bootstrap5.min.js'%}"></script>
 <script src="{% static 'TheaterWinBook/assets/vendor/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js'%}"></script>
-<script src="{% static 'TheaterWinBook/assets/vendor/datatables.net-buttons/js/dataTables.buttons.min.js'%}"></script>
-<script src="{% static 'TheaterWinBook/assets/vendor/datatables.net-buttons-bs5/js/buttons.bootstrap5.min.js'%}"></script>
-<script src="{% static 'TheaterWinBook/assets/vendor/datatables.net-buttons/js/buttons.html5.min.js'%}"></script>
-<script src="{% static 'TheaterWinBook/assets/vendor/datatables.net-buttons/js/buttons.print.min.js'%}"></script>
-<script src="{% static 'TheaterWinBook/assets/vendor/datatables.net-keytable/js/dataTables.keyTable.min.js'%}"></script>
-<script src="{% static 'TheaterWinBook/assets/vendor/datatables.net-select/js/dataTables.select.min.js'%}"></script>
-<script src="{% static 'TheaterWinBook/assets/js/components/table-datatable.js'%} "></script>
 
 <script>
-    let dataTableInstance = null;
-
     $(document).ready(function () {
 
+        // 기존 인스턴스 정리 (중복 방지)
         if ($.fn.DataTable.isDataTable('#selection-datatable')) {
             $('#selection-datatable').DataTable().destroy();
-            console.log("Existing DataTable instance destroyed.");
         }
 
-        // DataTables 초기화
-        dataTableInstance = $('#selection-datatable').DataTable({
-             fixedHeader: true,
-             "pageLength": 50,
-             select: false, // (1) 멀티 선택 기능 비활성화
-             // 초기 정렬: 업데이트 시간(인덱스 3) 기준 내림차순, 그 후 현재가(인덱스 1) 기준 내림차순
-             order: [[3, 'desc'], [1, 'desc']],
-             responsive: true,
-             // (1) select 관련 language 설정 제거
-             "autoWidth": true,
-             // ✅ 검색창 텍스트를 포함하는 언어 설정 객체
-     "language": {
-         // 검색창 앞에 표시되는 'Search:' 텍스트를 변경합니다.
-         "search": "",
+        // DataTables 설정
+        var table = $('#selection-datatable').DataTable({
+            fixedHeader: true,          // 헤더 고정
+            responsive: true,           // 반응형
+            pageLength: 50,             // 기본 표시 개수
+            autoWidth: false,           // 자동 너비 조정 끄기 (스타일 제어 용이)
 
-         // 💡 (선택 사항) 검색창 내부 Placeholder 텍스트를 변경하려면 아래 코드를 추가합니다.
-         "searchPlaceholder": "코인명/티커 검색",
+            // 초기 정렬 설정:
+            // 3번 컬럼(숨겨진 시간값) 내림차순(최신순) -> 1번 컬럼(가격) 내림차순
+            order: [[3, 'desc'], [1, 'desc']],
 
-         // 나머지 필수 한국어 설정 (이전 요청에서 추가됨)
-         "processing": "처리 중...",
-         "lengthMenu": "_MENU_ 개씩 보기",
-         "zeroRecords": "검색 결과가 없습니다.",
-         "info": "현재 _START_ 에서 _END_ 까지 표시합니다. 총 _TOTAL_ 건",
-         "infoEmpty": "데이터가 없습니다.",
-         "infoFiltered": "( _MAX_ 건의 데이터에서 필터링됨 )",
-         "paginate": {
-             "first": "처음",
-             "previous": "이전",
-             "next": "다음",
-             "last": "마지막"
-         }
-     },
-
-
+            language: {
+                search: "",
+                searchPlaceholder: "코인명 또는 심볼 검색...",
+                lengthMenu: "_MENU_ 개씩 보기",
+                zeroRecords: "검색 결과가 없습니다.",
+                info: "총 _TOTAL_개 코인 중 _START_ - _END_",
+                infoEmpty: "데이터가 없습니다.",
+                infoFiltered: "(전체 _MAX_개 중 필터링됨)",
+                paginate: {
+                    first: "<<",
+                    last: ">>",
+                    next: ">",
+                    previous: "<"
+                }
+            },
+            // DOM 설정: 검색창과 길이 조절 위치 커스터마이징 (옵션)
+            dom: "<'row mb-3'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                 "<'row'<'col-sm-12'tr>>" +
+                 "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
         });
 
-        // --- 행 클릭 시 상세 페이지 이동 이벤트 추가 (유지) ---
+        // 행 클릭 이벤트 (상세 페이지 이동)
         $('#selection-datatable tbody').on('click', 'tr', function () {
             const coinFullCode = $(this).data('full-code');
             if (coinFullCode) {
-                 const detailUrl = `{% url 'coin_detail' coin_code='__FULL_CODE_PLACEHOLDER__' %}`.replace('__FULL_CODE_PLACEHOLDER__', coinFullCode);
-                 window.location.href = detailUrl;
-            } else {
-                 console.warn("코인 코드(full_code)를 찾을 수 없습니다.");
+                // Django URL 패턴에 맞게 주소 생성
+                // urls.py에 'coin_detail'이라는 name이 정의되어 있어야 합니다.
+                // 예: path('coin/<str:coin_code>/', views.coin_detail_view, name='coin_detail')
+                const url = "/coin_detail/" + coinFullCode + "/"; // 혹은 Django template tag 사용 권장
+
+                // 템플릿 태그를 JS 문자열로 처리하는 트릭 (권장 방식)
+                // 실제로는 뷰에서 URL을 data attribute로 넘겨주는 것이 더 깔끔합니다.
+                // 여기서는 기존 방식에 맞게 리디렉션 합니다.
+                window.location.href = "{% url 'coin_detail' 'PLACEHOLDER' %}".replace('PLACEHOLDER', coinFullCode);
             }
         });
-
-        // 💡 기존의 버튼 이벤트 처리 로직 및 함수 제거 (요구사항 1, 2)
     });
-
 </script>
-
 {% endblock %}
