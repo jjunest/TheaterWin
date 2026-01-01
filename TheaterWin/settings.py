@@ -47,7 +47,7 @@ DEBUG = False
 
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'www.fullvesting.com', 'fullvesting.com.','fullvesting.com', 'http://fullvesting.com',
-                 'theaterwin.com', 'http://theaterwin.com', 'http://158.247.218.118/', '158.247.218.118','0.0.0.0']
+                 'theaterwin.com', 'http://theaterwin.com', 'http://158.247.218.118/', '158.247.218.118','0.0.0.0',"*"]
 
 
 
