@@ -68,7 +68,7 @@ INSTALLED_APPS = (
     'tinymce',
     # 'dbbackup',  # django-dbbackup
     # push알람을 위한 fcm_django
-    'fcm_django',
+    # 'fcm_django',
 
 )
 
