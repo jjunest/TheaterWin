@@ -1,0 +1,161 @@
+{% extends "TheaterWinBook/base_header_footer_250724.html" %}
+{% load static %}
+
+{% block css_script %}
+<style>
+    .summary-box { padding: 20px; border-radius: 8px; background-color: #fff; margin-bottom: 20px; border: 1px solid #e3e6f0; box-shadow: 0 0.15rem 1.75rem 0 rgba(58,59,69,0.15); }
+    .main-price { font-size: 2.2rem; font-weight: 800; color: #2e2e2e; margin-right: 15px; }
+    .change-up { color: #d60000; background: rgba(214,0,0,0.1); padding: 5px 10px; border-radius: 5px; font-weight: 700; }
+    .change-down { color: #0051c7; background: rgba(0,81,199,0.1); padding: 5px 10px; border-radius: 5px; font-weight: 700; }
+    .detail-label { font-size: 0.85rem; color: #858796; font-weight: 600; text-transform: uppercase; }
+    #stockCandleChart { width: 100%; min-height: 500px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box">
+            <h4 class="page-title">🇰🇷 {{ stock_info.stock_name }} ({{ stock_code }}) 상세 분석</h4>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <ul class="nav nav-pills bg-nav-pills nav-justified mb-4">
+                    <li class="nav-item">
+                        <a href="#tab-info" data-bs-toggle="tab" class="nav-link active">기본정보/시세</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#tab-chart" data-bs-toggle="tab" class="nav-link">기술적 차트</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#tab-quant" data-bs-toggle="tab" class="nav-link">퀀트(MDD) 분석</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane show active" id="tab-info">
+                        <div class="row">
+                            <div class="col-lg-7">
+                                <div class="summary-box">
+                                    <h5 class="mb-4"><i class="mdi mdi-access-point text-danger"></i> 실시간 시세</h5>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <span class="main-price">₩ {{ summary.price_display }}</span>
+                                        {% if summary.change_rate > 0 %}
+                                            <span class="change-up">▲ {{ summary.change_rate|floatformat:2 }}%</span>
+                                        {% elif summary.change_rate < 0 %}
+                                            <span class="change-down">▼ {{ summary.change_rate|floatformat:2 }}%</span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="text-muted small">업데이트: {{ summary.updated_at }}</p>
+                                    <hr>
+                                    <div class="row text-center">
+                                        <div class="col-4">
+                                            <p class="detail-label">고가</p>
+                                            <h5 class="text-danger">{{ summary.high }}</h5>
+                                        </div>
+                                        <div class="col-4 border-start">
+                                            <p class="detail-label">저가</p>
+                                            <h5 class="text-primary">{{ summary.low }}</h5>
+                                        </div>
+                                        <div class="col-4 border-start">
+                                            <p class="detail-label">시가</p>
+                                            <h5>{{ summary.open }}</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-5">
+                                <div class="card bg-light border-0">
+                                    <div class="card-body">
+                                        <h5 class="header-title mb-3">🏢 기업 정보</h5>
+                                        <ul class="list-group list-group-flush bg-transparent">
+                                            <li class="list-group-item bg-transparent d-flex justify-content-between">
+                                                <span>시장 구분</span><strong>{{ stock_info.market_type }}</strong>
+                                            </li>
+                                            <li class="list-group-item bg-transparent d-flex justify-content-between">
+                                                <span>업종</span><strong>{{ stock_info.industry }}</strong>
+                                            </li>
+                                            {% if latest_ticker %}
+                                            <li class="list-group-item bg-transparent d-flex justify-content-between">
+                                                <span>시가총액</span><strong>{{ latest_ticker.market_cap }}억</strong>
+                                            </li>
+                                            <li class="list-group-item bg-transparent d-flex justify-content-between">
+                                                <span>시총 순위</span><strong>{{ latest_ticker.market_cap_rank }}위</strong>
+                                            </li>
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="tab-chart">
+                        <div id="stockCandleChart"></div>
+                    </div>
+
+                    <div class="tab-pane" id="tab-quant">
+                        <h5 class="mb-3 text-danger"><i class="mdi mdi-trending-down"></i> 기간별 최대 낙폭(MDD) 지표</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered text-center align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>분석 기간</th>
+                                        <th>기간 최고가</th>
+                                        <th>현재가</th>
+                                        <th>MDD (고점대비 낙폭)</th>
+                                        <th>리스크 점수</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for key, res in mdd_results.items %}
+                                    <tr>
+                                        <td><span class="badge bg-secondary">{{ res.label }}</span></td>
+                                        <td>₩ {{ res.peak_price }}</td>
+                                        <td class="fw-bold">₩ {{ res.current_price }}</td>
+                                        <td class="text-danger fw-bold">{{ res.mdd_percent|floatformat:2 }}%</td>
+                                        <td>{{ res.risk_score }} / 100</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+    $(document).ready(function() {
+        let chartLoaded = false;
+        $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+            if ($(e.target).attr("href") === '#tab-chart' && !chartLoaded) {
+                renderChart();
+                chartLoaded = true;
+            }
+        });
+
+        function renderChart() {
+            $.getJSON("/get_stock_candle_api/{{ stock_code }}/", function(response) {
+                const options = {
+                    series: [{ data: response.data }],
+                    chart: { type: 'candlestick', height: 500 },
+                    xaxis: { type: 'datetime' },
+                    plotOptions: { candlestick: { colors: { up: '#d60000', down: '#0051c7' } } }
+                };
+                new ApexCharts(document.querySelector("#stockCandleChart"), options).render();
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,3 +1,9 @@
+import time
+
+import datetime
+import pandas as pd
+import pytz
+from datetime import timedelta  # <--- 이렇게 수정해야 합니다.
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
@@ -24,12 +30,19 @@ import traceback
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
 import json
-
+# 실제 정의하신 모델 임포트
+from ..models_stock_korea import StocksKrList, StocksKrCandle, StocksKrTicker
+from decimal import Decimal
 
 
 # stock_rank
 def stock_rank(request):
     return render(request, 'TheaterWinBook/stock_rank.html')
+
+
+# stock_rank
+def stock_rank_korea(request):
+    return render(request, 'TheaterWinBook/stock_rank_korea.html')
 
 
 def stock_rank_pop(request, rank_name, market_sum_percent):
@@ -79,29 +92,204 @@ def stock_rank_pop(request, rank_name, market_sum_percent):
     # return render(request, 'TheaterWinBook/stock_rank_pop.html',{"top10": top10_result})
 
 
-def stock_list_kospi(request):
-    print("this is stock_list_kospi")
-    # rank name 에 따라 top stock 10 개 리스트를 추려서 화면에 뿌려줌
-    top_stock = StockList.objects.raw('SELECT * FROM TheaterWinBook_StockList A LEFT OUTER JOIN (SELECT * FROM TheaterWinBook_stocksummarykr GROUP BY STOCK_CODE HAVING MAX(INFO_DATE)) B ON A.stock_code = B.stock_code ORDER BY B.STOCK_MARKET_SUM DESC')
-    return render(request, 'TheaterWinBook/stock_list_kospi.html',{"top_stock": top_stock})
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.utils import timezone
+from decimal import Decimal
+from datetime import timedelta
+import pandas as pd
+import pytz
+from ..models_stock_korea import StocksKrList, StocksKrTicker, StocksKrCandle
+
+KST = pytz.timezone('Asia/Seoul')
 
 
-def stock_detail_kor(request, stock_code):
-    stock_code = stock_code
-    print("this is stock_detail page, stock_code:",stock_code)
-    stock_detail = StockSummaryKr.objects.raw('SELECT * FROM TheaterWinBook_stocksummarykr WHERE '
-                                       'info_date = (SELECT info_date FROM TheaterWinBook_stocksummarykr '
-                                       'ORDER BY info_date DESC LIMIT 1) and STOCK_CODE = %s',[stock_code])
+def stock_korea_detail(request, stock_code):
+    """한국 주식 상세 분석 뷰 (Ticker 및 MDD 분석)"""
+    stock_info = get_object_or_404(StocksKrList, stock_code=stock_code)
 
-    print("this is stock_detail:",stock_detail)
-    # question_pk = question_pk
-    # print("this is question_pk" + question_pk)
+    # 1. 실시간 Ticker 및 최신 Candle 데이터 로드
+    latest_ticker = StocksKrTicker.objects.filter(stock_code=stock_info).order_by('-bat_time').first()
+    latest_candle = StocksKrCandle.objects.filter(stock_code=stock_info).order_by('-date').first()
 
-    # return render(request, 'TheaterWinBook/stock_detail.html',
-    #               {'question_record': target_record, 'form': form, 'is_record_owner': is_record_owner,
-    #                'thumbup_count': thumbup_count, 'thumbdown_count': thumbdown_count, 'target_replys': target_replys,
-    #                'login_user': login_user})
+    # 2. 현재가 결정 (Ticker 우선)
+    current_price = Decimal('0')
+    if latest_ticker:
+        current_price = latest_ticker.ticker_close_price
+    elif latest_candle:
+        current_price = latest_candle.close_price
 
-    return render(request, 'TheaterWinBook/stock_detail_kor.html', {'stock_detail': stock_detail} )
+    # 3. 요약 정보 포맷팅 (주식은 원단위이므로 int처리)
+    summary = {
+        'price_display': f"{int(current_price):,}" if current_price > 0 else "가격정보없음",
+        'change_rate': (
+                    latest_ticker.ticker_change_rate * 100) if latest_ticker and latest_ticker.ticker_change_rate else 0,
+        'high_price': f"{int(latest_ticker.ticker_high_price or 0):,}" if latest_ticker else "-",
+        'low_price': f"{int(latest_ticker.ticker_low_price or 0):,}" if latest_ticker else "-",
+        'prev_close': f"{int(latest_ticker.ticker_prev_close or 0):,}" if latest_ticker else "-",
+        'updated_at': latest_ticker.bat_time.astimezone(KST).strftime('%Y/%m/%d %H:%M:%S') if latest_ticker else "-"
+    }
+
+    # 4. MDD 퀀트 분석 (코인 로직 이식)
+    time_periods = {'1m': 30, '3m': 90, '6m': 180, '12m': 365}
+    mdd_results = {}
+    end_date = timezone.now().date()
+
+    if current_price > 0:
+        for key, days in time_periods.items():
+            start_date = end_date - timedelta(days=days)
+            prices_qs = StocksKrCandle.objects.filter(
+                stock_code=stock_info,
+                date__range=[start_date, end_date]
+            ).order_by('date').values('close_price')
+
+            if prices_qs.exists():
+                df = pd.DataFrame(list(prices_qs))
+                peak_price = float(df['close_price'].max())
+                # MDD 계산: (현재가 - 최고가) / 최고가 * 100
+                mdd_val = ((float(current_price) - peak_price) / peak_price) * 100 if peak_price > 0 else 0
+
+                mdd_results[key] = {
+                    'label': f"{days}일",
+                    'peak_price': f"{int(peak_price):,}",
+                    'current_price': f"{int(current_price):,}",
+                    'mdd_percent': Decimal(str(mdd_val)),
+                    'mdd_rank_percent': abs(round(mdd_val, 1))  # 임시 리스크 점수
+                }
+
+    context = {
+        'stock_info': stock_info,
+        'stock_code': stock_code,
+        'summary': summary,
+        'latest_ticker': latest_ticker,
+        'mdd_results': mdd_results,
+        'page_title': f"{stock_info.stock_name} 상세 분석",
+    }
+    return render(request, 'TheaterWinBook/stock_korea_detail.html', context)
 
 
+def get_stock_candle(request, stock_code):
+    """주식 캔들 데이터 API (ApexCharts용)"""
+    try:
+        # 최근 200봉 조회
+        candles = StocksKrCandle.objects.filter(stock_code__stock_code=stock_code).order_by('-date')[:200]
+        candle_data = [
+            {
+                'x': int(timezone.datetime.combine(c.date, timezone.datetime.min.time()).timestamp() * 1000),
+                'y': [float(c.open_price), float(c.high_price), float(c.low_price), float(c.close_price)]
+            }
+            for c in reversed(candles)
+        ]
+        stock_name = StocksKrList.objects.get(stock_code=stock_code).stock_name
+        return JsonResponse({'status': 'success', 'data': candle_data, 'stock_name': stock_name})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+def val_label(days):
+    if days >= 30: return f"{days // 30}개월"
+    return f"{days}일"
+
+
+# 캔들 차트 API (ApexCharts용)
+def get_stock_candle_api(request, stock_code):
+    candles = StocksKrCandle.objects.filter(stock_code__stock_code=stock_code).order_by('-date')[:300]
+    data = [{
+        'x': int(time.mktime(c.date.timetuple()) * 1000),
+        'y': [float(c.open_price), float(c.high_price), float(c.low_price), float(c.close_price)]
+    } for c in reversed(candles)]
+
+    return JsonResponse({'status': 'success', 'data': data, 'name': '주가 차트'})
+
+
+
+def stock_list_usa(request):
+    return render(request, 'TheaterWinBook/stock_list_usa.html')
+
+def stock_rank_usa(request):
+    return render(request, 'TheaterWinBook/stock_rank_usa.html')
+
+
+# 타임존 설정 (settings.py에 정의되어 있다면 가져와서 사용)
+KST = pytz.timezone('Asia/Seoul')
+
+
+def stock_korea_list(request):
+    """
+    코인 리스트 뷰의 로직을 주식 데이터 구조로 이식.
+    Ticker 데이터를 우선하며, 부재 시 Candle 데이터를 활용합니다.
+    """
+    # 1. 활성화된 주식 리스트 조회
+    active_stocks = StocksKrList.objects.filter(is_active=True).values(
+        'stock_code', 'stock_name', 'market_type', 'industry'
+    )
+
+    stock_list_data = []
+
+    for stock in active_stocks:
+        s_code = stock['stock_code']
+
+        # 최신 티커 데이터 조회
+        latest_ticker = StocksKrTicker.objects.filter(
+            stock_code__stock_code=s_code
+        ).order_by('-bat_time').first()
+
+        # 기본값 초기화
+        price_value = Decimal('-1')
+        display_price = '가격정보없음'
+        change_rate = None
+        formatted_bat_time = '-'
+        bat_time_sort_value = 0
+
+        if latest_ticker:
+            print("this is latest_ticker:",latest_ticker.bat_time)
+            print("this is ticker_close_price:",latest_ticker.ticker_close_price)
+            print("this is ticker_change_rate:",latest_ticker.ticker_change_rate)
+            # 1) 가격 처리 (주식은 보통 정수이므로 콤마 처리)
+            if latest_ticker.ticker_close_price is not None:
+                price_value = latest_ticker.ticker_close_price
+                display_price = f"{int(price_value):,}"
+
+            # 2) 등락률 처리
+            if latest_ticker.ticker_change_rate is not None:
+                change_rate = latest_ticker.ticker_change_rate * Decimal(100)
+
+            # 3) 시간 처리 (분 단위 표시 고도화)
+            if latest_ticker.bat_time:
+                dt = latest_ticker.bat_time
+                aware_dt = dt.astimezone(KST) if timezone.is_aware(dt) else timezone.make_aware(dt, KST)
+                formatted_bat_time = aware_dt.strftime('%Y/%m/%d %H:%M')
+                bat_time_sort_value = aware_dt.timestamp()
+
+        # Ticker 데이터가 없을 경우 Candle 백업 (코인 로직과 동일)
+        elif not latest_ticker:
+            latest_candle = StocksKrCandle.objects.filter(stock_code__stock_code=s_code).order_by('-date').first()
+            if latest_candle:
+                price_value = latest_candle.close_price
+                display_price = f"{int(price_value):,}"
+                change_rate = latest_candle.change_rate * Decimal(100) if latest_candle.change_rate else 0
+                formatted_bat_time = latest_candle.date.strftime('%Y/%m/%d') + " (종가)"
+                # 날짜만 있을 경우 타임스탬프 변환
+                import datetime
+                bat_time_sort_value = datetime.datetime.combine(latest_candle.date, datetime.time.min).timestamp()
+        # print("this is name:", stock['stock_name'])
+        # print("this is ticker:", s_code)
+        # print("this is latest_price_display:", display_price)
+        # print("this is updated_at_formatted:", change_rate)
+        stock_list_data.append({
+            'name': stock['stock_name'],
+            'ticker': s_code,
+            'market': stock['market_type'],
+            'industry': stock['industry'],
+            'sort_price': price_value,
+            'latest_price_display': display_price,
+            'change_rate': change_rate,
+            'updated_at_formatted': formatted_bat_time,
+            'updated_at_sort': bat_time_sort_value,
+        })
+
+    context = {
+        'stock_list': stock_list_data,
+        'title': '🚀 실시간 주식 시세 (Ticker)'
+    }
+    return render(request, 'TheaterWinBook/stock_korea_list.html', context)

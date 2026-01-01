@@ -3,64 +3,46 @@
 
 {% block css_script %}
 <style>
-    /* ------------------------------------------------------------- */
-    /* 1. 가독성 및 상태 표시 스타일 */
-    /* ------------------------------------------------------------- */
-    .coin-name {
-        font-weight: 700;
-        font-size: 1.05em;
-        color: #333;
-    }
-    .coin-ticker {
-        font-size: 0.85em;
-        color: #888;
-        margin-top: 2px;
-    }
-    .price-value {
-        font-weight: 700;
-        font-size: 1.1em;
-        font-family: 'Roboto', sans-serif; /* 숫자 가독성 폰트 추천 */
+    /* 기존 스타일 유지 */
+    .coin-name { font-weight: 700; font-size: 1.05em; color: #333; }
+    .coin-ticker { font-size: 0.85em; color: #888; margin-top: 2px; }
+    .price-value { font-weight: 700; font-size: 1.1em; font-family: 'Roboto', sans-serif; }
+    .change-up { font-weight: 700; color: #d60000 !important; }
+    .change-down { font-weight: 700; color: #0051c7 !important; }
+    .change-flat { font-weight: 700; color: #333 !important; }
+
+    /* 테이블 인터랙션 */
+    #selection-datatable tbody tr { cursor: pointer; transition: background-color 0.2s; }
+    #selection-datatable tbody tr:hover { background-color: #f1f3f5 !important; }
+    #selection-datatable td { vertical-align: middle; }
+
+    /* 체크박스 크기 확대 */
+    .form-check-input.coin-compare-check {
+        width: 1.8em; height: 1.8em;
+        cursor: pointer; border: 2px solid #adb5bd; margin-top: 0;
     }
 
-    /* 2. 등락률 색상 (업비트 스타일: 상승=빨강, 하락=파랑) */
-    .change-up {
-        font-weight: 700;
-        color: #d60000 !important;
-    }
-    .change-down {
-        font-weight: 700;
-        color: #0051c7 !important;
-    }
-    .change-flat {
-        font-weight: 700;
-        color: #333 !important;
+    /* 체크박스 셀 UX 개선 */
+    td.check-cell {
+        cursor: default !important; text-align: center;
+        padding-left: 0 !important; padding-right: 0 !important;
     }
 
-    /* 3. 테이블 인터랙션 */
-    #selection-datatable tbody tr {
-        cursor: pointer;
-        transition: background-color 0.2s;
+    /* 플로팅 바 */
+    #compare-floating-bar {
+        position: fixed; bottom: 30px; left: 50%;
+        transform: translateX(-50%) translateY(150%);
+        background: #fff; padding: 15px 30px; border-radius: 50px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        display: flex; align-items: center; gap: 20px;
+        z-index: 2000; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 1px solid #e1e1e1;
     }
-    #selection-datatable tbody tr:hover {
-        background-color: #f1f3f5 !important; /* 마우스 오버 시 연한 회색 */
-    }
-    #selection-datatable td {
-        vertical-align: middle; /* 셀 내용 수직 중앙 정렬 */
-    }
+    #compare-floating-bar.active { transform: translateX(-50%) translateY(0); }
 
-    /* 4. 고정 헤더 스타일 (FixedHeader) */
+    /* DataTables Fixed Header */
     .dtfh-floating-top {
-        background-color: #f8f9fa !important;
-        border-bottom: 2px solid #dee2e6 !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        z-index: 1050;
-    }
-    .dtfh-floating-top th {
-        color: #495057 !important;
-        font-weight: 700 !important;
-        padding-top: 15px !important;
-        padding-bottom: 15px !important;
-        border-bottom: none !important;
+        background-color: #f8f9fa !important; border-bottom: 2px solid #dee2e6 !important; z-index: 1050;
     }
 </style>
 
@@ -70,24 +52,28 @@
 {% endblock %}
 
 {% block content %}
-<div class="row g-0"> <div class="col-12">
-        <div class="card shadow-sm border-0"> <div class="card-body pt-4">
+<div class="row g-0">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-body pt-4">
 
                 <div class="mb-4">
                     <h4 class="header-title mt-0 mb-1">🚀 실시간 코인 시세 (Ticker)</h4>
                     <p class="text-muted font-14">
-                        업비트(Upbit) 실시간 체결 데이터를 기반으로 제공됩니다.<br>
-                        행을 클릭하여 상세 퀀트 분석(MDD, 백테스팅 등)을 확인하세요.
+                        <strong>체크박스</strong>를 선택하여 최대 <strong>3개</strong>까지 상세 퀀트 지표를 비교할 수 있습니다.
                     </p>
                 </div>
 
                 <table id="selection-datatable" class="table table-hover dt-responsive nowrap w-100">
                     <thead>
                     <tr>
+
                         <th style="width: 30%;">코인명/티커</th>
                         <th style="width: 30%;">현재가 (KRW)</th>
                         <th style="width: 25%;">전일대비</th>
-                        <th class="d-none">업데이트 정렬용</th> </tr>
+                        <th style="width: 60px;" class="text-center">비교</th>
+                        <th class="d-none">업데이트 정렬용</th>
+                    </tr>
                     </thead>
                     <tbody>
                     {% for coin in coin_list %}
@@ -123,6 +109,15 @@
                             {% endif %}
                         </td>
 
+                        <td class="text-center check-cell">
+                            <div class="form-check d-flex justify-content-center align-items-center" style="height: 100%; min-height: 40px;" onclick="event.stopPropagation();">
+                                <input type="checkbox" class="form-check-input coin-compare-check"
+                                       id="chk_{{ coin.ticker }}"
+                                       data-ticker="{{ coin.ticker }}"
+                                       data-fullcode="{{ coin.full_code }}">
+                            </div>
+                        </td>
+
                         <td class="d-none">{{ coin.updated_at_sort }}</td>
 
                     </tr>
@@ -130,7 +125,24 @@
                     </tbody>
                 </table>
 
-            </div> </div> </div> </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="compare-floating-bar">
+    <div>
+        <i class="mdi mdi-poll fs-4 text-primary align-middle me-2"></i>
+        <span class="fw-bold text-dark"><span id="selected-count">0</span>/3 선택됨</span>
+    </div>
+    <button class="btn btn-primary rounded-pill px-4" id="btn-go-compare" disabled>
+        비교 분석 하러가기 <i class="mdi mdi-arrow-right ms-1"></i>
+    </button>
+    <button class="btn btn-light btn-sm rounded-circle ms-2" id="btn-clear-compare" title="초기화">
+        <i class="mdi mdi-close"></i>
+    </button>
+</div>
+
 {% endblock %}
 
 {% block javascript %}
@@ -143,55 +155,108 @@
 <script>
     $(document).ready(function () {
 
-        // 기존 인스턴스 정리 (중복 방지)
+        // --- DataTables 설정 (기존 동일) ---
         if ($.fn.DataTable.isDataTable('#selection-datatable')) {
             $('#selection-datatable').DataTable().destroy();
         }
 
-        // DataTables 설정
         var table = $('#selection-datatable').DataTable({
-            fixedHeader: true,          // 헤더 고정
-            responsive: true,           // 반응형
-            pageLength: 50,             // 기본 표시 개수
-            autoWidth: false,           // 자동 너비 조정 끄기 (스타일 제어 용이)
-
-            // 초기 정렬 설정:
-            // 3번 컬럼(숨겨진 시간값) 내림차순(최신순) -> 1번 컬럼(가격) 내림차순
-            order: [[3, 'desc'], [1, 'desc']],
-
+            fixedHeader: true,
+            responsive: true,
+            pageLength: 50,
+            autoWidth: false,
+            order: [[4, 'desc'], [2, 'desc']],
+            columnDefs: [
+                { orderable: false, targets: 0 },
+                { className: 'text-center check-cell', targets: 0 }
+            ],
             language: {
                 search: "",
                 searchPlaceholder: "코인명 또는 심볼 검색...",
                 lengthMenu: "_MENU_ 개씩 보기",
                 zeroRecords: "검색 결과가 없습니다.",
                 info: "총 _TOTAL_개 코인 중 _START_ - _END_",
-                infoEmpty: "데이터가 없습니다.",
-                infoFiltered: "(전체 _MAX_개 중 필터링됨)",
-                paginate: {
-                    first: "<<",
-                    last: ">>",
-                    next: ">",
-                    previous: "<"
-                }
+                paginate: { first: "<<", last: ">>", next: ">", previous: "<" }
             },
-            // DOM 설정: 검색창과 길이 조절 위치 커스터마이징 (옵션)
             dom: "<'row mb-3'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
                  "<'row'<'col-sm-12'tr>>" +
                  "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
         });
 
-        // 행 클릭 이벤트 (상세 페이지 이동)
-        $('#selection-datatable tbody').on('click', 'tr', function () {
+        // --- 체크박스 로직 (최대 3개) ---
+        let selectedCoins = []; // 여기에 ticker를 담습니다.
+
+        $('#selection-datatable tbody').on('change', '.coin-compare-check', function(e) {
+            const $this = $(this);
+            const isChecked = $this.is(':checked');
+            const coinTicker = $this.data('ticker');
+
+            if (isChecked) {
+                // [변경] 제한 개수 3개
+                if (selectedCoins.length >= 3) {
+                    $this.prop('checked', false);
+                    alert("비교는 최대 3개까지만 가능합니다.");
+                    return;
+                }
+                selectedCoins.push(coinTicker);
+            } else {
+                selectedCoins = selectedCoins.filter(t => t !== coinTicker);
+            }
+            updateFloatingBar();
+        });
+
+        // 체크박스 셀 클릭 (UX)
+        $('#selection-datatable tbody').on('click', 'td.check-cell', function(e) {
+            if ($(e.target).is('input[type="checkbox"]')) return;
+            const $checkbox = $(this).find('.coin-compare-check');
+            $checkbox.trigger('click');
+        });
+
+        function updateFloatingBar() {
+            const count = selectedCoins.length;
+            $('#selected-count').text(count);
+
+            if (count > 0) {
+                $('#compare-floating-bar').addClass('active');
+            } else {
+                $('#compare-floating-bar').removeClass('active');
+            }
+
+            // 1개 이상만 선택해도 비교 페이지 이동 가능하도록 설정 (보통은 2개 이상 권장하지만 3개는 유연하게)
+            if (count >= 1) {
+                $('#btn-go-compare').prop('disabled', false).removeClass('btn-secondary').addClass('btn-primary');
+            } else {
+                $('#btn-go-compare').prop('disabled', true).removeClass('btn-primary').addClass('btn-secondary');
+            }
+        }
+
+        // --- [핵심 변경] 페이지 이동 로직 ---
+        $('#btn-go-compare').on('click', function() {
+            if (selectedCoins.length === 0) return;
+
+            // 배열을 콤마로 연결하여 문자열 생성 (예: BTC,ETH,XRP)
+            const tickersString = selectedCoins.join(',');
+
+            // Django URL Tag 사용 + GET 파라미터 전달
+            // urls.py에 'coin_compare_view' path가 있어야 함
+            const targetUrl = "{% url 'coin_compare_view' %}?tickers=" + tickersString;
+
+            // 현재 창에서 페이지 이동
+            window.location.href = targetUrl;
+        });
+
+        $('#btn-clear-compare').on('click', function() {
+            selectedCoins = [];
+            $('.coin-compare-check').prop('checked', false);
+            updateFloatingBar();
+        });
+
+        // 행 클릭 이동 (상세 페이지) - 방어 코드는 유지
+        $('#selection-datatable tbody').on('click', 'tr', function (e) {
+            if ($(e.target).closest('td').index() === 0) return;
+
             const coinFullCode = $(this).data('full-code');
             if (coinFullCode) {
-                // Django URL 패턴에 맞게 주소 생성
-                // urls.py에 'coin_detail'이라는 name이 정의되어 있어야 합니다.
-                // 예: path('coin/<str:coin_code>/', views.coin_detail_view, name='coin_detail')
-                const url = "/coin_detail/" + coinFullCode + "/"; // 혹은 Django template tag 사용 권장
-
-                // 템플릿 태그를 JS 문자열로 처리하는 트릭 (권장 방식)
-                // 실제로는 뷰에서 URL을 data attribute로 넘겨주는 것이 더 깔끔합니다.
-                // 여기서는 기존 방식에 맞게 리디렉션 합니다.
                 window.location.href = "{% url 'coin_detail' 'PLACEHOLDER' %}".replace('PLACEHOLDER', coinFullCode);
             }
         });

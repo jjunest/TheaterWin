@@ -174,15 +174,47 @@
                 <li class="side-nav-item">
                     <a href="{% url 'coin_list' %}" class="side-nav-link">
                         <span class="menu-icon"><i class="ti ti-dashboard"></i></span>
+                        <span class="menu-text"> 코인목록 </span>
+                        <span class="badge bg-danger rounded-pill"></span>
+                    </a>
+                </li>
+
+                <li class="side-nav-item">
+                    <a href="{% url 'coin_rank' %}" class="side-nav-link">
+                        <span class="menu-icon"><i class="ti ti-dashboard"></i></span>
                         <span class="menu-text"> 코인랭킹 </span>
                         <span class="badge bg-danger rounded-pill"></span>
                     </a>
                 </li>
 
                 <li class="side-nav-item">
-                    <a href="{% url 'stock_list_kospi' %}" class="side-nav-link">
+                    <a href="{% url 'stock_list_usa' %}" class="side-nav-link">
                         <span class="menu-icon"><i class="ti ti-dashboard"></i></span>
-                        <span class="menu-text"> 한국주식 </span>
+                        <span class="menu-text"> 미국주식목록 </span>
+                        <span class="badge bg-danger rounded-pill"></span>
+                    </a>
+                </li>
+
+                <li class="side-nav-item">
+                    <a href="{% url 'stock_rank_usa' %}" class="side-nav-link">
+                        <span class="menu-icon"><i class="ti ti-dashboard"></i></span>
+                        <span class="menu-text"> 미국주식랭킹 </span>
+                        <span class="badge bg-danger rounded-pill"></span>
+                    </a>
+                </li>
+
+                <li class="side-nav-item">
+                    <a href="{% url 'stock_korea_list' %}" class="side-nav-link">
+                        <span class="menu-icon"><i class="ti ti-dashboard"></i></span>
+                        <span class="menu-text"> 한국주식목록 </span>
+                        <span class="badge bg-danger rounded-pill"></span>
+                    </a>
+                </li>
+
+                <li class="side-nav-item">
+                    <a href="{% url 'stock_rank_korea' %}" class="side-nav-link">
+                        <span class="menu-icon"><i class="ti ti-dashboard"></i></span>
+                        <span class="menu-text"> 한국주식랭킹 </span>
                         <span class="badge bg-danger rounded-pill"></span>
                     </a>
                 </li>

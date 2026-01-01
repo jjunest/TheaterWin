@@ -67,7 +67,28 @@ INSTALLED_APPS = (
     # wyswgi Editor와 이미지업로드를 위한 filebrowser
     'tinymce',
     # 'dbbackup',  # django-dbbackup
+    # push알람을 위한 fcm_django
+    'fcm_django',
+
 )
+
+# 앱 push 알람을 위한 코드 fcm_django
+import firebase_admin
+from firebase_admin import credentials
+
+# Firebase 인증 파일 경로 (다운로드한 JSON 파일 경로)
+FIREBASE_CERT_PATH = "C:\\Users\\Junhyuk\\PycharmProjects\\pythonProject\\TheaterWin\\firebase-adminsdk.json"
+
+if not firebase_admin._apps:
+    cred = credentials.Certificate(FIREBASE_CERT_PATH)
+    firebase_admin.initialize_app(cred)
+
+FCM_DJANGO_SETTINGS = {
+     # 기기 토큰이 유효하지 않을 때 자동으로 삭제할지 여부
+     "DELETE_INACTIVE_DEVICES": True,
+}
+
+
 
 # 채팅을 위한 코드
 ASGI_APPLICATION = 'TheaterWin.routing.application'

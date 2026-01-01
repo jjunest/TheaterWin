@@ -20,7 +20,6 @@ from django.contrib import admin
 
 from TheaterWinBook import views  # Import your app views
 
-
 from django.urls import path
 # from . import views  # Import your views
 
@@ -35,6 +34,7 @@ urlpatterns = [
     path("", include("TheaterWinBook.urls_freeboardstock")),
     path("", include("TheaterWinBook.urls_freeboardprof")),
     path("", include("TheaterWinBook.urls_coin")),
+    path("", include("TheaterWinBook.urls_stock_korea")),
     # Django 인증 URL 포함
     path("accounts/", include("django.contrib.auth.urls")),
 

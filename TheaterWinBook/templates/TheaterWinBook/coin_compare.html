@@ -1,0 +1,87 @@
+{% extends "TheaterWinBook/base_header_footer_250724.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box d-flex align-items-center justify-content-between">
+                <h4 class="page-title">⚔️ 퀀트 코인 비교 분석</h4>
+                <a href="{% url 'coin_list' %}" class="btn btn-sm btn-light border">
+                    <i class="mdi mdi-arrow-left me-1"></i> 목록으로
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        {% if compared_coins %}
+            {% for coin in compared_coins %}
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card shadow-sm h-100"> <div class="card-body text-center border-bottom bg-light bg-opacity-10">
+                        <h3 class="mt-2 mb-1">{{ coin.name }}</h3>
+                        <span class="badge bg-secondary mb-3">{{ coin.ticker }}</span>
+                        <h2 class="text-primary fw-bold">₩ {{ coin.price }}</h2>
+                    </div>
+
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                <span class="text-muted">전일대비</span>
+                                <span class="fw-bold text-danger">+5.20%</span> </li>
+
+                            <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                <span>
+                                    <span class="text-muted">MDD (최대낙폭)</span>
+                                    <i class="mdi mdi-information-outline text-muted ms-1" title="최고점 대비 하락률"></i>
+                                </span>
+                                <span class="fw-bold text-primary">{{ coin.mdd }}%</span>
+                            </li>
+
+                            <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                <span class="text-muted">변동성 (30일)</span>
+                                <span class="fw-bold">{{ coin.volatility }}%</span>
+                            </li>
+
+                            <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                <span class="text-muted">RSI (상대강도)</span>
+                                <span class="fw-bold {% if coin.rsi > 70 %}text-danger{% elif coin.rsi < 30 %}text-success{% endif %}">
+                                    {{ coin.rsi }}
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="card-body border-top text-center">
+                        <a href="#" class="btn btn-soft-primary w-100">상세 분석 보기</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <div class="alert alert-warning">
+                    선택된 코인이 없습니다. 목록에서 비교할 코인을 선택해주세요.
+                </div>
+                <a href="{% url 'coin_list' %}" class="btn btn-primary">코인 목록 가기</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card bg-light border-0">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="mdi mdi-lightbulb-on-outline text-warning"></i> 퀀트 투자 팁</h5>
+                    <p class="card-text text-muted mb-0">
+                        MDD(Maximum Drawdown)가 낮을수록 하락장에서 방어력이 좋은 코인입니다.
+                        변동성이 큰 장세에서는 RSI가 30 이하일 때 과매도 구간으로 보아 매수 기회로 삼기도 합니다.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

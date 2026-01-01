@@ -9,3 +9,4 @@ from .views_stock import *
 from .views_freeBoardstock import *
 from .views_freeBoardprof import *
 from .views_coin import *
+from .views_util import *

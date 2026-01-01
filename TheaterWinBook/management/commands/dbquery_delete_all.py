@@ -9,6 +9,8 @@ import glob
 
 # 모델 임포트 경로는 실제 프로젝트에 맞게 확인해주세요.
 from TheaterWinBook.models_coins import CoinsUpbitTicker
+from TheaterWinBook.models_stock_korea import StocksKrList, StocksKrCandle, StocksKrTicker
+from TheaterWinBook.models_stock_usa import StocksUsList, StocksUsCandle, StocksUsTicker
 from django.apps import apps  # 앱 설정을 가져오기 위해 필요
 
 
@@ -21,11 +23,11 @@ class Command(BaseCommand):
         # 1. Ticker 데이터 삭제
         try:
             with transaction.atomic():
-                deleted_count, details = CoinsUpbitTicker.objects.all().delete()
+                deleted_count, details = StocksUsCandle.objects.all().delete()
 
             total_deleted = details.get('coins_upbit_ticker', 0)
             self.stdout.write(
-                self.style.SUCCESS(f'✅ CoinsUpbitTicker 테이블에서 총 {total_deleted}개 레코드를 삭제했습니다.')
+                self.style.SUCCESS(f'✅  테이블에서 총 {total_deleted}개 레코드를 삭제했습니다.')
             )
 
         except Exception as e:

@@ -133,6 +133,20 @@ def calculate_mdd(prices_df, current_price, days=180):
 
     return peak_price, current_price, mdd_percentage
 
+def _get_empty_mdd_result(days):
+    """
+    데이터가 없거나 부족할 때, 템플릿 에러 방지를 위해
+    기본값(0, -, N/A)으로 채워진 MDD 결과 딕셔너리를 반환합니다.
+    """
+    return {
+        'label': f"{days}일",
+        'peak_price': 'N/A',            # 최고가 정보 없음
+        'current_price': 0,             # 현재가 0
+        'mdd_percent': Decimal('0.0'),  # 수익률 0%
+        'mdd_rank': '-',                # 순위 정보 없음
+        'mdd_total_count': '-',         # 전체 개수 정보 없음
+        'mdd_rank_percent': Decimal('0.0'), # 상위 % 0
+    }
 
 # 💡 재사용을 위해 Ticker 데이터 포맷팅 함수를 Candle 데이터 포맷팅 함수로 변경/정의
 def format_candle_data(latest_candle, latest_ticker_for_rate):
@@ -332,7 +346,7 @@ def coin_list(request):
         'coin_list': coin_list_data,
         'title': '실시간 코인 시세 (Ticker 기준)'
     }
-
+    print("this is coin_list context:",context)
     return render(request, 'TheaterWinBook/coin_list.html', context)
 
 
@@ -480,6 +494,12 @@ def get_coin_candle(request, coin_code):
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 
+def template_250705(request):
+    return render(request, 'TheaterWinBook/template_content_250705.html')
+
+def coin_rank(request):
+    return render(request, 'TheaterWinBook/coin_rank.html')
+
 
 
 
@@ -554,3 +574,32 @@ def coin_chart_pop(request, coin_ticker):
 # def coin_prices_view(request):
     # return render(request, 'TheaterWinBook/coin_list.html', {"coins": coins})
 
+def coin_compare_view(request):
+    # GET 파라미터로 tickers 받기 (예: "BTC,ETH,XRP")
+    tickers_str = request.GET.get('tickers', '')
+
+    if tickers_str:
+        ticker_list = tickers_str.split(',')
+        # 실제 DB 조회 로직 (예시)
+        # coins = Coin.objects.filter(ticker__in=ticker_list)
+        # 여기서 MDD, RSI 등 퀀트 지표를 계산하거나 가져와야 합니다.
+
+        # [임시 데이터] 화면 테스트용 더미 데이터
+        coins_data = []
+        for t in ticker_list:
+            coins_data.append({
+                'name': t,  # 실제로는 코인 이름
+                'ticker': t,
+                'price': 1000,  # DB값
+                'mdd': -15.5,  # 계산값
+                'rsi': 45.2,
+                'volatility': 2.3
+            })
+    else:
+        coins_data = []
+
+    context = {
+        'compared_coins': coins_data
+    }
+
+    return render(request, 'TheaterWinBook/coin_compare.html', context)

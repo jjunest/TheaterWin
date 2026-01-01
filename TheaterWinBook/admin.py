@@ -11,6 +11,8 @@ from .models_freeboard import FreeBoard, FreeBoardInfo, FreeBoardReply
 from .models_freeboardstock import FreeBoardstock, FreeBoardstockInfo, FreeBoardstockReply
 from .models_freeboardprof import FreeBoardprof, FreeBoardprofInfo, FreeBoardprofReply
 from .models_coins import CoinsUpbitList, CoinsUpbitCandle, CoinsUpbitTicker
+from .models_stock_korea import StocksKrList,StocksKrCandle,StocksKrTicker
+from .models_stock_usa import StocksUsList, StocksUsCandle, StocksUsTicker
 
 admin.site.register(Post)
 admin.site.register(TheaterWinBookRecord)
@@ -26,6 +28,12 @@ admin.site.register(StockGroupKr)
 admin.site.register(FullvestingApi)
 admin.site.register(StockList)
 admin.site.register(StockCoreInfoKr)
+admin.site.register(StocksKrList)
+admin.site.register(StocksKrCandle)
+admin.site.register(StocksKrTicker)
+admin.site.register(StocksUsList)
+admin.site.register(StocksUsCandle)
+admin.site.register(StocksUsTicker)
 
 admin.site.register(FreeBoard)
 admin.site.register(FreeBoardInfo)

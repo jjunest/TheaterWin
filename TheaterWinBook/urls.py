@@ -104,12 +104,14 @@ urlpatterns = [
 
     path('/$', views.share_picks, name='share_picks'),
 
-
     # 주식 관련 URL
     path("stock_rank/", views.stock_rank, name="stock_rank"),
     path("stock_rank_pop/<slug:rank_name>/<int:market_sum_percent>/", views.stock_rank_pop, name="stock_rank_pop"),
-    path("stock_list_kospi/", views.stock_list_kospi, name="stock_list_kospi"),
-    path("stock_detail_kor/<int:stock_code>/", views.stock_detail_kor, name="stock_detail_kor"),
+
+    path("stock_rank_korea/", views.stock_rank_korea, name="stock_rank_korea"),
+
+
+    path("stock_rank_usa/", views.stock_rank_usa, name="stock_rank_usa"),
 
     # 게시판 (질문 관련)
     path("question/list/", views.question_list, name="question_list"),
@@ -153,4 +155,7 @@ urlpatterns = [
     path("base_template_250724/", views.base_template_250724, name="base_template_250724"),
     path("base_template_datatable_250724/", views.base_template_datatable_250724, name="base_template_datatable_250724"),
     path("base_template_content_251011/", views.base_template_content_251011, name="base_template_content_251011"),
+    path('api/telegram/webhook/', views.telegram_webhook),
+
+
 ]

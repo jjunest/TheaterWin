@@ -25,6 +25,8 @@ urlpatterns = [
 
     # 게시판 목록, 작성, 수정, 삭제, 상세보기
     path("coin_list/", views.coin_list, name="coin_list"),
+    path("coin_rank/", views.coin_rank, name="coin_rank"),
+    path("stock_list_usa/", views.stock_list_usa, name="stock_list_usa"),
     path("template_250705/", views.template_250705, name="template_250705"),
     # 1. 알람 설정 팝업 (기존)
     # path('coin/alarm/setting/<str:coin_ticker>/', views.coin_alarm_setting_pop, name='coin_alarm_setting_pop'),
@@ -35,7 +37,9 @@ urlpatterns = [
     # 🚨 코인 상세 페이지 URL 패턴 추가
     path('coin/detail/<str:coin_code>/', views.coin_detail_view, name='coin_detail'),
 
+    path('coin/compare/', views.coin_compare_view, name='coin_compare_view'),
+
     # urls.py에 정의되어야 함
-    path('api/coin/candle/<str:coin_code>/', views.get_coin_candle, name='get_coin_candle'),
+    path('get_coin_candle/<str:coin_code>/', views.get_coin_candle, name='get_coin_candle'),
 
 ]

@@ -1,0 +1,180 @@
+{% extends "TheaterWinBook/base_header_footer_250724.html" %}
+{% load static %}
+
+{% block css_script %}
+<style>
+    /* 코인 페이지 스타일 계승 */
+    .stock-name { font-weight: 700; font-size: 1.05em; color: #333; }
+    .stock-ticker { font-size: 0.85em; color: #888; margin-top: 2px; }
+    .price-value { font-weight: 700; font-size: 1.1em; font-family: 'Roboto', sans-serif; }
+    .change-up { font-weight: 700; color: #d60000 !important; }
+    .change-down { font-weight: 700; color: #0051c7 !important; }
+    .change-flat { font-weight: 700; color: #333 !important; }
+
+    #selection-datatable tbody tr { cursor: pointer; transition: background-color 0.2s; }
+    #selection-datatable tbody tr:hover { background-color: #f1f3f5 !important; }
+    #selection-datatable td { vertical-align: middle; }
+
+    .form-check-input.stock-compare-check {
+        width: 1.8em; height: 1.8em;
+        cursor: pointer; border: 2px solid #adb5bd; margin-top: 0;
+    }
+
+    #compare-floating-bar {
+        position: fixed; bottom: 30px; left: 50%;
+        transform: translateX(-50%) translateY(150%);
+        background: #fff; padding: 15px 30px; border-radius: 50px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        display: flex; align-items: center; gap: 20px;
+        z-index: 2000; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 1px solid #e1e1e1;
+    }
+    #compare-floating-bar.active { transform: translateX(-50%) translateY(0); }
+</style>
+
+<link href="{% static 'TheaterWinBook/assets/vendor/datatables.net-bs5/css/dataTables.bootstrap5.min.css'%}" rel="stylesheet" type="text/css"/>
+<link href="{% static 'TheaterWinBook/assets/vendor/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css'%}" rel="stylesheet" type="text/css"/>
+<link href="{% static 'TheaterWinBook/assets/vendor/datatables.net-fixedheader-bs5/css/fixedHeader.bootstrap5.min.css'%}" rel="stylesheet" type="text/css"/>
+{% endblock %}
+
+{% block content %}
+<div class="row g-0">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-body pt-4">
+                <div class="mb-4">
+                    <h4 class="header-title mt-0 mb-1">{{ title }}</h4>
+                    <p class="text-muted font-14">
+                        <strong>체크박스</strong>를 선택하여 최대 3개까지 주식 상세 퀀트 지표를 비교할 수 있습니다.
+                    </p>
+                </div>
+
+                <table id="selection-datatable" class="table table-hover dt-responsive nowrap w-100">
+                    <thead>
+                    <tr>
+                        <th style="width: 30%;">종목명/코드</th>
+                        <th style="width: 30%;">현재가 (KRW)</th>
+                        <th style="width: 25%;">전일대비</th>
+                        <th style="width: 60px;" class="text-center">비교</th>
+                        <th class="d-none">정렬용시간</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for stock in stock_list %}
+                    <tr data-code="{{ stock.ticker }}">
+                        <td>
+                            <div class="stock-name">{{ stock.name }}</div>
+                            <div class="stock-ticker">{{ stock.ticker }} <small class="ms-1 text-muted">[{{ stock.market }}]</small></div>
+                        </td>
+                        <td data-order="{{ stock.sort_price }}">
+                            {% if stock.latest_price_display == '가격정보없음' %}
+                                <span class="text-muted small">정보 없음</span>
+                            {% else %}
+                                <div class="price-value">₩ {{ stock.latest_price_display }}</div>
+                                <div class="text-muted small mt-1">
+                                    <i class="mdi mdi-clock-outline"></i> {{ stock.updated_at_formatted }}
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td data-order="{{ stock.change_rate|default:0 }}">
+                            {% if stock.change_rate is not None %}
+                                {% if stock.change_rate > 0 %}
+                                    <span class="change-up">+{{ stock.change_rate|floatformat:2 }}% ▲</span>
+                                {% elif stock.change_rate < 0 %}
+                                    <span class="change-down">{{ stock.change_rate|floatformat:2 }}% ▼</span>
+                                {% else %}
+                                    <span class="change-flat">0.00% -</span>
+                                {% endif %}
+                            {% else %}<span class="text-muted">-</span>{% endif %}
+                        </td>
+                        <td class="text-center check-cell">
+                            <div class="form-check d-flex justify-content-center align-items-center" style="height: 100%; min-height: 40px;" onclick="event.stopPropagation();">
+                                <input type="checkbox" class="form-check-input stock-compare-check"
+                                       id="chk_{{ stock.ticker }}"
+                                       data-ticker="{{ stock.ticker }}">
+                            </div>
+                        </td>
+                        <td class="d-none">{{ stock.updated_at_sort }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="compare-floating-bar">
+    <div>
+        <i class="mdi mdi-chart-areaspline fs-4 text-primary align-middle me-2"></i>
+        <span class="fw-bold text-dark"><span id="selected-count">0</span>/3 선택됨</span>
+    </div>
+    <button class="btn btn-primary rounded-pill px-4" id="btn-go-compare" disabled>
+        비교 분석 하러가기 <i class="mdi mdi-arrow-right ms-1"></i>
+    </button>
+    <button class="btn btn-light btn-sm rounded-circle ms-2" id="btn-clear-compare" title="초기화">
+        <i class="mdi mdi-close"></i>
+    </button>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script src="{% static 'TheaterWinBook/assets/vendor/datatables.net/js/dataTables.min.js'%}"></script>
+<script src="{% static 'TheaterWinBook/assets/vendor/datatables.net-bs5/js/dataTables.bootstrap5.min.js'%}"></script>
+<script src="{% static 'TheaterWinBook/assets/vendor/datatables.net-responsive/js/dataTables.responsive.min.js'%}"></script>
+<script src="{% static 'TheaterWinBook/assets/vendor/datatables.net-responsive-bs5/js/responsive.bootstrap5.min.js'%}"></script>
+<script src="{% static 'TheaterWinBook/assets/vendor/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js'%}"></script>
+
+<script>
+    $(document).ready(function () {
+        var table = $('#selection-datatable').DataTable({
+            fixedHeader: true,
+            responsive: true,
+            pageLength: 50,
+            order: [[4, 'desc']], // 최근 업데이트순
+            language: { search: "", searchPlaceholder: "종목명 또는 코드 검색..." }
+        });
+
+        let selectedStocks = [];
+
+        // 체크박스 선택 로직
+        $('#selection-datatable tbody').on('change', '.stock-compare-check', function() {
+            const ticker = $(this).data('ticker');
+            if ($(this).is(':checked')) {
+                if (selectedStocks.length >= 3) {
+                    $(this).prop('checked', false);
+                    alert("최대 3개까지만 비교 가능합니다.");
+                    return;
+                }
+                selectedStocks.push(ticker);
+            } else {
+                selectedStocks = selectedStocks.filter(t => t !== ticker);
+            }
+            updateFloatingBar();
+        });
+
+        function updateFloatingBar() {
+            const count = selectedStocks.length;
+            $('#selected-count').text(count);
+            count > 0 ? $('#compare-floating-bar').addClass('active') : $('#compare-floating-bar').removeClass('active');
+            $('#btn-go-compare').prop('disabled', count === 0);
+        }
+
+        // 상세 페이지 이동 (종목 클릭 시)
+        $('#selection-datatable tbody').on('click', 'tr', function (e) {
+            if ($(e.target).closest('td').index() === 3) return; // 체크박스 열 제외
+            const code = $(this).data('code');
+            if (code) {
+                window.location.href = "{% url 'stock_korea_detail' 'PLACEHOLDER' %}".replace('PLACEHOLDER', code);
+            }
+        });
+
+        // 비교 페이지 이동
+        $('#btn-go-compare').on('click', function() {
+            const tickersString = selectedStocks.join(',');
+            alert("this is window")
+
+        });
+    });
+</script>
+{% endblock %}
