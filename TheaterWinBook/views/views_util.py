@@ -5,6 +5,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Max
 from ..models_stock_korea import StocksKrList, StocksKrCandle, StocksKrTicker
+from ..models_coins import CoinsUpbitList,CoinsUpbitCandle,CoinsUpbitTicker
 import requests
 from ..utils_telegram import send_notification_telegram
 
@@ -12,19 +13,79 @@ from ..utils_telegram import send_notification_telegram
 @csrf_exempt
 def telegram_webhook(request):
     if request.method == 'POST':
-        payload = json.loads(request.body.decode('utf-8'))
+        try:
+            payload = json.loads(request.body.decode('utf-8'))
+            if 'message' in payload:
+                chat_id = payload['message']['chat']['id']
+                text = payload['message'].get('text', '').strip()
 
-        if 'message' in payload:
-            chat_id = payload['message']['chat']['id']
-            text = payload['message'].get('text', '').strip()
+                if text:
+                    # 1. '/' 제거 후 코인인지 주식인지 판단 (예: /비트코인 또는 /BTC)
+                    query = text.replace('/', '')
 
-            # 사용자가 "/종목명" 또는 "종목명" 입력 시 처리
-            if text:
-                response_msg = process_stock_query(text)
-                send_direct_message(chat_id, response_msg)
+                    # 2. 코인 검색 시도
+                    coin_response = process_coin_query(query)
+                    if coin_response:
+                        send_direct_message(chat_id, coin_response)
+                    else:
+                        # 3. 코인이 없으면 기존 주식 로직 실행
+                        stock_response = process_stock_query(query)
+                        send_direct_message(chat_id, stock_response)
+        except Exception as e:
+            print(f"Webhook Error: {e}")
 
         return JsonResponse({'status': 'ok'})
     return JsonResponse({'status': 'fail'}, status=400)
+
+
+def process_coin_query(query):
+    """
+    코인명 또는 코인코드로 현재가 및 MDD 계산
+    """
+    # 1. 코인 찾기 (한글명 또는 KRW-BTC 형태의 코드)
+    coin = CoinsUpbitList.objects.filter(coins_name_kor=query).first() or \
+           CoinsUpbitList.objects.filter(coins_code=query).first()
+
+    if not coin:
+        return None  # 코인이 없으면 None 리턴하여 주식 로직으로 넘김
+
+    # 2. 현재가 가져오기 (CoinsUpbitTicker 활용)
+    current_ticker = CoinsUpbitTicker.objects.filter(coins_code=coin).order_by('-bat_time').first()
+    if not current_ticker:
+        return f"⚠️ {coin.coins_name_kor}의 실시간 가격 데이터가 없습니다."
+
+    curr_price = float(current_ticker.ticker_trade_price)
+
+    # 3. MDD 계산 (최근 1년치 캔들 데이터 기준)
+    # 캔들 데이터에서 최고가(coin_high_price)를 가져와서 계산
+    now = timezone.now()
+    one_year_ago = now - timedelta(days=365)
+
+    high_price_data = CoinsUpbitCandle.objects.filter(
+        coins_code=coin,
+        coin_candle_datetime_kst__gte=one_year_ago
+    ).aggregate(Max('coin_high_price'))
+
+    max_high = float(high_price_data['coin_high_price__max']) if high_price_data['coin_high_price__max'] else 0
+
+    # 4. 메시지 구성
+    if max_high > 0:
+        mdd = ((curr_price / max_high) - 1) * 100
+        mdd_str = f"`{mdd:.2f}%`"
+    else:
+        mdd_str = "데이터 부족"
+
+    response = [
+        f"🪙 *[{coin.coins_name_kor} ({coin.coins_code})]*",
+        f"현재가: `{curr_price:,.0f}원`" if curr_price >= 100 else f"현재가: `{curr_price:,.2f}원`",
+        f"1년 내 최고점 대비(MDD): {mdd_str}",
+        "",
+        f"📍 최고가: {max_high:,.0f}원",
+        "💡 _MDD가 낮을수록 현재가 저점 구간임을 의미합니다._"
+    ]
+
+    return "\n".join(response)
+
 
 
 def process_stock_query(query):
