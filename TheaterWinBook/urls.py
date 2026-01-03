@@ -156,6 +156,7 @@ urlpatterns = [
     path("base_template_datatable_250724/", views.base_template_datatable_250724, name="base_template_datatable_250724"),
     path("base_template_content_251011/", views.base_template_content_251011, name="base_template_content_251011"),
     path('api/telegram/webhook/', views.telegram_webhook),
+    path('api/telegram/quant_webhook/', views.telegram_quant_webhook),
 
 
 ]

@@ -8,6 +8,36 @@ from ..models_stock_korea import StocksKrList, StocksKrCandle, StocksKrTicker
 from ..models_coins import CoinsUpbitList,CoinsUpbitCandle,CoinsUpbitTicker
 import requests
 from ..utils_telegram import send_notification_telegram
+from django.conf import settings
+
+
+@csrf_exempt
+def telegram_quant_webhook(request):
+    QUANT_BOT_TOKEN = settings.TELEGRAM_QUANT_BOT_TOKEN
+    if request.method == 'POST':
+        try:
+            payload = json.loads(request.body.decode('utf-8'))
+            if 'message' in payload:
+                chat_id = payload['message']['chat']['id']
+                text = payload['message'].get('text', '').strip()
+
+                if text:
+                    # 1. '/' 제거 후 코인인지 주식인지 판단 (예: /비트코인 또는 /BTC)
+                    query = text.replace('/', '')
+
+                    # 2. 코인 검색 시도
+                    coin_response = process_coin_query(query)
+                    if coin_response:
+                        send_message(QUANT_BOT_TOKEN,chat_id, coin_response)
+                    else:
+                        # 3. 코인이 없으면 기존 주식 로직 실행
+                        stock_response = process_stock_query(query)
+                        send_message(chat_id, stock_response)
+        except Exception as e:
+            print(f"Webhook Error: {e}")
+
+        return JsonResponse({'status': 'ok'})
+    return JsonResponse({'status': 'fail'}, status=400)
 
 
 @csrf_exempt
@@ -142,9 +172,17 @@ def process_stock_query(query):
     return "\n".join(response)
 
 
+def send_message(token, chat_id, text):
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    payload = {'chat_id': chat_id, 'text': text}
+    requests.post(url, json=payload)
+
+
+
+
 def send_direct_message(chat_id, text):
     """특정 채팅방에 메시지 전송 (기존 함수 변형)"""
-    from django.conf import settings
+
     token = settings.TELEGRAM_QUANT_BOT_TOKEN
     # token = settings.TELEGRAM_BOT_TOKEN
     url = f"https://api.telegram.org/bot{token}/sendMessage"
