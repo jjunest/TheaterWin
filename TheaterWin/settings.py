@@ -35,6 +35,10 @@ TELEGRAM_BOT_TOKEN = env('TELEGRAM_BOT_TOKEN')
 TELEGRAM_CHAT_ID = env('TELEGRAM_CHAT_ID')
 # 텔레그램 추가 251023 env 패키지를 활용해서 텔레그램 환경 변수 가져오기
 
+TELEGRAM_QUANT_BOT_TOKEN = env('TELEGRAM_QuantBOT_TOKEN')
+TELEGRAM_QUANT_CHAT_ID = env('TELEGRAM_QuantBOT_CHAT_ID')
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
@@ -43,7 +47,7 @@ SECRET_KEY = 'v4t3@&*^zrj(+fxjpx_=2i_+$royxy5u98)2!8^pa@2l9%dxvj'
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'www.fullvesting.com', 'fullvesting.com.','fullvesting.com', 'http://fullvesting.com',

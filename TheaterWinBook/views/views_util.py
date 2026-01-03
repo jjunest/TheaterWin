@@ -145,7 +145,8 @@ def process_stock_query(query):
 def send_direct_message(chat_id, text):
     """특정 채팅방에 메시지 전송 (기존 함수 변형)"""
     from django.conf import settings
-    token = settings.TELEGRAM_BOT_TOKEN
+    token = settings.TELEGRAM_QUANT_BOT_TOKEN
+    # token = settings.TELEGRAM_BOT_TOKEN
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     payload = {
         'chat_id': chat_id,
