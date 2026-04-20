@@ -2,141 +2,200 @@
 {% load static %}
 
 {% block css_script %}
-<!--custom css -->
+<style>
+    /* 미국 주식 전용 스타일 (코어 디자인 계승) */
+    .stock-name { font-weight: 700; font-size: 1.05em; color: #333; }
+    .stock-symbol { font-size: 0.85em; color: #007bff; font-weight: 600; margin-top: 2px; }
+    .price-value { font-weight: 700; font-size: 1.1em; font-family: 'Roboto', sans-serif; }
 
+    /* 상승/하락 컬러 (미국 시장 기준: 보통 초록/빨강을 쓰지만 국내 사용자 편의상 한국식 컬러 유지 혹은 변경 가능) */
+    /* 여기서는 기존 한국 주식 페이지의 일관성을 위해 한국식(빨강 상승)을 유지합니다. */
+    .change-up { font-weight: 700; color: #d60000 !important; }
+    .change-down { font-weight: 700; color: #0051c7 !important; }
+    .change-flat { font-weight: 700; color: #333 !important; }
+
+    #usa-stock-datatable tbody tr { cursor: pointer; transition: background-color 0.2s; }
+    #usa-stock-datatable tbody tr:hover { background-color: #f8f9fa !important; }
+    #usa-stock-datatable td { vertical-align: middle; }
+
+    .form-check-input.stock-compare-check {
+        width: 1.8em; height: 1.8em;
+        cursor: pointer; border: 2px solid #adb5bd; margin-top: 0;
+    }
+
+    #compare-floating-bar {
+        position: fixed; bottom: 30px; left: 50%;
+        transform: translateX(-50%) translateY(150%);
+        background: #fff; padding: 15px 30px; border-radius: 50px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        display: flex; align-items: center; gap: 20px;
+        z-index: 2000; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 1px solid #e1e1e1;
+    }
+    #compare-floating-bar.active { transform: translateX(-50%) translateY(0); }
+</style>
+
+<link href="{% static 'TheaterWinBook/assets/vendor/datatables.net-bs5/css/dataTables.bootstrap5.min.css'%}" rel="stylesheet" type="text/css"/>
+<link href="{% static 'TheaterWinBook/assets/vendor/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css'%}" rel="stylesheet" type="text/css"/>
 {% endblock %}
 
 {% block content %}
-<!--base template의 content는 page-container 2개 뒤에 있는 row 부터 넣으면 됩니다. -->
-
-<!--Calendar -->
-                <div class="row">
-                    <div class="col-xl-3">
-                        <div class="card">
-                            <div class="card-body">
-                                <button class="btn btn-primary w-100" id="btn-new-event">
-                                    <i class="ti ti-plus me-2 align-middle"></i> Create New Event
-                                </button>
-
-                                <div id="external-events" class="mt-2">
-                                    <p class="text-muted">Drag and drop your event or click in the calendar</p>
-                                    <div class="external-event fc-event bg-success-subtle text-success"
-                                        data-class="bg-success-subtle">
-                                        <i class="ti ti-circle-filled me-2"></i>New Event Planning
-                                    </div>
-                                    <div class="external-event fc-event bg-info-subtle text-info"
-                                        data-class="bg-info-subtle">
-                                        <i class="ti ti-circle-filled me-2"></i>Meeting
-                                    </div>
-                                    <div class="external-event fc-event bg-warning-subtle text-warning"
-                                        data-class="bg-warning-subtle">
-                                        <i class="ti ti-circle-filled me-2"></i>Generating Reports
-                                    </div>
-                                    <div class="external-event fc-event bg-danger-subtle text-danger"
-                                        data-class="bg-danger-subtle">
-                                        <i class="ti ti-circle-filled me-2"></i>Create New theme
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div> <!-- end col-->
-
-                    <div class="col-xl-9">
-                        <div class="card">
-                            <div class="card-body">
-                                <div id="calendar"></div>
-                            </div>
-                        </div>
-                    </div><!-- end col -->
-                </div>
-                <!--end row-->
-
-                <!-- Add New Event MODAL -->
-                <div class="modal fade" id="event-modal" tabindex="-1">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <form class="needs-validation" name="event-form" id="forms-event" novalidate>
-                                <div class="modal-header">
-                                    <h4 class="modal-title" id="modal-title">
-                                        Create Event
-                                    </h4>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                        aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="row">
-                                        <div class="col-12">
-                                            <div class="mb-2">
-                                                <label class="control-label form-label" for="event-title">Event
-                                                    Name</label>
-                                                <input class="form-control" placeholder="Insert Event Name" type="text"
-                                                    name="title" id="event-title" required />
-                                                <div class="invalid-feedback">Please provide a valid event name</div>
-                                            </div>
-                                        </div>
-                                        <div class="col-12">
-                                            <div class="mb-2">
-                                                <label class="control-label form-label"
-                                                    for="event-category">Category</label>
-                                                <select class="form-select" name="category" id="event-category"
-                                                    required>
-                                                    <option value="bg-primary">Blue</option>
-                                                    <option value="bg-secondary">Gray Dark</option>
-                                                    <option value="bg-success">Green</option>
-                                                    <option value="bg-info">Cyan</option>
-                                                    <option value="bg-warning">Yellow</option>
-                                                    <option value="bg-danger">Red</option>
-                                                    <option value="bg-dark">Dark</option>
-                                                </select>
-                                                <div class="invalid-feedback">Please select a valid event category</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="d-flex flex-wrap align-items-center gap-2">
-                                        <button type="button" class="btn btn-danger" id="btn-delete-event">
-                                            Delete
-                                        </button>
-
-                                        <button type="button" class="btn btn-light ms-auto" data-bs-dismiss="modal">
-                                            Close
-                                        </button>
-
-                                        <button type="submit" class="btn btn-primary" id="btn-save-event">
-                                            Save
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                        <!-- end modal-content-->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-body pt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h4 class="header-title mt-0 mb-1">🇺🇸 미국 주식 종목 리스트</h4>
+                        <p class="text-muted font-14">
+                            NASDAQ, NYSE, AMEX 실시간 시세 및 퀀트 지표를 확인하세요.
+                        </p>
                     </div>
-                    <!-- end modal dialog-->
+                    <div class="text-end">
+                        <span class="badge bg-light text-dark border">Market Status: <span class="text-success">● Open</span></span>
+                    </div>
                 </div>
-                <!-- end modal-->
 
+                <table id="usa-stock-datatable" class="table table-hover dt-responsive nowrap w-100">
+                    <thead>
+                    <tr>
+                        <th style="width: 30%;">종목명 (Symbol)</th>
+                        <th style="width: 20%;">현재가 (USD)</th>
+                        <th style="width: 20%;">등락률</th>
+                        <th style="width: 20%;">섹터/산업</th>
+                        <th style="width: 60px;" class="text-center">비교</th>
+                        <th class="d-none">업데이트시간</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for stock in stock_list %}
+                    <tr data-symbol="{{ stock.symbol }}">
+                        <td>
+                            <div class="stock-name">{{ stock.name_ko|default:stock.name_en }}</div>
+                            <div class="stock-symbol">
+                                {{ stock.symbol }}
+                                <span class="badge badge-outline-secondary ms-1" style="font-size: 0.7em;">{{ stock.market }}</span>
+                            </div>
+                        </td>
+                        <td data-order="{{ stock.price }}">
+                            <div class="price-value">$ {{ stock.price|floatformat:2 }}</div>
+                            <div class="text-muted small mt-1" style="font-size: 0.75rem;">
+                                <i class="mdi mdi-database-outline"></i> {{ stock.market_cap_display }}
+                            </div>
+                        </td>
+                        <td data-order="{{ stock.change_rate|default:0 }}">
+                            {% if stock.change_rate is not None %}
+                                {% if stock.change_rate > 0 %}
+                                    <span class="change-up">+{{ stock.change_rate|floatformat:2 }}% ▲</span>
+                                {% elif stock.change_rate < 0 %}
+                                    <span class="change-down">{{ stock.change_rate|floatformat:2 }}% ▼</span>
+                                {% else %}
+                                    <span class="change-flat">0.00% -</span>
+                                {% endif %}
+                            {% else %}<span class="text-muted">-</span>{% endif %}
+                        </td>
+                        <td>
+                            <div class="text-dark small fw-bold">{{ stock.sector|default:"-" }}</div>
+                            <div class="text-muted extra-small" style="font-size: 0.75rem;">{{ stock.industry|default:"-" }}</div>
+                        </td>
+                        <td class="text-center">
+                            <div class="form-check d-flex justify-content-center align-items-center" onclick="event.stopPropagation();">
+                                <input type="checkbox" class="form-check-input stock-compare-check"
+                                       id="chk_{{ stock.symbol }}"
+                                       data-symbol="{{ stock.symbol }}">
+                            </div>
+                        </td>
+                        <td class="d-none">{{ stock.bat_time|date:"YmdHis" }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 
-
-
+<div id="compare-floating-bar">
+    <div>
+        <i class="mdi mdi-chart-box-outline fs-4 text-primary align-middle me-2"></i>
+        <span class="fw-bold text-dark"><span id="selected-count">0</span>/3 선택됨</span>
+    </div>
+    <button class="btn btn-primary rounded-pill px-4" id="btn-go-compare" disabled>
+        미국 주식 비교 분석 <i class="mdi mdi-arrow-right ms-1"></i>
+    </button>
+    <button class="btn btn-light btn-sm rounded-circle ms-2" id="btn-clear-compare">
+        <i class="mdi mdi-close"></i>
+    </button>
+</div>
 {% endblock %}
 
 {% block javascript %}
-
-<!-- Adminto.Fullcalendar js -->
-<script src="{% static 'TheaterWinBook/assets/vendor/fullcalendar/index.global.min.js'%}"></script>
-
-<!-- Adminto.Calendar App Demo js -->
-<script src="{% static 'TheaterWinBook/assets/js/pages/apps-calendar.js'%}"></script>
-
+<script src="{% static 'TheaterWinBook/assets/vendor/datatables.net/js/dataTables.min.js'%}"></script>
+<script src="{% static 'TheaterWinBook/assets/vendor/datatables.net-bs5/js/dataTables.bootstrap5.min.js'%}"></script>
+<script src="{% static 'TheaterWinBook/assets/vendor/datatables.net-responsive/js/dataTables.responsive.min.js'%}"></script>
+<script src="{% static 'TheaterWinBook/assets/vendor/datatables.net-responsive-bs5/js/responsive.bootstrap5.min.js'%}"></script>
 
 <script>
-        $(document).ready(function () {
-
-            // JQuery 적용
-<!--            alert("this is test");-->
+    $(document).ready(function () {
+        const table = $('#usa-stock-datatable').DataTable({
+            responsive: true,
+            pageLength: 25,
+            order: [[5, 'desc']], // 최신 데이터 순
+            language: {
+                search: "",
+                searchPlaceholder: "티커(AAPL) 또는 종목명 검색...",
+                emptyTable: "조회된 미국 주식 데이터가 없습니다."
+            }
         });
 
+        let selectedStocks = [];
 
-    </script>
+        // 체크박스 핸들링
+        $('#usa-stock-datatable tbody').on('change', '.stock-compare-check', function() {
+            const symbol = $(this).data('symbol');
+            if ($(this).is(':checked')) {
+                if (selectedStocks.length >= 3) {
+                    $(this).prop('checked', false);
+                    alert("미국 주식은 최대 3개까지만 비교 가능합니다.");
+                    return;
+                }
+                selectedStocks.push(symbol);
+            } else {
+                selectedStocks = selectedStocks.filter(s => s !== symbol);
+            }
+            updateFloatingBar();
+        });
+
+        function updateFloatingBar() {
+            const count = selectedStocks.length;
+            $('#selected-count').text(count);
+            count > 0 ? $('#compare-floating-bar').addClass('active') : $('#compare-floating-bar').removeClass('active');
+            $('#btn-go-compare').prop('disabled', count === 0);
+        }
+
+        // 초기화 버튼
+        $('#btn-clear-compare').on('click', function() {
+            $('.stock-compare-check').prop('checked', false);
+            selectedStocks = [];
+            updateFloatingBar();
+        });
+
+        // 상세 페이지 이동 (Row 클릭)
+        $('#usa-stock-datatable tbody').on('click', 'tr', function (e) {
+            if ($(e.target).closest('td').index() === 4) return;
+            const symbol = $(this).data('symbol');
+            if (symbol) {
+                // 향후 구현할 미국 주식 상세페이지 URL
+                window.location.href = `/stocks/usa/detail/${symbol}/`;
+            }
+        });
+
+        // 비교 분석 이동
+        $('#btn-go-compare').on('click', function() {
+            const symbols = selectedStocks.join(',');
+            // window.location.href = `/stocks/usa/compare/?symbols=${symbols}`;
+            alert(symbols + " 종목을 비교 분석합니다.");
+        });
+    });
+</script>
 {% endblock %}

@@ -23,7 +23,7 @@ class Command(BaseCommand):
         # 1. Ticker 데이터 삭제
         try:
             with transaction.atomic():
-                deleted_count, details = StocksUsCandle.objects.all().delete()
+                deleted_count, details = StocksKrTicker.objects.all().delete()
 
             total_deleted = details.get('coins_upbit_ticker', 0)
             self.stdout.write(

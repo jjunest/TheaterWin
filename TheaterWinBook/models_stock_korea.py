@@ -49,7 +49,6 @@ class StocksKrCandle(models.Model):
 
 class StocksKrTicker(models.Model):
     """
-    네이버 금융 API를 통해 수집한 주식 현재가(Ticker) 시계열 데이터
     """
     id = models.AutoField(primary_key=True)
 

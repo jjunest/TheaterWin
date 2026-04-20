@@ -33,7 +33,7 @@ import json
 # 실제 정의하신 모델 임포트
 from ..models_stock_korea import StocksKrList, StocksKrCandle, StocksKrTicker
 from decimal import Decimal
-
+from ..models_stock_usa import StocksUsList, StocksUsTicker, StocksUsCandle # 모델명 확인
 
 # stock_rank
 def stock_rank(request):
@@ -204,7 +204,91 @@ def get_stock_candle_api(request, stock_code):
 
 
 def stock_list_usa(request):
-    return render(request, 'TheaterWinBook/stock_list_usa.html')
+    """
+        미국 주식 리스트 뷰 (NASDAQ, NYSE, AMEX)
+        한국 주식 로직을 계승하되, 달러($) 및 소수점 처리를 추가함.
+        """
+    # 1. 활성화된 미국 주식 리스트 조회
+    active_stocks = StocksUsList.objects.filter(is_active=True).values(
+        'symbol', 'name_en', 'name_ko', 'market', 'sector', 'industry'
+    )
+
+    stock_list_data = []
+
+    for stock in active_stocks:
+        symbol = stock['symbol']
+
+        # 최신 티커 데이터 조회 (StocksUsTicker 모델 기준)
+        latest_ticker = StocksUsTicker.objects.filter(
+            symbol__symbol=symbol
+        ).order_by('-bat_time').first()
+
+        # 기본값 초기화
+        price_value = Decimal('-1')
+        display_price = '가격정보없음'
+        change_rate = None
+        formatted_bat_time = '-'
+        bat_time_sort_value = 0
+        market_cap_display = '-'
+
+        if latest_ticker:
+            # 1) 가격 처리 (미국 주식은 소수점 2자리 필수)
+            if latest_ticker.price is not None:
+                price_value = latest_ticker.price
+                display_price = f"{float(price_value):,.2f}"
+
+            # 2) 등락률 처리 (이미 소수점 형태일 것이므로 100을 곱함)
+            if latest_ticker.change_rate is not None:
+                change_rate = latest_ticker.change_rate * Decimal(100)
+
+            # 3) 시가총액 처리 (미국 시총은 단위가 크므로 가독성 있게 변환 가능)
+            if latest_ticker.market_cap:
+                m_cap = latest_ticker.market_cap
+                if m_cap >= 1_000_000_000_000:  # 1조 달러 이상 (T)
+                    market_cap_display = f"${m_cap / 1_000_000_000_000:.2f}T"
+                elif m_cap >= 1_000_000_000:  # 10억 달러 이상 (B)
+                    market_cap_display = f"${m_cap / 1_000_000_000:.2f}B"
+                else:
+                    market_cap_display = f"${m_cap / 1_000_000:.2f}M"
+
+            # 4) 시간 처리
+            if latest_ticker.bat_time:
+                dt = latest_ticker.bat_time
+                # 미국 주식이라도 한국 사용자 기준(KST)으로 보여줌
+                aware_dt = dt.astimezone(KST) if timezone.is_aware(dt) else timezone.make_aware(dt, KST)
+                formatted_bat_time = aware_dt.strftime('%m/%d %H:%M')
+                bat_time_sort_value = aware_dt.timestamp()
+
+        # Ticker 데이터가 없을 경우 Candle에서 마지막 종가 백업
+        elif not latest_ticker:
+            latest_candle = StocksUsCandle.objects.filter(symbol__symbol=symbol).order_by('-date').first()
+            if latest_candle:
+                price_value = latest_candle.close_price
+                display_price = f"{float(price_value):,.2f}"
+                # 캔들은 등락률 계산이 필요할 수 있으나 여기서는 단순히 가격만 노출 예시
+                formatted_bat_time = latest_candle.date.strftime('%Y/%m/%d') + " (종가)"
+                bat_time_sort_value = datetime.datetime.combine(latest_candle.date, datetime.time.min).timestamp()
+
+        stock_list_data.append({
+            'name_en': stock['name_en'],
+            'name_ko': stock['name_ko'],
+            'symbol': symbol,
+            'market': stock['market'],
+            'sector': stock['sector'],
+            'industry': stock['industry'],
+            'price': price_value,  # 정렬용 숫자
+            'latest_price_display': display_price,  # 화면 표시용
+            'change_rate': change_rate,
+            'market_cap_display': market_cap_display,
+            'updated_at_formatted': formatted_bat_time,
+            'updated_at_sort': bat_time_sort_value,
+        })
+
+    context = {
+        'stock_list': stock_list_data,
+        'title': '🇺🇸 미국 주식 실시간 시세 (S&P500 / NASDAQ)'
+    }
+    return render(request, 'TheaterWinBook/stock_list_usa.html', context)
 
 def stock_rank_usa(request):
     return render(request, 'TheaterWinBook/stock_rank_usa.html')
