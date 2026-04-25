@@ -53,6 +53,35 @@ def telegram_quant_webhook(request):
     return JsonResponse({'status': 'fail'}, status=400)
 
 
+@csrf_exempt
+def telegram_webhook(request):
+    if request.method == 'POST':
+        try:
+            payload = json.loads(request.body.decode('utf-8'))
+            if 'message' in payload:
+                chat_id = payload['message']['chat']['id']
+                text = payload['message'].get('text', '').strip()
+
+                if text:
+                    # 1. '/' 제거 후 코인인지 주식인지 판단 (예: /비트코인 또는 /BTC)
+                    query = text.replace('/', '')
+
+                    # 2. 코인 검색 시도
+                    coin_response = process_coin_query(query)
+                    if coin_response:
+                        send_direct_message(chat_id, coin_response)
+                    else:
+                        # 3. 코인이 없으면 기존 주식 로직 실행
+                        stock_response = process_stock_query(query)
+                        send_direct_message(chat_id, stock_response)
+        except Exception as e:
+            print(f"Webhook Error: {e}")
+
+        return JsonResponse({'status': 'ok'})
+    return JsonResponse({'status': 'fail'}, status=400)
+
+
+
 def process_coin_query(query):
     """코인명 또는 코인코드로 현재가 및 MDD 계산"""
     coin = CoinsUpbitList.objects.filter(coins_name_kor=query).first() or \
