@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from datetime import timedelta
-from django.db.models import Max
+from django.db.models import Max, Min  # Min 추가
 from django.conf import settings
 
 # 모델 임포트 (기존 컨텍스트 유지)
@@ -17,7 +17,7 @@ from ..models_coins import CoinsUpbitList, CoinsUpbitCandle, CoinsUpbitTicker
 @csrf_exempt
 def telegram_quant_webhook(request):
     """
-    퀀트 봇 웹후크 메인 함수
+    퀀트 봇 웹후크 메인 함수 (6개월 분석 특화)
     검색 순서: 코인 -> 한국 주식 -> 미국 주식
     """
     if request.method == 'POST':
@@ -37,13 +37,13 @@ def telegram_quant_webhook(request):
                     if not response:
                         response = process_stock_query(query)
 
-                    # 3. 한국 주식 결과도 없으면(None 리턴 시) 미국 주식 검색
+                    # 3. 한국 주식 결과도 없으면 미국 주식 검색
                     if not response:
                         response = process_us_stock_query(query)
 
                     # 4. 모든 검색 실패 시 최종 메시지
                     if not response:
-                        response = f"❓ '{query}'에 해당하는 코인, 한국주식, 미국주식을 찾을 수 없습니다."
+                        response = f"❓ '{query}'에 해당하는 종목을 찾을 수 없습니다."
 
                     send_direct_message(chat_id, response)
         except Exception as e:
@@ -53,151 +53,132 @@ def telegram_quant_webhook(request):
     return JsonResponse({'status': 'fail'}, status=400)
 
 
-@csrf_exempt
-def telegram_webhook(request):
-    if request.method == 'POST':
-        try:
-            payload = json.loads(request.body.decode('utf-8'))
-            if 'message' in payload:
-                chat_id = payload['message']['chat']['id']
-                text = payload['message'].get('text', '').strip()
-
-                if text:
-                    # 1. '/' 제거 후 코인인지 주식인지 판단 (예: /비트코인 또는 /BTC)
-                    query = text.replace('/', '')
-
-                    # 2. 코인 검색 시도
-                    coin_response = process_coin_query(query)
-                    if coin_response:
-                        send_direct_message(chat_id, coin_response)
-                    else:
-                        # 3. 코인이 없으면 기존 주식 로직 실행
-                        stock_response = process_stock_query(query)
-                        send_direct_message(chat_id, stock_response)
-        except Exception as e:
-            print(f"Webhook Error: {e}")
-
-        return JsonResponse({'status': 'ok'})
-    return JsonResponse({'status': 'fail'}, status=400)
-
-
-
 def process_coin_query(query):
-    """코인명 또는 코인코드로 현재가 및 MDD 계산"""
+    """코인 6개월 최고/최저 대비 분석"""
     coin = CoinsUpbitList.objects.filter(coins_name_kor=query).first() or \
            CoinsUpbitList.objects.filter(coins_code=query).first()
 
     if not coin:
-        return None  # 검색 결과 없으면 None 리턴
+        return None
 
     current_ticker = CoinsUpbitTicker.objects.filter(coins_code=coin).order_by('-bat_time').first()
     if not current_ticker:
         return f"⚠️ {coin.coins_name_kor}의 실시간 가격 데이터가 없습니다."
 
     curr_price = float(current_ticker.ticker_trade_price)
-    now = timezone.now()
-    one_year_ago = now - timedelta(days=365)
+    six_months_ago = timezone.now() - timedelta(days=180)
 
-    high_price_data = CoinsUpbitCandle.objects.filter(
+    # 6개월 내 최고가 및 최저가 조회
+    stats = CoinsUpbitCandle.objects.filter(
         coins_code=coin,
-        coin_candle_datetime_kst__gte=one_year_ago
-    ).aggregate(Max('coin_high_price'))
+        coin_candle_datetime_kst__gte=six_months_ago
+    ).aggregate(max_p=Max('coin_high_price'), min_p=Min('coin_low_price'))
 
-    max_high = float(high_price_data['coin_high_price__max']) if high_price_data['coin_high_price__max'] else 0
-    mdd = ((curr_price / max_high) - 1) * 100 if max_high > 0 else 0
+    max_p = float(stats['max_p']) if stats['max_p'] else 0
+    min_p = float(stats['min_p']) if stats['min_p'] else 0
 
-    response = [
-        f"🪙 *[{coin.coins_name_kor} ({coin.coins_code})]*",
-        f"현재가: `{curr_price:,.0f}원`" if curr_price >= 100 else f"현재가: `{curr_price:,.2f}원`",
-        f"1년 내 최고점 대비(MDD): `{mdd:.2f}%`",
-        "",
-        f"📍 52주 최고가: `{max_high:,.0f}원`",
-        "💡 _MDD가 낮을수록 현재가 저점 구간임을 의미합니다._"
-    ]
-    return "\n".join(response)
+    return format_summary_message(
+        name=coin.coins_name_kor,
+        symbol=coin.coins_code,
+        curr=curr_price,
+        high=max_p,
+        low=min_p,
+        currency="원"
+    )
 
 
 def process_stock_query(query):
-    """한국 주식 검색 및 기간별 분석"""
+    """한국 주식 6개월 최고/최저 대비 분석"""
     stock = StocksKrList.objects.filter(stock_name=query).first() or \
             StocksKrList.objects.filter(stock_code=query).first()
 
     if not stock:
-        return None  # 검색 결과 없으면 None 리턴
+        return None
 
     current_ticker = StocksKrTicker.objects.filter(stock_code=stock).first()
     if not current_ticker:
         return f"⚠️ {stock.stock_name}의 실시간 가격 데이터가 없습니다."
 
     curr_price = float(current_ticker.ticker_close_price)
-    now = timezone.now().date()
+    six_months_ago = timezone.now().date() - timedelta(days=180)
 
-    # 기간별 MDD 계산
-    periods = {"3개월": 90, "6개월": 180, "12개월": 365}
-    results = []
+    # 6개월 내 최고가 및 최저가 조회
+    stats = StocksKrCandle.objects.filter(
+        stock_code=stock,
+        date__gte=six_months_ago
+    ).aggregate(max_p=Max('high_price'), min_p=Min('low_price'))
 
-    for label, days in periods.items():
-        start_date = now - timedelta(days=days)
-        high_data = StocksKrCandle.objects.filter(stock_code=stock, date__gte=start_date).aggregate(Max('high_price'))
-        max_h = float(high_data['high_price__max']) if high_data['high_price__max'] else 0
+    max_p = float(stats['max_p']) if stats['max_p'] else 0
+    min_p = float(stats['min_p']) if stats['min_p'] else 0
 
-        if max_h > 0:
-            dd = ((curr_price / max_h) - 1) * 100
-            results.append(f"📍 *{label} MDD:* `{dd:.2f}%` (고점: {int(max_h):,}원)")
-        else:
-            results.append(f"📍 *{label}:* 데이터 부족")
-
-    response = [
-        f"📊 *[{stock.stock_name} ({stock.stock_code})]*",
-        f"현재가: `{int(curr_price):,}원`",
-        "",
-        *results,
-        "",
-        "💡 _MDD가 낮을수록 현재가 저점 구간임을 의미합니다._"
-    ]
-    return "\n".join(response)
+    return format_summary_message(
+        name=stock.stock_name,
+        symbol=stock.stock_code,
+        curr=curr_price,
+        high=max_p,
+        low=min_p,
+        currency="원"
+    )
 
 
 def process_us_stock_query(query):
-    """
-    미국 주식 검색 및 기간별(1, 3, 6개월) 분석 추가
-    """
+    """미국 주식 6개월 최고/최저 대비 분석"""
     stock = StocksUsList.objects.filter(symbol=query).first() or \
             StocksUsList.objects.filter(name_en__icontains=query).first()
 
     if not stock:
-        return None  # 최종적으로 검색 결과 없으면 None
+        return None
 
     latest_candle = StocksUsCandle.objects.filter(symbol=stock).order_by('-date').first()
     if not latest_candle:
         return f"⚠️ {stock.symbol}의 가격 데이터가 존재하지 않습니다."
 
     curr_price = float(latest_candle.close_price)
-    latest_date = latest_candle.date
+    six_months_ago = latest_candle.date - timedelta(days=180)
 
-    # 요청하신 기간별 최고가 분석 (1, 3, 6개월)
-    periods = {"1개월": 30, "3개월": 90, "6개월": 180, "12개월": 365}
-    mdd_results = []
+    # 6개월 내 최고가 및 최저가 조회
+    stats = StocksUsCandle.objects.filter(
+        symbol=stock,
+        date__gte=six_months_ago
+    ).aggregate(max_p=Max('high_price'), min_p=Min('low_price'))
 
-    for label, days in periods.items():
-        start_date = latest_date - timedelta(days=days)
-        high_data = StocksUsCandle.objects.filter(symbol=stock, date__gte=start_date).aggregate(Max('high_price'))
-        max_h = float(high_data['high_price__max']) if high_data['high_price__max'] else 0
+    max_p = float(stats['max_p']) if stats['max_p'] else 0
+    min_p = float(stats['min_p']) if stats['min_p'] else 0
 
-        if max_h > 0:
-            dd = ((curr_price / max_h) - 1) * 100
-            mdd_results.append(f"✅ *{label} MDD:* `{dd:.2f}%` (고점: ${max_h:,.2f})")
-        else:
-            mdd_results.append(f"✅ *{label}:* 데이터 부족")
+    return format_summary_message(
+        name=stock.name_en,
+        symbol=stock.symbol,
+        curr=curr_price,
+        high=max_p,
+        low=min_p,
+        currency="$"
+    )
+
+
+def format_summary_message(name, symbol, curr, high, low, currency):
+    """메시지 포맷팅 공통 로직"""
+    if high == 0 or low == 0:
+        return f"📊 *[{name} ({symbol})]*\n최근 6개월 데이터가 부족합니다."
+
+    # 1. 최고가 대비 현재가 (MDD/하락폭)
+    diff_from_high = ((curr / high) - 1) * 100
+    # 2. 최저가 대비 현재가 (상승폭)
+    diff_from_low = ((curr / low) - 1) * 100
+
+    # 화폐 기호 위치 처리
+    curr_fmt = f"{curr:,.2f}{currency}" if currency == "원" else f"{currency}{curr:,.2f}"
+    high_fmt = f"{high:,.2f}{currency}" if currency == "원" else f"{currency}{high:,.2f}"
+    low_fmt = f"{low:,.2f}{currency}" if currency == "원" else f"{currency}{low:,.2f}"
 
     response = [
-        f"🇺🇸 *[{stock.name_en} ({stock.symbol})]*",
-        f"최근 종가: `${curr_price:,.2f}` (`{latest_date}` 기준)",
+        f"📊 *[{name} ({symbol})]*",
+        f"현재가: `{curr_fmt}`",
         "",
-        *mdd_results,
+        f"🔍 *최근 6개월 분석*",
+        f"📈 최고가 대비: `{diff_from_high:.2f}%` (고점: {high_fmt})",
+        f"📉 최저가 대비: `+{diff_from_low:.2f}%` (저점: {low_fmt})",
         "",
-        f"🏛️ 시장: {stock.market} | 섹터: {stock.sector or 'N/A'}",
-        "💡 _미국 주식은 전 영업일 종가 기준으로 분석됩니다._"
+        "💡 _최고가 대비 하락폭이 크고 최저가 대비 상승폭이 적을수록 바닥권일 확률이 높습니다._"
     ]
     return "\n".join(response)
 
