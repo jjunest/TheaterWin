@@ -168,6 +168,97 @@ def stock_korea_detail(request, stock_code):
     return render(request, 'TheaterWinBook/stock_korea_detail.html', context)
 
 
+def stock_usa_detail(request, stock_code):
+    """
+    미국 주식 상세 분석 뷰
+    """
+    # 1. 기본 종목 정보 로드 (상단에서 전달받은 stock_code 사용)
+    stock_info = get_object_or_404(StocksUsList, symbol=stock_code.upper())
+
+    # 2. 데이터 로드 (Ticker 우선, Candle 백업)
+    latest_ticker = StocksUsTicker.objects.filter(symbol=stock_info).order_by('-bat_time').first()
+    latest_candle = StocksUsCandle.objects.filter(symbol=stock_info).order_by('-date').first()
+
+    # 3. 기준 현재가 결정
+    current_price = Decimal('0')
+    display_date = "-"
+
+    if latest_ticker:
+        current_price = latest_ticker.price
+        display_date = latest_ticker.bat_time.astimezone(KST).strftime('%Y/%m/%d %H:%M:%S')
+    elif latest_candle:
+        current_price = latest_candle.close_price
+        display_date = latest_candle.date.strftime('%Y/%m/%d') + " (종가)"
+
+    # 4. 요약 정보 (미국 주식은 소수점 2자리 필수)
+    summary = {
+        'price_display': f"{float(current_price):,.2f}" if current_price > 0 else "0.00",
+        'change_rate': (latest_ticker.change_rate * 100) if latest_ticker and latest_ticker.change_rate else 0,
+        'high': f"{float(latest_ticker.high or 0):,.2f}" if latest_ticker else "-",
+        'low': f"{float(latest_ticker.low or 0):,.2f}" if latest_ticker else "-",
+        'open': f"{float(latest_ticker.open or 0):,.2f}" if latest_ticker else "-",
+        'updated_at': display_date,
+    }
+
+    # 5. MDD 분석 (기존 로직 유지)
+    time_periods = {'1m': 30, '3m': 90, '6m': 180, '12m': 365}
+    mdd_results = {}
+    analysis_end_date = latest_candle.date if latest_candle else timezone.now().date()
+
+    if current_price > 0:
+        for key, days in time_periods.items():
+            start_date = analysis_end_date - timedelta(days=days)
+            prices_qs = StocksUsCandle.objects.filter(
+                symbol=stock_info,
+                date__range=[start_date, analysis_end_date]
+            ).order_by('date').values('high_price', 'close_price')
+
+            if prices_qs.exists():
+                df = pd.DataFrame(list(prices_qs))
+                peak_price = float(df['high_price'].max())
+                mdd_val = ((float(current_price) - peak_price) / peak_price) * 100 if peak_price > 0 else 0
+
+                mdd_results[key] = {
+                    'label': f"{days}일",
+                    'peak_price': f"{peak_price:,.2f}",
+                    'current_price': f"{float(current_price):,.2f}",
+                    'mdd_percent': mdd_val,
+                    'risk_score': abs(round(mdd_val, 1))
+                }
+
+    context = {
+        'stock_info': stock_info,
+        'stock_code': stock_code.upper(),  # symbol 대신 stock_code로 통일하여 NameError 해결
+        'summary': summary,
+        'latest_ticker': latest_ticker,
+        'mdd_results': mdd_results,
+    }
+    return render(request, 'TheaterWinBook/stock_usa_detail.html', context)
+
+def format_us_market_cap(value):
+    """미국 시가총액 단위 변환 헬퍼 함수"""
+    if not value: return "-"
+    val = float(value)
+    if val >= 1_000_000_000_000:
+        return f"${val / 1_000_000_000_000:.2f}T (조)"
+    elif val >= 1_000_000_000:
+        return f"${val / 1_000_000_000:.2f}B (십억)"
+    return f"${val / 1_000_000:.2f}M (백만)"
+
+
+def get_us_stock_candle_api(request, symbol):
+    """미국 주식 ApexCharts용 API"""
+    candles = StocksUsCandle.objects.filter(symbol__symbol=symbol.upper()).order_by('-date')[:250]
+    data = [{
+        'x': int(timezone.datetime.combine(c.date, timezone.datetime.min.time()).timestamp() * 1000),
+        'y': [float(c.open_price), float(c.high_price), float(c.low_price), float(c.close_price)]
+    } for c in reversed(candles)]
+
+    return JsonResponse({'status': 'success', 'data': data})
+
+
+
+
 def get_stock_candle(request, stock_code):
     """주식 캔들 데이터 API (ApexCharts용)"""
     try:
@@ -191,19 +282,61 @@ def val_label(days):
     return f"{days}일"
 
 
-# 캔들 차트 API (ApexCharts용)
+# # 캔들 차트 API (ApexCharts용)
+# def get_stock_candle_api(request, stock_code):
+#     candles = StocksKrCandle.objects.filter(stock_code__stock_code=stock_code).order_by('-date')[:300]
+#     data = [{
+#         'x': int(time.mktime(c.date.timetuple()) * 1000),
+#         'y': [float(c.open_price), float(c.high_price), float(c.low_price), float(c.close_price)]
+#     } for c in reversed(candles)]
+#
+#     return JsonResponse({'status': 'success', 'data': data, 'name': '주가 차트'})
+
+# # 캔들 차트 API (ApexCharts용)
 def get_stock_candle_api(request, stock_code):
-    candles = StocksKrCandle.objects.filter(stock_code__stock_code=stock_code).order_by('-date')[:300]
-    data = [{
-        'x': int(time.mktime(c.date.timetuple()) * 1000),
-        'y': [float(c.open_price), float(c.high_price), float(c.low_price), float(c.close_price)]
-    } for c in reversed(candles)]
+    """
+    시장 구분(KR/US)을 자동 감지하여 캔들 데이터를 반환하는 통합 API
+    """
+    # 1. 시장 구분 로직 (간단하게 알파벳 포함 여부로 US 주식 판단)
+    # 혹은 요청에 ?market=US 같은 파라미터를 명시적으로 받을 수도 있습니다.
+    is_us_stock = any(c.isalpha() for c in stock_code)
 
-    return JsonResponse({'status': 'success', 'data': data, 'name': '주가 차트'})
+    try:
+        if is_us_stock:
+            # 미국 주식 처리 (StocksUsCandle 사용)
+            # StocksUsCandle은 ForeignKey(symbol) 구조이므로 symbol__symbol로 필터링
+            candles = StocksUsCandle.objects.filter(symbol__symbol=stock_code).order_by('-date')[:300]
+            chart_name = f"{stock_code} (US) Chart"
+        else:
+            # 한국 주식 처리 (StocksKrCandle 사용)
+            candles = StocksKrCandle.objects.filter(stock_code__stock_code=stock_code).order_by('-date')[:300]
+            chart_name = "국내 주가 차트"
 
+        if not candles.exists():
+            return JsonResponse({'status': 'error', 'message': 'No data found'}, status=404)
 
+        # 2. ApexCharts 데이터 포맷팅 (통일)
+        data = [{
+            'x': int(time.mktime(c.date.timetuple()) * 1000),
+            'y': [
+                float(c.open_price),
+                float(c.high_price),
+                float(c.low_price),
+                float(c.close_price)
+            ]
+        } for c in reversed(candles)]
 
-def stock_list_usa(request):
+        return JsonResponse({
+            'status': 'success',
+            'market': 'US' if is_us_stock else 'KR',
+            'data': data,
+            'name': chart_name
+        })
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+def stock_usa_list(request):
     """
         미국 주식 리스트 뷰 (NASDAQ, NYSE, AMEX)
         한국 주식 로직을 계승하되, 달러($) 및 소수점 처리를 추가함.
@@ -288,7 +421,7 @@ def stock_list_usa(request):
         'stock_list': stock_list_data,
         'title': '🇺🇸 미국 주식 실시간 시세 (S&P500 / NASDAQ)'
     }
-    return render(request, 'TheaterWinBook/stock_list_usa.html', context)
+    return render(request, 'TheaterWinBook/stock_usa_list.html', context)
 
 def stock_rank_usa(request):
     return render(request, 'TheaterWinBook/stock_rank_usa.html')

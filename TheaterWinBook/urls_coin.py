@@ -26,7 +26,7 @@ urlpatterns = [
     # 게시판 목록, 작성, 수정, 삭제, 상세보기
     path("coin_list/", views.coin_list, name="coin_list"),
     path("coin_rank/", views.coin_rank, name="coin_rank"),
-    path("stock_list_usa/", views.stock_list_usa, name="stock_list_usa"),
+
     path("template_250705/", views.template_250705, name="template_250705"),
     # 1. 알람 설정 팝업 (기존)
     # path('coin/alarm/setting/<str:coin_ticker>/', views.coin_alarm_setting_pop, name='coin_alarm_setting_pop'),

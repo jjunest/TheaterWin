@@ -35,6 +35,7 @@ urlpatterns = [
     path("", include("TheaterWinBook.urls_freeboardprof")),
     path("", include("TheaterWinBook.urls_coin")),
     path("", include("TheaterWinBook.urls_stock_korea")),
+    path("", include("TheaterWinBook.urls_stock_usa")),
     # Django 인증 URL 포함
     path("accounts/", include("django.contrib.auth.urls")),
 

@@ -24,7 +24,6 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 # env 패키지를 활용해서 업비트 .env 환경 변수 가져오기
 UPBIT_ACCESS_KEY = env('UPBIT_ACCESS_KEY')
 UPBIT_SECRET_KEY = env('UPBIT_SECRET_KEY')
-DEBUG = env.bool('DEBUG', default=False)
 
 # env 패키지를 활용해서 EVOS .env 환경 변수 가져오기 251030
 ECOS_API_KEY = env('ECOS_API_KEY')
@@ -47,7 +46,7 @@ SECRET_KEY = 'v4t3@&*^zrj(+fxjpx_=2i_+$royxy5u98)2!8^pa@2l9%dxvj'
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'www.fullvesting.com', 'fullvesting.com.','fullvesting.com', 'http://fullvesting.com',

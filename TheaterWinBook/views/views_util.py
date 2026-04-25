@@ -5,6 +5,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Max
 from ..models_stock_korea import StocksKrList, StocksKrCandle, StocksKrTicker
+from ..models_stock_usa import StocksUsList, StocksUsCandle
 from ..models_coins import CoinsUpbitList,CoinsUpbitCandle,CoinsUpbitTicker
 import requests
 from ..utils_telegram import send_notification_telegram
@@ -22,17 +23,22 @@ def telegram_quant_webhook(request):
                 text = payload['message'].get('text', '').strip()
 
                 if text:
-                    # 1. '/' 제거 후 코인인지 주식인지 판단 (예: /비트코인 또는 /BTC)
-                    query = text.replace('/', '')
+                    query = text.replace('/', '').upper()  # 티커 검색을 위해 대문자 변환
 
-                    # 2. 코인 검색 시도
-                    coin_response = process_coin_query(query)
-                    if coin_response:
-                        send_message(QUANT_BOT_TOKEN,chat_id, coin_response)
-                    else:
-                        # 3. 코인이 없으면 기존 주식 로직 실행
-                        stock_response = process_stock_query(query)
-                        send_message(chat_id, stock_response)
+                    # 1. 코인 검색
+                    response = process_coin_query(query)
+
+                    # 2. 코인이 없으면 한국 주식 검색
+                    if not response:
+                        response = process_stock_query(query)
+
+                    # 3. 한국 주식도 없으면 미국 주식 검색 (추가된 부분)
+                    if "찾을 수 없습니다" in response:  # 기존 한국주식 실패 메시지 확인
+                        us_response = process_us_stock_query(query)
+                        if us_response:
+                            response = us_response
+
+                    send_direct_message(chat_id, response)
         except Exception as e:
             print(f"Webhook Error: {e}")
 
@@ -117,6 +123,56 @@ def process_coin_query(query):
     return "\n".join(response)
 
 
+def process_us_stock_query(query):
+    """
+    StocksUsCandle 테이블의 최근 종가(close_price)를 기준으로 MDD 및 현재 상태 분석
+    """
+    # 1. 종목 검색 (티커 대문자 변환 후 검색)
+    query = query.strip().upper()
+    stock = StocksUsList.objects.filter(symbol=query).first() or \
+            StocksUsList.objects.filter(name_en__icontains=query).first()
+
+    if not stock:
+        return f"❓ 미국 주식 '{query}' 종목을 찾을 수 없습니다."
+
+    # 2. 최신 캔들 데이터 가져오기 (Ticker 대신 최신 종가 사용)
+    latest_candle = StocksUsCandle.objects.filter(symbol=stock).order_by('-date').first()
+
+    if not latest_candle:
+        return f"⚠️ {stock.symbol} ({stock.name_en})의 가격 데이터(Candle)가 존재하지 않습니다."
+
+    # 현재가로 사용할 데이터 (최근 영업일 종가)
+    curr_price = float(latest_candle.close_price)
+    latest_date = latest_candle.date
+
+    # 3. MDD 계산 (최근 1년 최고점 대비)
+    one_year_ago = latest_date - timedelta(days=365)
+
+    # 해당 기간 내 최고가 조회
+    high_price_data = StocksUsCandle.objects.filter(
+        symbol=stock,
+        date__gte=one_year_ago
+    ).aggregate(Max('high_price'))
+
+    max_high = float(high_price_data['high_price__max']) if high_price_data['high_price__max'] else 0
+
+    # 4. 메시지 구성
+    mdd = ((curr_price / max_high) - 1) * 100 if max_high > 0 else 0
+    mdd_str = f"`{mdd:.2f}%`" if max_high > 0 else "데이터 부족"
+
+    response = [
+        f"🇺🇸 *[{stock.name_en} ({stock.symbol})]*",
+        f"최근 종가: `${curr_price:,.2f}` (`{latest_date}` 기준)",
+        f"1년 내 최고점 대비(MDD): {mdd_str}",
+        "",
+        f"📍 52주 최고가: `${max_high:,.2f}`",
+        f"🏛️ 시장: {stock.market}",
+        f"📂 섹터: {stock.sector or 'N/A'}",
+        "",
+        "💡 _미국 주식은 전 영업일 종가 기준으로 분석됩니다._"
+    ]
+
+    return "\n".join(response)
 
 def process_stock_query(query):
     # 1. 종목 찾기 (이름 또는 코드로 검색)
