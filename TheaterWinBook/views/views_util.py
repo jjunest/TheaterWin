@@ -125,7 +125,7 @@ def process_coin_query(query):
 
 def process_us_stock_query(query):
     """
-    StocksUsCandle 테이블의 최근 종가(close_price)를 기준으로 MDD 및 현재 상태 분석
+    StocksUsCandle 테이블을 기준으로 1년 내 최고점/최저점 대비 변동 분석
     """
     # 1. 종목 검색 (티커 대문자 변환 후 검색)
     query = query.strip().upper()
@@ -135,44 +135,109 @@ def process_us_stock_query(query):
     if not stock:
         return f"❓ 미국 주식 '{query}' 종목을 찾을 수 없습니다."
 
-    # 2. 최신 캔들 데이터 가져오기 (Ticker 대신 최신 종가 사용)
+    # 2. 최신 캔들 데이터 가져오기
     latest_candle = StocksUsCandle.objects.filter(symbol=stock).order_by('-date').first()
 
     if not latest_candle:
-        return f"⚠️ {stock.symbol} ({stock.name_en})의 가격 데이터(Candle)가 존재하지 않습니다."
+        return f"⚠️ {stock.symbol} ({stock.name_en})의 가격 데이터가 존재하지 않습니다."
 
-    # 현재가로 사용할 데이터 (최근 영업일 종가)
+    # 현재가 및 기준 날짜
     curr_price = float(latest_candle.close_price)
     latest_date = latest_candle.date
 
-    # 3. MDD 계산 (최근 1년 최고점 대비)
+    # 3. 1년(365일) 데이터 집계 (최고가 & 최저가)
     one_year_ago = latest_date - timedelta(days=365)
 
-    # 해당 기간 내 최고가 조회
-    high_price_data = StocksUsCandle.objects.filter(
+    # 해당 기간 내 최고가(high_price)와 최저가(low_price)를 한 번에 조회
+    stats = StocksUsCandle.objects.filter(
         symbol=stock,
         date__gte=one_year_ago
-    ).aggregate(Max('high_price'))
+    ).aggregate(
+        max_h=Max('high_price'),
+        min_l=Min('low_price')
+    )
 
-    max_high = float(high_price_data['high_price__max']) if high_price_data['high_price__max'] else 0
+    max_high = float(stats['max_h']) if stats['max_h'] else 0
+    min_low = float(stats['min_l']) if stats['min_l'] else 0
 
-    # 4. 메시지 구성
+    # 4. 변동률 계산
+    # 최고점 대비 (MDD): (현재가 / 고점) - 1
     mdd = ((curr_price / max_high) - 1) * 100 if max_high > 0 else 0
+
+    # 최저점 대비 상승률: (현재가 / 저점) - 1
+    recovery = ((curr_price / min_low) - 1) * 100 if min_low > 0 else 0
+
+    # 5. 메시지 구성
     mdd_str = f"`{mdd:.2f}%`" if max_high > 0 else "데이터 부족"
+    recovery_str = f"`+{recovery:.2f}%`" if min_low > 0 else "데이터 부족"
 
     response = [
         f"🇺🇸 *[{stock.name_en} ({stock.symbol})]*",
         f"최근 종가: `${curr_price:,.2f}` (`{latest_date}` 기준)",
-        f"1년 내 최고점 대비(MDD): {mdd_str}",
+        "",
+        f"📉 *1년 내 최고점 대비(MDD):* {mdd_str}",
+        f"📈 *1년 내 최저점 대비 상승:* {recovery_str}",
         "",
         f"📍 52주 최고가: `${max_high:,.2f}`",
-        f"🏛️ 시장: {stock.market}",
-        f"📂 섹터: {stock.sector or 'N/A'}",
+        f"📍 52주 최저가: `${min_low:,.2f}`",
+        "",
+        f"🏛️ 시장: {stock.market} | 섹터: {stock.sector or 'N/A'}",
         "",
         "💡 _미국 주식은 전 영업일 종가 기준으로 분석됩니다._"
     ]
 
     return "\n".join(response)
+
+# def process_us_stock_query(query):
+#     """
+#     StocksUsCandle 테이블의 최근 종가(close_price)를 기준으로 MDD 및 현재 상태 분석
+#     """
+#     # 1. 종목 검색 (티커 대문자 변환 후 검색)
+#     query = query.strip().upper()
+#     stock = StocksUsList.objects.filter(symbol=query).first() or \
+#             StocksUsList.objects.filter(name_en__icontains=query).first()
+#
+#     if not stock:
+#         return f"❓ 미국 주식 '{query}' 종목을 찾을 수 없습니다."
+#
+#     # 2. 최신 캔들 데이터 가져오기 (Ticker 대신 최신 종가 사용)
+#     latest_candle = StocksUsCandle.objects.filter(symbol=stock).order_by('-date').first()
+#
+#     if not latest_candle:
+#         return f"⚠️ {stock.symbol} ({stock.name_en})의 가격 데이터(Candle)가 존재하지 않습니다."
+#
+#     # 현재가로 사용할 데이터 (최근 영업일 종가)
+#     curr_price = float(latest_candle.close_price)
+#     latest_date = latest_candle.date
+#
+#     # 3. MDD 계산 (최근 1년 최고점 대비)
+#     one_year_ago = latest_date - timedelta(days=365)
+#
+#     # 해당 기간 내 최고가 조회
+#     high_price_data = StocksUsCandle.objects.filter(
+#         symbol=stock,
+#         date__gte=one_year_ago
+#     ).aggregate(Max('high_price'))
+#
+#     max_high = float(high_price_data['high_price__max']) if high_price_data['high_price__max'] else 0
+#
+#     # 4. 메시지 구성
+#     mdd = ((curr_price / max_high) - 1) * 100 if max_high > 0 else 0
+#     mdd_str = f"`{mdd:.2f}%`" if max_high > 0 else "데이터 부족"
+#
+#     response = [
+#         f"🇺🇸 *[{stock.name_en} ({stock.symbol})]*",
+#         f"최근 종가: `${curr_price:,.2f}` (`{latest_date}` 기준)",
+#         f"1년 내 최고점 대비(MDD): {mdd_str}",
+#         "",
+#         f"📍 52주 최고가: `${max_high:,.2f}`",
+#         f"🏛️ 시장: {stock.market}",
+#         f"📂 섹터: {stock.sector or 'N/A'}",
+#         "",
+#         "💡 _미국 주식은 전 영업일 종가 기준으로 분석됩니다._"
+#     ]
+#
+#     return "\n".join(response)
 
 def process_stock_query(query):
     # 1. 종목 찾기 (이름 또는 코드로 검색)
